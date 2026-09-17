@@ -13,7 +13,8 @@
     "db:seed": "npm run seed",
     "geocode": "tsx --conditions=react-server scripts/geocode.ts",
     "data:convert": "tsx scripts/convert-excel.ts",
-    "data:features": "tsx scripts/build-features.ts"
+    "data:features": "tsx scripts/build-features.ts",
+    "data:calibrate": "tsx scripts/calibrate-scores.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

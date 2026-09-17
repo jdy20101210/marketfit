@@ -27,7 +27,7 @@ export function StoreDetailClient({ store }: { store: StoreDTO }) {
   }, [store.id]);
 
   const kakaoQuery = store.locationBasis === "market_zone" || !store.geocodeQuery ? `대전중앙시장 ${store.name}` : store.geocodeQuery;
-  const storeTaste = toVector(store.taste);
+  const storeTaste = toVector(store.inferred.taste);
 
   return (
     <div className="container-page max-w-5xl pt-4 sm:pt-6">
@@ -166,7 +166,7 @@ export function StoreDetailClient({ store }: { store: StoreDTO }) {
             <div className="mt-4">
               <TasteBars vector={storeTaste} emphasize={3} minScore={0.2} title={`${store.name} 추천 성향`} compareWith={profile?.taste} compareLabel="나의 취향" />
             </div>
-            <p className="mt-3 text-xs leading-relaxed text-ink-500">{store.rationale}</p>
+            <p className="mt-3 text-xs leading-relaxed text-ink-500">{store.inferred.rationale}</p>
           </Card>
         </div>
 
@@ -179,7 +179,7 @@ export function StoreDetailClient({ store }: { store: StoreDTO }) {
                   <MapPinned className="size-4" aria-hidden /> 위치
                 </dt>
                 <dd className="mt-1 text-ink-700">
-                  {store.addressRaw || "정보 없음"}
+                  {store.raw.addressRaw || "정보 없음"}
                   <p className="mt-1 text-xs text-ink-500">{store.location.note}</p>
                   {store.locationBasis === "market_zone" ? (
                     <p className="mt-1 text-xs text-ink-500">활성화구역 공식 대표 주소: {MARKET_REPRESENTATIVE_ADDRESS}</p>
@@ -209,7 +209,7 @@ export function StoreDetailClient({ store }: { store: StoreDTO }) {
                       {store.phone}
                     </a>
                   ) : (
-                    <span>{store.phoneRaw || PHONE_STATUS_LABEL[store.phoneStatus]}</span>
+                    <span>{store.raw.phoneRaw || PHONE_STATUS_LABEL[store.phoneStatus]}</span>
                   )}
                 </dd>
               </div>
@@ -232,7 +232,7 @@ export function StoreDetailClient({ store }: { store: StoreDTO }) {
                   <FileText className="size-4" aria-hidden /> 확인 출처 · 비고
                 </dt>
                 <dd className="mt-1 text-ink-700">
-                  {store.source || "—"}
+                  {store.raw.source || "—"}
                   {store.note ? <span className="text-ink-500"> · {store.note}</span> : null}
                 </dd>
               </div>
@@ -246,7 +246,7 @@ export function StoreDetailClient({ store }: { store: StoreDTO }) {
             <CardHeader title="중앙시장 특성" description="추천에서 보조적으로만 반영돼요 (가중치 0.10)." />
             <ul className="mt-4 space-y-3">
               {MARKET_FEATURE_KEYS.map((key) => {
-                const value = store.market[key] ?? 0;
+                const value = store.inferred.market[key] ?? 0;
                 return (
                   <li key={key}>
                     <div className="flex items-center justify-between text-sm">

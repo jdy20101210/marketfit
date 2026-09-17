@@ -3,7 +3,7 @@ import { z } from "zod";
 import { TASTE_KEYS, type TasteKey, type TasteVector } from "@/lib/recommendation/dimensions";
 import type { ScoreComponents } from "@/lib/recommendation/engine";
 import type { LocationAccuracy, StoreCategory } from "@/lib/stores/types";
-import type { EntityKind, LocationBasis, PhoneStatus } from "@/lib/stores/parse";
+import type { EntityKind, LocationBasis, LocLevel, PhoneStatus } from "@/lib/stores/parse";
 
 // 기본 검증 메시지를 한국어로 (직접 지정한 메시지는 그대로 사용)
 z.config(z.locales.ko());
@@ -88,29 +88,53 @@ export const SaveProfileRequestSchema = z.object({
 
 // ---------- 응답 DTO ----------
 
+/**
+ * 점포 응답 — 엑셀 원본 정보(raw)와 규칙으로 추정한 추천 성향(inferred)을 나눠 담습니다.
+ */
 export interface StoreDTO {
   id: string;
   name: string;
+  /** 원본 품목을 가운뎃점으로 연결한 표시용 문자열 */
   storeType: string;
-  addressRaw: string;
+  /** 원본 정보 (엑셀) */
+  raw: {
+    sourceIds: number[];
+    items: string[];
+    itemsRaw: string;
+    categoriesRaw: string;
+    addressRaw: string;
+    addressClean: string | null;
+    zone: string | null;
+    locLevel: LocLevel;
+    phoneRaw: string;
+    source: string;
+    collectedAt: string;
+  };
+  mainCategory: string;
+  subCategory: string;
   addressDetail: string | null;
   geocodeQuery: string | null;
   locationBasis: LocationBasis;
   phone: string | null;
-  phoneRaw: string;
   phoneStatus: PhoneStatus;
-  source: string;
+  /** 변환 과정 메모 (병합·형식 확인 등) */
   note: string;
   entityKind: EntityKind;
+  /** 추정 정보 (규칙 기반) */
+  inferred: {
+    by: "rule";
+    taste: TasteVector;
+    market: Record<string, number>;
+    exposure: number;
+    rationale: string;
+  };
   primaryCategory: StoreCategory;
   categories: StoreCategory[];
   tags: string[];
   productHints: string[];
   recommendable: boolean;
-  taste: TasteVector;
-  market: Record<string, number>;
-  exposure: number;
-  rationale: string;
+  /** 프로토타입 가상 집계 (고정값) */
+  activity: { visitCount: number; likeCount: number; saveCount: number; interestUsers: number };
   /** 점포 소개 (저장된 AI/템플릿 소개가 없으면 원본 데이터 기반 템플릿) */
   description: { text: string; provider: "gemini" | "template"; updatedAt: string | null };
   location: {

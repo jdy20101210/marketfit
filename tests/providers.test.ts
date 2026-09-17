@@ -304,31 +304,32 @@ describe("행동 이력 병합", () => {
 });
 
 describe("점포 소개 (템플릿)", () => {
-  it("원본 데이터에 있는 유형·품목만 쓰고 숫자·단정 표현을 쓰지 않는다", async () => {
+  it("원본 데이터에 있는 분류·품목만 쓰고 숫자·단정 표현을 쓰지 않는다", async () => {
     const { templateStoreDescription } = await import("@/lib/stores/description");
     const text = templateStoreDescription({
-      id: "jm-100",
+      id: "dj-1000",
       name: "테스트상회",
       storeType: "그릇·주방용품",
-      entityLabel: "개별 점포",
-      category: "주방·식기",
+      entityLabel: "점포",
+      category: "주거·생활 > 그릇·주방용품",
       confirmedItems: ["그릇", "주방용품", "냄비"],
       marketHighlights: ["로컬 체험"],
       locationNote: "",
     });
-    expect(text).toContain("테스트상회는 '그릇·주방용품'을 다루는 점포예요.");
-    expect(text).toContain("냄비");
+    expect(text).toContain("테스트상회는 '그릇·주방용품·냄비'를 다루는 점포예요.");
+    expect(text).toContain("공식 점포 목록의 분류는 주거·생활 > 그릇·주방용품이에요.");
+    expect(text).toContain("로컬 체험");
     const vendor = templateStoreDescription({
-      id: "jm-101",
-      name: "테스트주단",
-      storeType: "의류 노점",
+      id: "dj-1001",
+      name: "옷(노점)",
+      storeType: "여성복",
       entityLabel: "노점",
-      category: "패션·의류",
-      confirmedItems: ["의류"],
+      category: "의류·패션 > 여성복",
+      confirmedItems: ["여성복"],
       marketHighlights: [],
       locationNote: "",
     });
-    expect(vendor).toBe("테스트주단은 '의류'를 다루는 노점이에요.");
+    expect(vendor).toBe("옷(노점)은 '여성복'을 다루는 노점이에요. 공식 점포 목록의 분류는 의류·패션 > 여성복이에요.");
     expect(text).not.toMatch(/\d/);
     expect(text).not.toMatch(/최고|유일|원조/);
   });

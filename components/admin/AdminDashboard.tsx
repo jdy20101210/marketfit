@@ -337,7 +337,7 @@ function StoreTable({ stores }: { stores: StoreDTO[] }) {
           <tbody>
             {stores.map((s) => {
               const expanded = open === s.id;
-              const taste = toVector(s.taste);
+              const taste = toVector(s.inferred.taste);
               return (
                 <Fragment key={s.id}>
                   <tr className="border-t border-ink-100 align-top">
@@ -362,7 +362,7 @@ function StoreTable({ stores }: { stores: StoreDTO[] }) {
                     <td className="px-2 py-3">
                       <AccuracyBadge accuracy={s.location.accuracy} />
                     </td>
-                    <td className="tabular px-2 py-3 text-right text-ink-700">{Math.round(s.exposure * 100)}</td>
+                    <td className="tabular px-2 py-3 text-right text-ink-700">{Math.round(s.inferred.exposure * 100)}</td>
                     <td className="px-4 py-3 text-right">
                       <button
                         type="button"
@@ -397,7 +397,7 @@ function StoreTable({ stores }: { stores: StoreDTO[] }) {
                             {MARKET_FEATURE_KEYS.map((k) => (
                               <p key={k} className="flex justify-between text-xs">
                                 <span className="text-ink-600">{MARKET_FEATURE_META[k].label}</span>
-                                <span className="tabular text-ink-800">{Math.round((s.market[k] ?? 0) * 100)}</span>
+                                <span className="tabular text-ink-800">{Math.round((s.inferred.market[k] ?? 0) * 100)}</span>
                               </p>
                             ))}
                             <p className="mt-2 text-xs text-ink-500">원본 태그: {s.tags.join(", ")}</p>

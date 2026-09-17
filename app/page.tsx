@@ -7,7 +7,8 @@ import { ModeBadge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { getPublicModes } from "@/lib/config/integrations";
 import { getStoreCatalog, SEED_META } from "@/lib/stores/catalog";
-import { STORE_CATEGORIES } from "@/lib/stores/types";
+import { displayCategory } from "@/lib/stores/parse";
+import { MAIN_CATEGORIES } from "@/lib/stores/types";
 
 function steps(modes: Awaited<ReturnType<typeof getPublicModes>>) {
   return [
@@ -36,7 +37,7 @@ function steps(modes: Awaited<ReturnType<typeof getPublicModes>>) {
 export default async function HomePage() {
   await connection();
   const [modes, catalog] = await Promise.all([getPublicModes(), getStoreCatalog()]);
-  const categoryCounts = STORE_CATEGORIES.map((c) => ({
+  const categoryCounts = MAIN_CATEGORIES.map((c) => ({
     category: c,
     count: catalog.stores.filter((s) => s.features.categories.includes(c)).length,
   })).filter((c) => c.count > 0);
@@ -144,7 +145,7 @@ export default async function HomePage() {
             <ul className="flex flex-wrap content-start gap-2" aria-label="카테고리별 점포 수">
               {categoryCounts.map((c) => (
                 <li key={c.category} className="rounded-2xl border border-ink-200 bg-cream px-3.5 py-2 text-sm">
-                  <span className="font-semibold text-ink-800">{c.category}</span>
+                  <span className="font-semibold text-ink-800">{displayCategory(c.category)}</span>
                   <span className="tabular ml-1.5 text-ink-500">{c.count}</span>
                 </li>
               ))}

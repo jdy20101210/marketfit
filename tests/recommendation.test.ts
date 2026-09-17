@@ -2,9 +2,20 @@ import { describe, expect, it } from "vitest";
 import seed from "@/data/stores/stores.seed.json";
 import features from "@/data/stores/store-features.json";
 import { emptyVector, TASTE_KEYS, toVector } from "@/lib/recommendation/dimensions";
-import { cosineSimilarity, diversifyOrder, rankStores, scoreStore, SCORE_WEIGHTS, toDisplayScore } from "@/lib/recommendation/engine";
+import {
+  cosineSimilarity,
+  preferenceSimilarity,
+  rankStores,
+  RECOMMEND_FALLBACK_SCORE,
+  RECOMMEND_MIN_SCORE,
+  scoreStore,
+  SCORE_WEIGHTS,
+  selectRecommended,
+  toDisplayScore,
+  weightedCosine,
+} from "@/lib/recommendation/engine";
 import { currentState, feedbackByStore, updateTasteVector } from "@/lib/recommendation/feedback";
-import { matchKeyword, vectorFromKeywords } from "@/lib/recommendation/keywords";
+import { matchKeyword, matchSentence, splitKeywords, vectorFromKeywords } from "@/lib/recommendation/keywords";
 import { josa, templateReason } from "@/lib/recommendation/reasons";
 import type { StoreFeatures } from "@/lib/stores/types";
 
@@ -51,20 +62,48 @@ describe("가중치와 점수 범위", () => {
   });
 });
 
+const storeById = new Map(seed.stores.map((s) => [s.id, s]));
+const kw = (words: string[]) => vectorFromKeywords(words.map((keyword) => ({ keyword, score: 0.9 }))).vector;
+
+describe("취향 유사도 (가중 cosine + 관심 분야 묶음)", () => {
+  it("상황·스타일 차원은 절반 가중치로 계산한다", () => {
+    const user = toVector({ coffee: 1, local: 1 });
+    const store = toVector({ coffee: 1 });
+    expect(weightedCosine(user, store)).toBeGreaterThan(cosineSimilarity(user, store));
+  });
+
+  it("관심사가 여러 개여도 한 분야에 잘 맞는 점포를 놓치지 않는다", () => {
+    const user = kw(["커피", "캠핑", "선물", "빈티지", "전통시장"]);
+    const coffeeShop = toVector({ coffee: 0.95, dessert: 0.6, local: 0.7 });
+    const pref = preferenceSimilarity(user, coffeeShop);
+    expect(pref.facet).toBe("coffee");
+    expect(pref.value).toBeGreaterThan(cosineSimilarity(user, coffeeShop));
+  });
+
+  it("약한 관심 분야는 강한 관심보다 앞서지 않는다", () => {
+    const user = toVector({ coffee: 0.9, kitchen: 0.8, living: 0.5 });
+    const curtain = toVector({ living: 0.95, practical: 0.45 });
+    const kitchen = toVector({ kitchen: 0.95, practical: 0.75, living: 0.45, coffee: 0.25 });
+    expect(preferenceSimilarity(user, kitchen).value).toBeGreaterThan(preferenceSimilarity(user, curtain).value);
+  });
+});
+
 describe("추천 순위", () => {
   it("주방 취향 사용자에게 주방용품 점포가 상위에 온다", () => {
     const profile = { taste: toVector({ kitchen: 0.95, family: 0.8, practical: 0.7 }), recent: null };
     const ranked = rankStores(profile, storeInputs);
-    const topTypes = ranked.slice(0, 5).map((r) => seed.stores.find((s) => s.id === r.storeId)!.storeType);
-    expect(topTypes.some((t) => t.includes("주방") || t.includes("식기"))).toBe(true);
+    expect(ranked.slice(0, 5).every((r) => storeById.get(r.storeId)!.subCategory === "그릇•주방용품" || r.score < ranked[0]!.score)).toBe(true);
+    expect(storeById.get(ranked[0]!.storeId)!.subCategory).toBe("그릇•주방용품");
   });
 
-  it("상인회(시장 안내)는 추천 대상이 아니며 맨 뒤로 간다", () => {
-    const profile = { taste: toVector({ local: 1, travel: 1 }), recent: null };
-    const ranked = rankStores(profile, storeInputs);
-    const association = ranked.find((r) => !r.recommendable)!;
-    expect(association.score).toBe(0);
-    expect(ranked.at(-1)!.recommendable).toBe(false);
+  it("점수 내림차순이며 추천 제외 점포는 0점으로 맨 뒤에 둔다", () => {
+    const profile = { taste: toVector({ food: 1, local: 0.9 }), recent: null };
+    const extra = { ...storeInputs[0]!, id: "zz-info", recommendable: false };
+    const ranked = rankStores(profile, [...storeInputs, extra]);
+    expect(ranked.at(-1)!.storeId).toBe("zz-info");
+    expect(ranked.at(-1)!.score).toBe(0);
+    const scores = ranked.filter((r) => r.recommendable).map((r) => r.score);
+    expect(scores).toEqual([...scores].sort((a, b) => b - a));
   });
 
   it("관심 없음 점포는 추천 가능한 점포 중 뒤쪽으로 밀린다", () => {
@@ -76,24 +115,64 @@ describe("추천 순위", () => {
     expect(ranked.slice(idx + 1).every((r) => r.dismissed || !r.recommendable)).toBe(true);
   });
 
-  it("다양화는 점수를 바꾸지 않고 같은 유형 연속을 줄인다", () => {
-    const profile = { taste: toVector({ kitchen: 1, family: 0.9, living: 0.8 }), recent: null };
-    const ranked = rankStores(profile, storeInputs);
-    const typeOf = (id: string) => ({ type: seed.stores.find((s) => s.id === id)!.storeType, category: "x" });
-    const ordered = diversifyOrder(ranked, typeOf);
-    expect(ordered).toHaveLength(ranked.length);
-    expect(new Set(ordered.map((o) => o.score))).toEqual(new Set(ranked.map((o) => o.score)));
-    const firstFour = ordered.slice(0, 4).map((o) => typeOf(o.storeId).type);
-    expect(new Set(firstFour).size).toBeGreaterThan(1);
+  it("덜 알려진 점포는 취향이 맞을 때만 discovery bonus를 받는다", () => {
+    const vendorId = seed.stores.find((s) => s.name === "옷(노점)")!.id;
+    const vendor = storeInputs.find((s) => s.id === vendorId)!;
+    const scored = scoreStore({ taste: toVector({ fashion: 1, practical: 0.6, discovery: 0.8 }), recent: null }, { ...vendor, exposure: 0.2 });
+    expect(scored.components.discovery_bonus).toBeGreaterThan(0.3);
+    const unrelated = scoreStore({ taste: toVector({ camping: 1 }), recent: null }, { ...vendor, exposure: 0.2 });
+    expect(unrelated.components.discovery_bonus).toBeLessThan(0.05);
+  });
+});
+
+describe("추천 기준 (80점, 없으면 75점)", () => {
+  const item = (id: string, score: number, extra: Partial<{ recommendable: boolean; dismissed: boolean }> = {}) => ({
+    storeId: id,
+    score,
+    raw: score / 100,
+    recommendable: true,
+    dismissed: false,
+    ...extra,
   });
 
-  it("덜 알려진 점포는 취향이 맞을 때만 discovery bonus를 받는다", () => {
-    const profile = { taste: toVector({ fashion: 1, practical: 0.6 }), recent: null };
-    const vendor = storeInputs.find((s) => s.id === "jm-008")!; // 의류 노점 (노출도 낮음)
-    const scored = scoreStore(profile, vendor);
-    expect(scored.components.discovery_bonus).toBeGreaterThan(0.3);
-    const unrelated = scoreStore({ taste: toVector({ food: 1 }), recent: null }, vendor);
-    expect(unrelated.components.discovery_bonus).toBeLessThan(0.05);
+  it("80점 이상만 점수순으로 순위를 매긴다", () => {
+    const sel = selectRecommended([item("a", 93), item("b", 91), item("c", 87), item("d", 79), item("e", 60)]);
+    expect(sel.threshold).toBe(RECOMMEND_MIN_SCORE);
+    expect(sel.usedFallback).toBe(false);
+    expect(sel.ranked.map((r) => [r.rank, r.storeId, r.score])).toEqual([
+      [1, "a", 93],
+      [2, "b", 91],
+      [3, "c", 87],
+    ]);
+  });
+
+  it("80점 이상이 없으면 75점 이상을 보여주고 점수는 바꾸지 않는다", () => {
+    const sel = selectRecommended([item("a", 78), item("b", 75), item("c", 74)]);
+    expect(sel.threshold).toBe(RECOMMEND_FALLBACK_SCORE);
+    expect(sel.usedFallback).toBe(true);
+    expect(sel.ranked.map((r) => r.score)).toEqual([78, 75]);
+  });
+
+  it("75점 이상도 없으면 빈 목록을 돌려준다", () => {
+    const sel = selectRecommended([item("a", 74), item("b", 60)]);
+    expect(sel.threshold).toBeNull();
+    expect(sel.ranked).toEqual([]);
+    expect(sel.bestScore).toBe(74);
+  });
+
+  it("관심 없음·추천 제외 점포는 순위에서 뺀다", () => {
+    const sel = selectRecommended([item("a", 95, { dismissed: true }), item("b", 90), item("c", 88, { recommendable: false })]);
+    expect(sel.ranked.map((r) => r.storeId)).toEqual(["b"]);
+    expect(sel.ranked[0]!.rank).toBe(1);
+  });
+
+  it("실제 데이터: 여러 관심 키워드를 입력해도 80점 이상 점포가 나온다", () => {
+    const taste = kw(["커피", "캠핑", "선물", "빈티지", "전통시장"]);
+    const sel = selectRecommended(rankStores({ taste, recent: taste }, storeInputs));
+    expect(sel.threshold).toBe(RECOMMEND_MIN_SCORE);
+    expect(sel.ranked.length).toBeGreaterThan(0);
+    const subs = sel.ranked.map((r) => storeById.get(r.storeId)!.subCategory);
+    expect(subs).toContain("스포츠•아웃도어");
   });
 });
 
@@ -122,6 +201,32 @@ describe("키워드 → 취향", () => {
     const m = matchKeyword("양자컴퓨터");
     expect(m.mapped).toBe(false);
     expect(Math.max(...TASTE_KEYS.map((k) => m.weights[k]))).toBeLessThanOrEqual(0.25);
+  });
+
+  it("관련 차원을 약하게 함께 반영한다 (의미 확장)", () => {
+    const coffee = matchKeyword("커피").weights;
+    expect(coffee.coffee).toBe(1);
+    expect(coffee.dessert).toBeGreaterThan(0);
+    expect(coffee.dessert).toBeLessThan(0.5);
+    expect(matchKeyword("대전만의").weights.discovery).toBeGreaterThan(0.5);
+    expect(matchKeyword("가성비").weights.price_sensitive).toBe(1);
+    expect(matchKeyword("독특한").weights.discovery).toBe(1);
+  });
+
+  it("대화 문장에서 부정 구절은 반영하지 않는다", () => {
+    const m = matchSentence("친구 생일 선물을 찾는데, 캠핑은 관심 없어요.");
+    expect(m.matchedWords).toContain("생일선물");
+    expect(m.weights.gift).toBe(1);
+    expect(m.matchedWords).not.toContain("캠핑");
+    expect(m.weights.camping).toBe(0);
+  });
+
+  it("키워드 입력을 여러 형식으로 나눈다", () => {
+    expect(splitKeywords("커피, 캠핑, 선물, 빈티지, 전통시장")).toEqual(["커피", "캠핑", "선물", "빈티지", "전통시장"]);
+    expect(splitKeywords("[커피] [캠핑]\n[선물]")).toEqual(["커피", "캠핑", "선물"]);
+    expect(splitKeywords("#커피 #캠핑 #커피")).toEqual(["커피", "캠핑"]);
+    expect(splitKeywords("커피 캠핑 선물")).toEqual(["커피", "캠핑", "선물"]);
+    expect(splitKeywords("캠핑 의자")).toEqual(["캠핑 의자"]);
   });
 
   it("여러 신호를 합쳐도 0~1을 유지한다", () => {

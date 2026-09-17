@@ -104,7 +104,7 @@ export function SelectedStorePanel({
         {current.location
           ? current.location.note
           : mapMode === "schematic"
-            ? `${store.addressRaw || "주소 정보 없음"} — 데모 안내도에서 주소별로 묶어 보여줘요 (좌표 미확인)`
+            ? `${store.raw.addressRaw || "주소 정보 없음"} — 데모 안내도에서 주소별로 묶어 보여줘요 (좌표 미확인)`
             : "좌표를 확인하지 못해 지도에 표시하지 않았어요."}
       </p>
 

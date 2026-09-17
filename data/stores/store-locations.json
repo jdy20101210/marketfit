@@ -1,10 +1,670 @@
 {
   "meta": {
-    "notice": "좌표는 Kakao Local API(서버)로만 채웁니다. `npm run geocode` 또는 관리자 화면의 [좌표 갱신]을 사용하세요. 확인되지 않은 좌표는 null로 둡니다."
+    "notice": "좌표는 Kakao Local API(서버)로만 채웁니다. `npm run geocode` 또는 관리자 화면의 [좌표 채우기]를 사용하세요. 확인되지 않은 좌표는 null로 둡니다."
   },
   "locations": [
     {
-      "storeId": "jm-001",
+      "storeId": "dj-1",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-3",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-5",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-7",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-9",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-11",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-12",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-14",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-17",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-18",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-21",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-23",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-25",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-26",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-28",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-29",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-35",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-36",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-37",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-38",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-40",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-42",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-48",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-3",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-49",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-4",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-51",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-6",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-52",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-7",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-53",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-8",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-55",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-59",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-14",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-62",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-17",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-64",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-67",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-68",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-23",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-69",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-24",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-70",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-25",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-71",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-73",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-28",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-74",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-29",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-75",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-30",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-76",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-31",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-77",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-32",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-78",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-33",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-80",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-86",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-87",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-42",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-88",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-43",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-89",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-44",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-90",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-45",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-96",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 42-51",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-99",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 50",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-100",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 50",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-106",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 50",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-107",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 41-3",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-108",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로779번길 40-15",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-109",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 785-5",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-112",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 785",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-115",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 785-5",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-116",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 26",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-117",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 45",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-120",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로779번길 38-15",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-122",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 34-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-124",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 34",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-127",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 30",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-131",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-133",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 32",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-137",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 50",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-141",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -14,7 +674,7 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-002",
+      "storeId": "dj-143",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -24,7 +684,7 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-003",
+      "storeId": "dj-144",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -34,7 +694,7 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-004",
+      "storeId": "dj-146",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -44,7 +704,7 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-005",
+      "storeId": "dj-147",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -54,7 +714,7 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-006",
+      "storeId": "dj-148",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -64,7 +724,497 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-007",
+      "storeId": "dj-150",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-152",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-154",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-155",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-156",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-157",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-158",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-162",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-163",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-164",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-167",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-171",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-172",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-174",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-176",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-178",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-179",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-180",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-181",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-182",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-183",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-184",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-187",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-190",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-191",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-192",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-193",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-195",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-196",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-197",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-199",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-200",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-206",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-207",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-208",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-214",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-216",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-219",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-220",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 85",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-224",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 25",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-228",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 783",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-233",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 27",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-236",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로791번길 17",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-237",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로791번길 17",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-238",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 25",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-244",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 25",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-246",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 25",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-249",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 28-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-253",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 783",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-261",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -74,37 +1224,197 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-008",
+      "storeId": "dj-267",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
       "note": "Kakao Local API로 좌표 확인 전",
-      "query": "대전광역시 동구 대전로779번길 38-15",
+      "query": "대전광역시 동구 중앙로194번길 61",
       "provider": null,
       "geocodedAt": null
     },
     {
-      "storeId": "jm-009",
+      "storeId": "dj-272",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
       "note": "Kakao Local API로 좌표 확인 전",
-      "query": "대전광역시 동구 대전로779번길 38-15",
+      "query": "대전광역시 동구 중교로 120-2",
       "provider": null,
       "geocodedAt": null
     },
     {
-      "storeId": "jm-010",
+      "storeId": "dj-281",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
       "note": "Kakao Local API로 좌표 확인 전",
-      "query": "대전광역시 동구 대전로779번길 38-15",
+      "query": "대전광역시 동구 중앙로194번길 61",
       "provider": null,
       "geocodedAt": null
     },
     {
-      "storeId": "jm-011",
+      "storeId": "dj-283",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 118",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-284",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 112-2",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-285",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 118",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-286",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 116-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-288",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로194번길 61",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-291",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로194번길 61",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-292",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로194번길 61",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-293",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로194번길 33",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-294",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로194번길 64",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-297",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전천동로 522-4",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-298",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 114-2",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-299",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전천동로 524-20",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-300",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로194번길 61",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-301",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로194번길 61",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-302",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 118",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-308",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로194번길 34",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-310",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -114,7 +1424,7 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-012",
+      "storeId": "dj-312",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -124,7 +1434,17 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-013",
+      "storeId": "dj-313",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 55-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-322",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -134,7 +1454,17 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-014",
+      "storeId": "dj-323",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 125",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-325",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -144,7 +1474,47 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-015",
+      "storeId": "dj-326",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 781-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-331",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 781-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-332",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 781-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-334",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 781-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-335",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -154,7 +1524,507 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-016",
+      "storeId": "dj-336",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 781-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-345",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 64",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-346",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 64",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-347",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 40",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-348",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 64",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-350",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 64-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-351",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 64",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-352",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 40",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-353",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 40",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-354",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 40",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-355",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 64",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-356",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 40",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-357",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 64",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-358",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 64",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-359",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 40",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-362",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 64",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-364",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 40",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-366",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 40",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-367",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로194번길 33",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-369",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 40",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-372",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 64",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-373",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 40",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-375",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 40",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-376",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 64",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-378",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 40",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-381",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 40",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-382",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 40",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-385",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 64",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-386",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 40",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-387",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 40",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-391",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 40",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-392",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 64",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-393",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 40",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-394",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 40",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-399",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 55-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-401",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 55-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-405",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 28",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-407",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 38",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-409",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 50",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-410",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 중동 82-9",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-413",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 41-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-421",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 중동 82-6",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-422",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 45",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-428",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 33-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-429",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 중동 81-16",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-433",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 63-14",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-436",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 55-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-438",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 55-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-439",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로194번길 34-2",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-440",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 34",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-441",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -164,117 +2034,167 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-017",
+      "storeId": "dj-442",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
       "note": "Kakao Local API로 좌표 확인 전",
-      "query": "대전광역시 동구 대전로 783",
+      "query": "대전 동구 원동 62-18",
       "provider": null,
       "geocodedAt": null
     },
     {
-      "storeId": "jm-018",
+      "storeId": "dj-444",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
       "note": "Kakao Local API로 좌표 확인 전",
-      "query": "대전광역시 동구 대전로 783",
+      "query": "대전광역시 동구 대전천동로 540-2",
       "provider": null,
       "geocodedAt": null
     },
     {
-      "storeId": "jm-019",
+      "storeId": "dj-445",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
       "note": "Kakao Local API로 좌표 확인 전",
-      "query": "대전광역시 동구 대전로 783",
+      "query": "대전광역시 동구 대전로785번길 47-1",
       "provider": null,
       "geocodedAt": null
     },
     {
-      "storeId": "jm-020",
+      "storeId": "dj-446",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
       "note": "Kakao Local API로 좌표 확인 전",
-      "query": "대전광역시 동구 대전로 783",
+      "query": "대전광역시 동구 중앙로200번길 34",
       "provider": null,
       "geocodedAt": null
     },
     {
-      "storeId": "jm-021",
+      "storeId": "dj-447",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
       "note": "Kakao Local API로 좌표 확인 전",
-      "query": "대전광역시 동구 대전로 783",
+      "query": "대전광역시 동구 중앙로194번길 34",
       "provider": null,
       "geocodedAt": null
     },
     {
-      "storeId": "jm-022",
+      "storeId": "dj-449",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
       "note": "Kakao Local API로 좌표 확인 전",
-      "query": "대전광역시 동구 대전로 783",
+      "query": "대전광역시 동구 중앙로194번길 34-2",
       "provider": null,
       "geocodedAt": null
     },
     {
-      "storeId": "jm-023",
+      "storeId": "dj-450",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
       "note": "Kakao Local API로 좌표 확인 전",
-      "query": "대전광역시 동구 대전로 783",
+      "query": "대전 동구 원동 55-1",
       "provider": null,
       "geocodedAt": null
     },
     {
-      "storeId": "jm-024",
+      "storeId": "dj-451",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
       "note": "Kakao Local API로 좌표 확인 전",
-      "query": "대전광역시 동구 대전로 783",
+      "query": "대전 동구 원동 62-18",
       "provider": null,
       "geocodedAt": null
     },
     {
-      "storeId": "jm-025",
+      "storeId": "dj-453",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
       "note": "Kakao Local API로 좌표 확인 전",
-      "query": "대전광역시 동구 대전로 783",
+      "query": "대전 동구 원동 62-5",
       "provider": null,
       "geocodedAt": null
     },
     {
-      "storeId": "jm-026",
+      "storeId": "dj-458",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
       "note": "Kakao Local API로 좌표 확인 전",
-      "query": "대전광역시 동구 대전로 783",
+      "query": "대전광역시 동구 중앙로200번길 34",
       "provider": null,
       "geocodedAt": null
     },
     {
-      "storeId": "jm-027",
+      "storeId": "dj-459",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
       "note": "Kakao Local API로 좌표 확인 전",
-      "query": "대전광역시 동구 대전로779번길 41",
+      "query": "대전 동구 중동 81-18",
       "provider": null,
       "geocodedAt": null
     },
     {
-      "storeId": "jm-028",
+      "storeId": "dj-462",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 26-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-463",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 38",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-464",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 48",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-467",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 63-4",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-468",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 48",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-473",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -284,17 +2204,37 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-029",
+      "storeId": "dj-479",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
-      "note": "Kakao Local API로 좌표 확인 전",
-      "query": "대전광역시 동구 대전로785번길 51",
+      "note": "주소 정보가 없어 좌표를 확인할 수 없음",
+      "query": null,
       "provider": null,
       "geocodedAt": null
     },
     {
-      "storeId": "jm-030",
+      "storeId": "dj-486",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 799",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-488",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로797번길 18",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-490",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -304,7 +2244,197 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-031",
+      "storeId": "dj-491",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 24",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-496",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 3",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-497",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 16",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-499",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 6",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-501",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 28-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-503",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 3",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-504",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 5",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-506",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로797번길 11",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-507",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로 210",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-508",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 7",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-511",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 799",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-513",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로797번길 9",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-514",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로791번길 17",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-515",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 14",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-517",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로797번길 18",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-522",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로797번길 8",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-525",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 4",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-526",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로791번길 12",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-527",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로797번길 14",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-529",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -314,7 +2444,47 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-032",
+      "storeId": "dj-538",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로797번길 7-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-539",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 28",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-541",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로797번길 5",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-544",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로797번길 5",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-545",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -324,7 +2494,167 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-033",
+      "storeId": "dj-546",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 중앙로 204-18",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-547",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 29",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-548",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 28-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-549",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로797번길 12",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-551",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 795-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-552",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중동 76-8",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-553",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로797번길 12",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-554",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로791번길 11",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-555",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로 206",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-560",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 38-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-561",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 38-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-562",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 38-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-565",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 38-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-566",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 73",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-568",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 40-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-570",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 38-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-572",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -334,7 +2664,267 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-034",
+      "storeId": "dj-578",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 38-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-581",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 73",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-582",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 73",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-585",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 38-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-595",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 38-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-596",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 38-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-597",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 38-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-600",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 73",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-607",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 38-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-609",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 38-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-610",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 38-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-611",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 73",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-612",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 38-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-613",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "주소 정보가 없어 좌표를 확인할 수 없음",
+      "query": null,
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-623",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 73",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-635",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로779번길 12",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-643",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 38",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-645",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 38",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-646",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 28-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-650",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 45",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-651",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 51",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-652",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 38",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-659",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-660",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 원동 55-24",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-664",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로779번길 11",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-665",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 51",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-666",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -344,7 +2934,7 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-035",
+      "storeId": "dj-667",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -354,7 +2944,97 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-036",
+      "storeId": "dj-668",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-669",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 775",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-671",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 28-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-672",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 45",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-675",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 127",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-679",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-680",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 38",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-683",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 38",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-685",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 20",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-687",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -364,7 +3044,17 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-037",
+      "storeId": "dj-689",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중동 77-2",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-690",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -374,7 +3064,17 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-038",
+      "storeId": "dj-691",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 28",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-695",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -384,7 +3084,27 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-039",
+      "storeId": "dj-709",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로 194",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-715",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로791번길 29-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-719",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
@@ -394,12 +3114,1222 @@
       "geocodedAt": null
     },
     {
-      "storeId": "jm-040",
+      "storeId": "dj-723",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로791번길 31",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-725",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로791번길 38",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-727",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 중동 28-56",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-728",
       "lat": null,
       "lng": null,
       "accuracy": "unknown",
       "note": "Kakao Local API로 좌표 확인 전",
       "query": "대전광역시 동구 대전로 783",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-735",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로194번길 19",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-736",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로194번길 19",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-737",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 대전로791번길 51",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-738",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 783",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-741",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로194번길 8-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-744",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 16-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-745",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 28-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-746",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로797번길 33",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-751",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로194번길 16",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-755",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로194번길 26",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-758",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-760",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-761",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-762",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-763",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-765",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-766",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-767",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-770",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-771",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-772",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-773",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-774",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-775",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-776",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-778",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-779",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-781",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-782",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-783",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-784",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-786",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-787",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-788",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-789",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-790",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-791",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-794",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-795",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-796",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-799",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-800",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-801",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-802",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-803",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-804",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-805",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-807",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-810",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-812",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-814",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-815",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-816",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-817",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-818",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 65-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-819",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 65-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-820",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 65-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-821",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-822",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-824",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-827",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-828",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-831",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-832",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 65-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-834",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-835",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-836",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-838",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-839",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전 동구 원동 65-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-840",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-841",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-842",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 119",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-846",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 75",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-848",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 69-5",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-850",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 64",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-851",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 126-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-853",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 64",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-854",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 60",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-855",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 64-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-856",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 59",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-857",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 130-8",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-862",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 63",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-865",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 124",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-866",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 71",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-867",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 67",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-869",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 77",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-870",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 65",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-871",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로60번길 204",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-872",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 126-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-873",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로204번길 57",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-874",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중교로 126-1",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-882",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 783",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-886",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 783",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-888",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "주소 정보가 없어 좌표를 확인할 수 없음",
+      "query": null,
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-891",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 783",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-893",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 783",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-895",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 783",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-897",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 783",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-902",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 783",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-903",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 783",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-922",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 783",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-923",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 783",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-925",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 783",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-930",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로 783",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-941",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 70",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-942",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 10",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-943",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 중앙로200번길 22",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-944",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-945",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 28",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-946",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 28",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-947",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 34",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-948",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 43",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-949",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 50",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-950",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로785번길 50",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-951",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로779번길 38-15",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-952",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로779번길 38-15",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-953",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로779번길 38-15",
+      "provider": null,
+      "geocodedAt": null
+    },
+    {
+      "storeId": "dj-954",
+      "lat": null,
+      "lng": null,
+      "accuracy": "unknown",
+      "note": "Kakao Local API로 좌표 확인 전",
+      "query": "대전광역시 동구 대전로779번길 38-15",
       "provider": null,
       "geocodedAt": null
     }

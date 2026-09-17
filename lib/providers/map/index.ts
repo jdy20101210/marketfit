@@ -45,7 +45,12 @@ function locationFor(store: Store, result: Awaited<ReturnType<MapProvider["geoco
     note = `${store.addressDetail ?? "인근"} — 건물 주소 기준 근사 위치`;
   } else if (store.locationBasis === "market_zone") {
     accuracy = "approximate";
-    note = "중앙시장 활성화구역 대표 주소(대전로 783) 기준 — 세부 위치 미확인";
+    note = `${store.zone ?? store.addressRaw} — 구역명만 있어 중앙시장 대표 주소(대전로 783) 기준 대략적 위치`;
+  } else if (store.locationBasis === "road_only") {
+    accuracy = "approximate";
+    note = `${store.geocodeQuery} 도로 기준 대략적 위치 (건물 번호 없음)`;
+  } else if (store.locationBasis === "parcel_address" && accuracy === "exact") {
+    note = `Kakao Local 지번 주소 검색 결과(${result.matchedAddress})`;
   }
   return {
     storeId: store.id,

@@ -1,0 +1,3039 @@
+{
+  "meta": {
+    "notice": "프로토타입 가상 집계(고정값) — 실제 이용 기록이 쌓이면 함께 반영됩니다.",
+    "period": "최근 7일 기준 가상값"
+  },
+  "activities": [
+    {
+      "storeId": "dj-1",
+      "visitCount": 46,
+      "likeCount": 8,
+      "saveCount": 3,
+      "interestUsers": 32
+    },
+    {
+      "storeId": "dj-3",
+      "visitCount": 67,
+      "likeCount": 6,
+      "saveCount": 8,
+      "interestUsers": 54
+    },
+    {
+      "storeId": "dj-5",
+      "visitCount": 104,
+      "likeCount": 17,
+      "saveCount": 4,
+      "interestUsers": 83
+    },
+    {
+      "storeId": "dj-7",
+      "visitCount": 49,
+      "likeCount": 9,
+      "saveCount": 4,
+      "interestUsers": 28
+    },
+    {
+      "storeId": "dj-9",
+      "visitCount": 71,
+      "likeCount": 12,
+      "saveCount": 5,
+      "interestUsers": 34
+    },
+    {
+      "storeId": "dj-11",
+      "visitCount": 26,
+      "likeCount": 3,
+      "saveCount": 1,
+      "interestUsers": 18
+    },
+    {
+      "storeId": "dj-12",
+      "visitCount": 44,
+      "likeCount": 8,
+      "saveCount": 2,
+      "interestUsers": 35
+    },
+    {
+      "storeId": "dj-14",
+      "visitCount": 29,
+      "likeCount": 5,
+      "saveCount": 2,
+      "interestUsers": 23
+    },
+    {
+      "storeId": "dj-17",
+      "visitCount": 17,
+      "likeCount": 2,
+      "saveCount": 2,
+      "interestUsers": 10
+    },
+    {
+      "storeId": "dj-18",
+      "visitCount": 76,
+      "likeCount": 14,
+      "saveCount": 10,
+      "interestUsers": 42
+    },
+    {
+      "storeId": "dj-21",
+      "visitCount": 57,
+      "likeCount": 6,
+      "saveCount": 7,
+      "interestUsers": 37
+    },
+    {
+      "storeId": "dj-23",
+      "visitCount": 63,
+      "likeCount": 12,
+      "saveCount": 5,
+      "interestUsers": 40
+    },
+    {
+      "storeId": "dj-25",
+      "visitCount": 43,
+      "likeCount": 8,
+      "saveCount": 3,
+      "interestUsers": 31
+    },
+    {
+      "storeId": "dj-26",
+      "visitCount": 12,
+      "likeCount": 1,
+      "saveCount": 1,
+      "interestUsers": 8
+    },
+    {
+      "storeId": "dj-28",
+      "visitCount": 87,
+      "likeCount": 5,
+      "saveCount": 10,
+      "interestUsers": 48
+    },
+    {
+      "storeId": "dj-29",
+      "visitCount": 70,
+      "likeCount": 7,
+      "saveCount": 7,
+      "interestUsers": 43
+    },
+    {
+      "storeId": "dj-35",
+      "visitCount": 72,
+      "likeCount": 13,
+      "saveCount": 4,
+      "interestUsers": 46
+    },
+    {
+      "storeId": "dj-36",
+      "visitCount": 62,
+      "likeCount": 7,
+      "saveCount": 2,
+      "interestUsers": 30
+    },
+    {
+      "storeId": "dj-37",
+      "visitCount": 89,
+      "likeCount": 10,
+      "saveCount": 5,
+      "interestUsers": 57
+    },
+    {
+      "storeId": "dj-38",
+      "visitCount": 55,
+      "likeCount": 9,
+      "saveCount": 4,
+      "interestUsers": 36
+    },
+    {
+      "storeId": "dj-40",
+      "visitCount": 103,
+      "likeCount": 19,
+      "saveCount": 4,
+      "interestUsers": 84
+    },
+    {
+      "storeId": "dj-42",
+      "visitCount": 17,
+      "likeCount": 3,
+      "saveCount": 1,
+      "interestUsers": 12
+    },
+    {
+      "storeId": "dj-48",
+      "visitCount": 55,
+      "likeCount": 8,
+      "saveCount": 6,
+      "interestUsers": 34
+    },
+    {
+      "storeId": "dj-49",
+      "visitCount": 50,
+      "likeCount": 6,
+      "saveCount": 5,
+      "interestUsers": 27
+    },
+    {
+      "storeId": "dj-51",
+      "visitCount": 55,
+      "likeCount": 6,
+      "saveCount": 2,
+      "interestUsers": 31
+    },
+    {
+      "storeId": "dj-52",
+      "visitCount": 27,
+      "likeCount": 2,
+      "saveCount": 3,
+      "interestUsers": 17
+    },
+    {
+      "storeId": "dj-53",
+      "visitCount": 58,
+      "likeCount": 10,
+      "saveCount": 2,
+      "interestUsers": 26
+    },
+    {
+      "storeId": "dj-55",
+      "visitCount": 58,
+      "likeCount": 6,
+      "saveCount": 5,
+      "interestUsers": 30
+    },
+    {
+      "storeId": "dj-59",
+      "visitCount": 31,
+      "likeCount": 5,
+      "saveCount": 1,
+      "interestUsers": 20
+    },
+    {
+      "storeId": "dj-62",
+      "visitCount": 58,
+      "likeCount": 6,
+      "saveCount": 6,
+      "interestUsers": 47
+    },
+    {
+      "storeId": "dj-64",
+      "visitCount": 11,
+      "likeCount": 1,
+      "saveCount": 1,
+      "interestUsers": 7
+    },
+    {
+      "storeId": "dj-67",
+      "visitCount": 11,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 8
+    },
+    {
+      "storeId": "dj-68",
+      "visitCount": 19,
+      "likeCount": 3,
+      "saveCount": 1,
+      "interestUsers": 9
+    },
+    {
+      "storeId": "dj-69",
+      "visitCount": 41,
+      "likeCount": 3,
+      "saveCount": 3,
+      "interestUsers": 30
+    },
+    {
+      "storeId": "dj-70",
+      "visitCount": 29,
+      "likeCount": 2,
+      "saveCount": 3,
+      "interestUsers": 21
+    },
+    {
+      "storeId": "dj-71",
+      "visitCount": 50,
+      "likeCount": 3,
+      "saveCount": 2,
+      "interestUsers": 29
+    },
+    {
+      "storeId": "dj-73",
+      "visitCount": 49,
+      "likeCount": 7,
+      "saveCount": 2,
+      "interestUsers": 22
+    },
+    {
+      "storeId": "dj-74",
+      "visitCount": 24,
+      "likeCount": 3,
+      "saveCount": 3,
+      "interestUsers": 18
+    },
+    {
+      "storeId": "dj-75",
+      "visitCount": 22,
+      "likeCount": 4,
+      "saveCount": 2,
+      "interestUsers": 12
+    },
+    {
+      "storeId": "dj-76",
+      "visitCount": 76,
+      "likeCount": 10,
+      "saveCount": 9,
+      "interestUsers": 45
+    },
+    {
+      "storeId": "dj-77",
+      "visitCount": 52,
+      "likeCount": 5,
+      "saveCount": 7,
+      "interestUsers": 37
+    },
+    {
+      "storeId": "dj-78",
+      "visitCount": 35,
+      "likeCount": 4,
+      "saveCount": 4,
+      "interestUsers": 22
+    },
+    {
+      "storeId": "dj-80",
+      "visitCount": 38,
+      "likeCount": 5,
+      "saveCount": 3,
+      "interestUsers": 23
+    },
+    {
+      "storeId": "dj-86",
+      "visitCount": 14,
+      "likeCount": 3,
+      "saveCount": 1,
+      "interestUsers": 9
+    },
+    {
+      "storeId": "dj-87",
+      "visitCount": 53,
+      "likeCount": 6,
+      "saveCount": 5,
+      "interestUsers": 44
+    },
+    {
+      "storeId": "dj-88",
+      "visitCount": 13,
+      "likeCount": 1,
+      "saveCount": 1,
+      "interestUsers": 8
+    },
+    {
+      "storeId": "dj-89",
+      "visitCount": 52,
+      "likeCount": 8,
+      "saveCount": 2,
+      "interestUsers": 25
+    },
+    {
+      "storeId": "dj-90",
+      "visitCount": 44,
+      "likeCount": 8,
+      "saveCount": 5,
+      "interestUsers": 22
+    },
+    {
+      "storeId": "dj-96",
+      "visitCount": 56,
+      "likeCount": 7,
+      "saveCount": 4,
+      "interestUsers": 45
+    },
+    {
+      "storeId": "dj-99",
+      "visitCount": 29,
+      "likeCount": 2,
+      "saveCount": 3,
+      "interestUsers": 17
+    },
+    {
+      "storeId": "dj-100",
+      "visitCount": 151,
+      "likeCount": 26,
+      "saveCount": 6,
+      "interestUsers": 92
+    },
+    {
+      "storeId": "dj-106",
+      "visitCount": 206,
+      "likeCount": 27,
+      "saveCount": 13,
+      "interestUsers": 126
+    },
+    {
+      "storeId": "dj-107",
+      "visitCount": 124,
+      "likeCount": 17,
+      "saveCount": 6,
+      "interestUsers": 52
+    },
+    {
+      "storeId": "dj-108",
+      "visitCount": 159,
+      "likeCount": 27,
+      "saveCount": 8,
+      "interestUsers": 98
+    },
+    {
+      "storeId": "dj-109",
+      "visitCount": 53,
+      "likeCount": 5,
+      "saveCount": 3,
+      "interestUsers": 25
+    },
+    {
+      "storeId": "dj-112",
+      "visitCount": 109,
+      "likeCount": 18,
+      "saveCount": 13,
+      "interestUsers": 68
+    },
+    {
+      "storeId": "dj-115",
+      "visitCount": 147,
+      "likeCount": 15,
+      "saveCount": 6,
+      "interestUsers": 79
+    },
+    {
+      "storeId": "dj-116",
+      "visitCount": 44,
+      "likeCount": 7,
+      "saveCount": 4,
+      "interestUsers": 21
+    },
+    {
+      "storeId": "dj-117",
+      "visitCount": 51,
+      "likeCount": 3,
+      "saveCount": 4,
+      "interestUsers": 36
+    },
+    {
+      "storeId": "dj-120",
+      "visitCount": 144,
+      "likeCount": 28,
+      "saveCount": 14,
+      "interestUsers": 100
+    },
+    {
+      "storeId": "dj-122",
+      "visitCount": 133,
+      "likeCount": 26,
+      "saveCount": 9,
+      "interestUsers": 100
+    },
+    {
+      "storeId": "dj-124",
+      "visitCount": 36,
+      "likeCount": 6,
+      "saveCount": 3,
+      "interestUsers": 28
+    },
+    {
+      "storeId": "dj-127",
+      "visitCount": 84,
+      "likeCount": 5,
+      "saveCount": 8,
+      "interestUsers": 43
+    },
+    {
+      "storeId": "dj-131",
+      "visitCount": 113,
+      "likeCount": 17,
+      "saveCount": 9,
+      "interestUsers": 58
+    },
+    {
+      "storeId": "dj-133",
+      "visitCount": 51,
+      "likeCount": 6,
+      "saveCount": 2,
+      "interestUsers": 28
+    },
+    {
+      "storeId": "dj-137",
+      "visitCount": 148,
+      "likeCount": 29,
+      "saveCount": 18,
+      "interestUsers": 99
+    },
+    {
+      "storeId": "dj-141",
+      "visitCount": 25,
+      "likeCount": 3,
+      "saveCount": 1,
+      "interestUsers": 15
+    },
+    {
+      "storeId": "dj-143",
+      "visitCount": 39,
+      "likeCount": 3,
+      "saveCount": 4,
+      "interestUsers": 23
+    },
+    {
+      "storeId": "dj-144",
+      "visitCount": 62,
+      "likeCount": 4,
+      "saveCount": 6,
+      "interestUsers": 43
+    },
+    {
+      "storeId": "dj-146",
+      "visitCount": 17,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 10
+    },
+    {
+      "storeId": "dj-147",
+      "visitCount": 14,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 11
+    },
+    {
+      "storeId": "dj-148",
+      "visitCount": 63,
+      "likeCount": 6,
+      "saveCount": 2,
+      "interestUsers": 46
+    },
+    {
+      "storeId": "dj-150",
+      "visitCount": 30,
+      "likeCount": 2,
+      "saveCount": 2,
+      "interestUsers": 16
+    },
+    {
+      "storeId": "dj-152",
+      "visitCount": 26,
+      "likeCount": 5,
+      "saveCount": 3,
+      "interestUsers": 13
+    },
+    {
+      "storeId": "dj-154",
+      "visitCount": 40,
+      "likeCount": 7,
+      "saveCount": 5,
+      "interestUsers": 22
+    },
+    {
+      "storeId": "dj-155",
+      "visitCount": 43,
+      "likeCount": 3,
+      "saveCount": 3,
+      "interestUsers": 31
+    },
+    {
+      "storeId": "dj-156",
+      "visitCount": 89,
+      "likeCount": 13,
+      "saveCount": 11,
+      "interestUsers": 63
+    },
+    {
+      "storeId": "dj-157",
+      "visitCount": 39,
+      "likeCount": 2,
+      "saveCount": 4,
+      "interestUsers": 26
+    },
+    {
+      "storeId": "dj-158",
+      "visitCount": 24,
+      "likeCount": 1,
+      "saveCount": 2,
+      "interestUsers": 15
+    },
+    {
+      "storeId": "dj-162",
+      "visitCount": 68,
+      "likeCount": 8,
+      "saveCount": 8,
+      "interestUsers": 31
+    },
+    {
+      "storeId": "dj-163",
+      "visitCount": 50,
+      "likeCount": 9,
+      "saveCount": 4,
+      "interestUsers": 34
+    },
+    {
+      "storeId": "dj-164",
+      "visitCount": 28,
+      "likeCount": 2,
+      "saveCount": 3,
+      "interestUsers": 21
+    },
+    {
+      "storeId": "dj-167",
+      "visitCount": 46,
+      "likeCount": 4,
+      "saveCount": 3,
+      "interestUsers": 25
+    },
+    {
+      "storeId": "dj-171",
+      "visitCount": 37,
+      "likeCount": 7,
+      "saveCount": 5,
+      "interestUsers": 20
+    },
+    {
+      "storeId": "dj-172",
+      "visitCount": 54,
+      "likeCount": 5,
+      "saveCount": 7,
+      "interestUsers": 43
+    },
+    {
+      "storeId": "dj-174",
+      "visitCount": 22,
+      "likeCount": 1,
+      "saveCount": 3,
+      "interestUsers": 16
+    },
+    {
+      "storeId": "dj-176",
+      "visitCount": 51,
+      "likeCount": 7,
+      "saveCount": 3,
+      "interestUsers": 22
+    },
+    {
+      "storeId": "dj-178",
+      "visitCount": 37,
+      "likeCount": 5,
+      "saveCount": 1,
+      "interestUsers": 15
+    },
+    {
+      "storeId": "dj-179",
+      "visitCount": 34,
+      "likeCount": 6,
+      "saveCount": 4,
+      "interestUsers": 20
+    },
+    {
+      "storeId": "dj-180",
+      "visitCount": 43,
+      "likeCount": 2,
+      "saveCount": 4,
+      "interestUsers": 33
+    },
+    {
+      "storeId": "dj-181",
+      "visitCount": 13,
+      "likeCount": 1,
+      "saveCount": 1,
+      "interestUsers": 8
+    },
+    {
+      "storeId": "dj-182",
+      "visitCount": 68,
+      "likeCount": 5,
+      "saveCount": 5,
+      "interestUsers": 33
+    },
+    {
+      "storeId": "dj-183",
+      "visitCount": 36,
+      "likeCount": 7,
+      "saveCount": 4,
+      "interestUsers": 18
+    },
+    {
+      "storeId": "dj-184",
+      "visitCount": 48,
+      "likeCount": 4,
+      "saveCount": 6,
+      "interestUsers": 26
+    },
+    {
+      "storeId": "dj-187",
+      "visitCount": 33,
+      "likeCount": 5,
+      "saveCount": 4,
+      "interestUsers": 22
+    },
+    {
+      "storeId": "dj-190",
+      "visitCount": 110,
+      "likeCount": 15,
+      "saveCount": 8,
+      "interestUsers": 58
+    },
+    {
+      "storeId": "dj-191",
+      "visitCount": 29,
+      "likeCount": 3,
+      "saveCount": 3,
+      "interestUsers": 17
+    },
+    {
+      "storeId": "dj-192",
+      "visitCount": 43,
+      "likeCount": 8,
+      "saveCount": 2,
+      "interestUsers": 23
+    },
+    {
+      "storeId": "dj-193",
+      "visitCount": 39,
+      "likeCount": 4,
+      "saveCount": 2,
+      "interestUsers": 17
+    },
+    {
+      "storeId": "dj-195",
+      "visitCount": 40,
+      "likeCount": 3,
+      "saveCount": 3,
+      "interestUsers": 24
+    },
+    {
+      "storeId": "dj-196",
+      "visitCount": 42,
+      "likeCount": 6,
+      "saveCount": 5,
+      "interestUsers": 25
+    },
+    {
+      "storeId": "dj-197",
+      "visitCount": 59,
+      "likeCount": 9,
+      "saveCount": 3,
+      "interestUsers": 47
+    },
+    {
+      "storeId": "dj-199",
+      "visitCount": 14,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 8
+    },
+    {
+      "storeId": "dj-200",
+      "visitCount": 16,
+      "likeCount": 1,
+      "saveCount": 1,
+      "interestUsers": 7
+    },
+    {
+      "storeId": "dj-206",
+      "visitCount": 50,
+      "likeCount": 9,
+      "saveCount": 3,
+      "interestUsers": 34
+    },
+    {
+      "storeId": "dj-207",
+      "visitCount": 44,
+      "likeCount": 2,
+      "saveCount": 2,
+      "interestUsers": 28
+    },
+    {
+      "storeId": "dj-208",
+      "visitCount": 12,
+      "likeCount": 1,
+      "saveCount": 1,
+      "interestUsers": 7
+    },
+    {
+      "storeId": "dj-214",
+      "visitCount": 83,
+      "likeCount": 10,
+      "saveCount": 8,
+      "interestUsers": 48
+    },
+    {
+      "storeId": "dj-216",
+      "visitCount": 15,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 8
+    },
+    {
+      "storeId": "dj-219",
+      "visitCount": 27,
+      "likeCount": 2,
+      "saveCount": 3,
+      "interestUsers": 20
+    },
+    {
+      "storeId": "dj-220",
+      "visitCount": 23,
+      "likeCount": 2,
+      "saveCount": 2,
+      "interestUsers": 13
+    },
+    {
+      "storeId": "dj-224",
+      "visitCount": 51,
+      "likeCount": 4,
+      "saveCount": 2,
+      "interestUsers": 23
+    },
+    {
+      "storeId": "dj-228",
+      "visitCount": 56,
+      "likeCount": 7,
+      "saveCount": 7,
+      "interestUsers": 44
+    },
+    {
+      "storeId": "dj-233",
+      "visitCount": 28,
+      "likeCount": 2,
+      "saveCount": 2,
+      "interestUsers": 15
+    },
+    {
+      "storeId": "dj-236",
+      "visitCount": 24,
+      "likeCount": 3,
+      "saveCount": 3,
+      "interestUsers": 19
+    },
+    {
+      "storeId": "dj-237",
+      "visitCount": 100,
+      "likeCount": 9,
+      "saveCount": 7,
+      "interestUsers": 69
+    },
+    {
+      "storeId": "dj-238",
+      "visitCount": 69,
+      "likeCount": 5,
+      "saveCount": 6,
+      "interestUsers": 32
+    },
+    {
+      "storeId": "dj-244",
+      "visitCount": 42,
+      "likeCount": 4,
+      "saveCount": 2,
+      "interestUsers": 27
+    },
+    {
+      "storeId": "dj-246",
+      "visitCount": 23,
+      "likeCount": 1,
+      "saveCount": 1,
+      "interestUsers": 10
+    },
+    {
+      "storeId": "dj-249",
+      "visitCount": 126,
+      "likeCount": 15,
+      "saveCount": 15,
+      "interestUsers": 60
+    },
+    {
+      "storeId": "dj-253",
+      "visitCount": 28,
+      "likeCount": 2,
+      "saveCount": 3,
+      "interestUsers": 22
+    },
+    {
+      "storeId": "dj-261",
+      "visitCount": 77,
+      "likeCount": 12,
+      "saveCount": 8,
+      "interestUsers": 44
+    },
+    {
+      "storeId": "dj-267",
+      "visitCount": 62,
+      "likeCount": 11,
+      "saveCount": 3,
+      "interestUsers": 47
+    },
+    {
+      "storeId": "dj-272",
+      "visitCount": 35,
+      "likeCount": 6,
+      "saveCount": 2,
+      "interestUsers": 25
+    },
+    {
+      "storeId": "dj-281",
+      "visitCount": 32,
+      "likeCount": 3,
+      "saveCount": 4,
+      "interestUsers": 15
+    },
+    {
+      "storeId": "dj-283",
+      "visitCount": 20,
+      "likeCount": 4,
+      "saveCount": 2,
+      "interestUsers": 12
+    },
+    {
+      "storeId": "dj-284",
+      "visitCount": 51,
+      "likeCount": 4,
+      "saveCount": 2,
+      "interestUsers": 35
+    },
+    {
+      "storeId": "dj-285",
+      "visitCount": 28,
+      "likeCount": 4,
+      "saveCount": 4,
+      "interestUsers": 21
+    },
+    {
+      "storeId": "dj-286",
+      "visitCount": 93,
+      "likeCount": 6,
+      "saveCount": 7,
+      "interestUsers": 61
+    },
+    {
+      "storeId": "dj-288",
+      "visitCount": 46,
+      "likeCount": 6,
+      "saveCount": 6,
+      "interestUsers": 40
+    },
+    {
+      "storeId": "dj-291",
+      "visitCount": 36,
+      "likeCount": 4,
+      "saveCount": 3,
+      "interestUsers": 23
+    },
+    {
+      "storeId": "dj-292",
+      "visitCount": 20,
+      "likeCount": 4,
+      "saveCount": 1,
+      "interestUsers": 14
+    },
+    {
+      "storeId": "dj-293",
+      "visitCount": 80,
+      "likeCount": 6,
+      "saveCount": 6,
+      "interestUsers": 39
+    },
+    {
+      "storeId": "dj-294",
+      "visitCount": 128,
+      "likeCount": 8,
+      "saveCount": 8,
+      "interestUsers": 54
+    },
+    {
+      "storeId": "dj-297",
+      "visitCount": 39,
+      "likeCount": 7,
+      "saveCount": 3,
+      "interestUsers": 27
+    },
+    {
+      "storeId": "dj-298",
+      "visitCount": 64,
+      "likeCount": 11,
+      "saveCount": 6,
+      "interestUsers": 31
+    },
+    {
+      "storeId": "dj-299",
+      "visitCount": 55,
+      "likeCount": 7,
+      "saveCount": 6,
+      "interestUsers": 30
+    },
+    {
+      "storeId": "dj-300",
+      "visitCount": 67,
+      "likeCount": 11,
+      "saveCount": 2,
+      "interestUsers": 53
+    },
+    {
+      "storeId": "dj-301",
+      "visitCount": 44,
+      "likeCount": 5,
+      "saveCount": 2,
+      "interestUsers": 19
+    },
+    {
+      "storeId": "dj-302",
+      "visitCount": 47,
+      "likeCount": 5,
+      "saveCount": 2,
+      "interestUsers": 21
+    },
+    {
+      "storeId": "dj-308",
+      "visitCount": 75,
+      "likeCount": 5,
+      "saveCount": 3,
+      "interestUsers": 51
+    },
+    {
+      "storeId": "dj-310",
+      "visitCount": 76,
+      "likeCount": 7,
+      "saveCount": 4,
+      "interestUsers": 50
+    },
+    {
+      "storeId": "dj-312",
+      "visitCount": 23,
+      "likeCount": 4,
+      "saveCount": 1,
+      "interestUsers": 18
+    },
+    {
+      "storeId": "dj-313",
+      "visitCount": 49,
+      "likeCount": 9,
+      "saveCount": 6,
+      "interestUsers": 33
+    },
+    {
+      "storeId": "dj-322",
+      "visitCount": 51,
+      "likeCount": 9,
+      "saveCount": 2,
+      "interestUsers": 28
+    },
+    {
+      "storeId": "dj-323",
+      "visitCount": 120,
+      "likeCount": 22,
+      "saveCount": 14,
+      "interestUsers": 83
+    },
+    {
+      "storeId": "dj-325",
+      "visitCount": 54,
+      "likeCount": 8,
+      "saveCount": 7,
+      "interestUsers": 26
+    },
+    {
+      "storeId": "dj-326",
+      "visitCount": 79,
+      "likeCount": 10,
+      "saveCount": 10,
+      "interestUsers": 60
+    },
+    {
+      "storeId": "dj-331",
+      "visitCount": 43,
+      "likeCount": 7,
+      "saveCount": 5,
+      "interestUsers": 27
+    },
+    {
+      "storeId": "dj-332",
+      "visitCount": 63,
+      "likeCount": 8,
+      "saveCount": 5,
+      "interestUsers": 39
+    },
+    {
+      "storeId": "dj-334",
+      "visitCount": 52,
+      "likeCount": 8,
+      "saveCount": 4,
+      "interestUsers": 32
+    },
+    {
+      "storeId": "dj-335",
+      "visitCount": 61,
+      "likeCount": 5,
+      "saveCount": 3,
+      "interestUsers": 34
+    },
+    {
+      "storeId": "dj-336",
+      "visitCount": 26,
+      "likeCount": 5,
+      "saveCount": 1,
+      "interestUsers": 15
+    },
+    {
+      "storeId": "dj-345",
+      "visitCount": 68,
+      "likeCount": 8,
+      "saveCount": 3,
+      "interestUsers": 38
+    },
+    {
+      "storeId": "dj-346",
+      "visitCount": 75,
+      "likeCount": 4,
+      "saveCount": 8,
+      "interestUsers": 37
+    },
+    {
+      "storeId": "dj-347",
+      "visitCount": 57,
+      "likeCount": 7,
+      "saveCount": 4,
+      "interestUsers": 36
+    },
+    {
+      "storeId": "dj-348",
+      "visitCount": 17,
+      "likeCount": 2,
+      "saveCount": 2,
+      "interestUsers": 10
+    },
+    {
+      "storeId": "dj-350",
+      "visitCount": 22,
+      "likeCount": 4,
+      "saveCount": 1,
+      "interestUsers": 18
+    },
+    {
+      "storeId": "dj-351",
+      "visitCount": 65,
+      "likeCount": 6,
+      "saveCount": 7,
+      "interestUsers": 34
+    },
+    {
+      "storeId": "dj-352",
+      "visitCount": 52,
+      "likeCount": 4,
+      "saveCount": 6,
+      "interestUsers": 42
+    },
+    {
+      "storeId": "dj-353",
+      "visitCount": 71,
+      "likeCount": 7,
+      "saveCount": 6,
+      "interestUsers": 40
+    },
+    {
+      "storeId": "dj-354",
+      "visitCount": 59,
+      "likeCount": 7,
+      "saveCount": 5,
+      "interestUsers": 48
+    },
+    {
+      "storeId": "dj-355",
+      "visitCount": 44,
+      "likeCount": 5,
+      "saveCount": 2,
+      "interestUsers": 19
+    },
+    {
+      "storeId": "dj-356",
+      "visitCount": 32,
+      "likeCount": 6,
+      "saveCount": 4,
+      "interestUsers": 20
+    },
+    {
+      "storeId": "dj-357",
+      "visitCount": 30,
+      "likeCount": 6,
+      "saveCount": 3,
+      "interestUsers": 22
+    },
+    {
+      "storeId": "dj-358",
+      "visitCount": 19,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 10
+    },
+    {
+      "storeId": "dj-359",
+      "visitCount": 55,
+      "likeCount": 11,
+      "saveCount": 5,
+      "interestUsers": 38
+    },
+    {
+      "storeId": "dj-362",
+      "visitCount": 77,
+      "likeCount": 14,
+      "saveCount": 10,
+      "interestUsers": 57
+    },
+    {
+      "storeId": "dj-364",
+      "visitCount": 90,
+      "likeCount": 13,
+      "saveCount": 3,
+      "interestUsers": 43
+    },
+    {
+      "storeId": "dj-366",
+      "visitCount": 24,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 13
+    },
+    {
+      "storeId": "dj-367",
+      "visitCount": 47,
+      "likeCount": 9,
+      "saveCount": 3,
+      "interestUsers": 33
+    },
+    {
+      "storeId": "dj-369",
+      "visitCount": 76,
+      "likeCount": 8,
+      "saveCount": 6,
+      "interestUsers": 34
+    },
+    {
+      "storeId": "dj-372",
+      "visitCount": 40,
+      "likeCount": 2,
+      "saveCount": 4,
+      "interestUsers": 22
+    },
+    {
+      "storeId": "dj-373",
+      "visitCount": 52,
+      "likeCount": 3,
+      "saveCount": 6,
+      "interestUsers": 35
+    },
+    {
+      "storeId": "dj-375",
+      "visitCount": 85,
+      "likeCount": 9,
+      "saveCount": 10,
+      "interestUsers": 54
+    },
+    {
+      "storeId": "dj-376",
+      "visitCount": 20,
+      "likeCount": 4,
+      "saveCount": 2,
+      "interestUsers": 12
+    },
+    {
+      "storeId": "dj-378",
+      "visitCount": 16,
+      "likeCount": 3,
+      "saveCount": 2,
+      "interestUsers": 8
+    },
+    {
+      "storeId": "dj-381",
+      "visitCount": 22,
+      "likeCount": 2,
+      "saveCount": 2,
+      "interestUsers": 11
+    },
+    {
+      "storeId": "dj-382",
+      "visitCount": 53,
+      "likeCount": 4,
+      "saveCount": 5,
+      "interestUsers": 38
+    },
+    {
+      "storeId": "dj-385",
+      "visitCount": 20,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 13
+    },
+    {
+      "storeId": "dj-386",
+      "visitCount": 22,
+      "likeCount": 3,
+      "saveCount": 2,
+      "interestUsers": 17
+    },
+    {
+      "storeId": "dj-387",
+      "visitCount": 85,
+      "likeCount": 6,
+      "saveCount": 10,
+      "interestUsers": 43
+    },
+    {
+      "storeId": "dj-391",
+      "visitCount": 52,
+      "likeCount": 8,
+      "saveCount": 3,
+      "interestUsers": 32
+    },
+    {
+      "storeId": "dj-392",
+      "visitCount": 53,
+      "likeCount": 10,
+      "saveCount": 2,
+      "interestUsers": 26
+    },
+    {
+      "storeId": "dj-393",
+      "visitCount": 55,
+      "likeCount": 10,
+      "saveCount": 4,
+      "interestUsers": 36
+    },
+    {
+      "storeId": "dj-394",
+      "visitCount": 24,
+      "likeCount": 1,
+      "saveCount": 2,
+      "interestUsers": 11
+    },
+    {
+      "storeId": "dj-399",
+      "visitCount": 56,
+      "likeCount": 9,
+      "saveCount": 5,
+      "interestUsers": 32
+    },
+    {
+      "storeId": "dj-401",
+      "visitCount": 46,
+      "likeCount": 6,
+      "saveCount": 5,
+      "interestUsers": 34
+    },
+    {
+      "storeId": "dj-405",
+      "visitCount": 45,
+      "likeCount": 5,
+      "saveCount": 3,
+      "interestUsers": 36
+    },
+    {
+      "storeId": "dj-407",
+      "visitCount": 133,
+      "likeCount": 21,
+      "saveCount": 7,
+      "interestUsers": 72
+    },
+    {
+      "storeId": "dj-409",
+      "visitCount": 56,
+      "likeCount": 7,
+      "saveCount": 3,
+      "interestUsers": 27
+    },
+    {
+      "storeId": "dj-410",
+      "visitCount": 35,
+      "likeCount": 7,
+      "saveCount": 2,
+      "interestUsers": 21
+    },
+    {
+      "storeId": "dj-413",
+      "visitCount": 119,
+      "likeCount": 19,
+      "saveCount": 5,
+      "interestUsers": 61
+    },
+    {
+      "storeId": "dj-421",
+      "visitCount": 48,
+      "likeCount": 9,
+      "saveCount": 5,
+      "interestUsers": 39
+    },
+    {
+      "storeId": "dj-422",
+      "visitCount": 56,
+      "likeCount": 3,
+      "saveCount": 3,
+      "interestUsers": 35
+    },
+    {
+      "storeId": "dj-428",
+      "visitCount": 125,
+      "likeCount": 7,
+      "saveCount": 14,
+      "interestUsers": 87
+    },
+    {
+      "storeId": "dj-429",
+      "visitCount": 23,
+      "likeCount": 3,
+      "saveCount": 2,
+      "interestUsers": 18
+    },
+    {
+      "storeId": "dj-433",
+      "visitCount": 54,
+      "likeCount": 9,
+      "saveCount": 2,
+      "interestUsers": 32
+    },
+    {
+      "storeId": "dj-436",
+      "visitCount": 89,
+      "likeCount": 7,
+      "saveCount": 7,
+      "interestUsers": 38
+    },
+    {
+      "storeId": "dj-438",
+      "visitCount": 157,
+      "likeCount": 26,
+      "saveCount": 16,
+      "interestUsers": 127
+    },
+    {
+      "storeId": "dj-439",
+      "visitCount": 172,
+      "likeCount": 11,
+      "saveCount": 20,
+      "interestUsers": 108
+    },
+    {
+      "storeId": "dj-440",
+      "visitCount": 129,
+      "likeCount": 8,
+      "saveCount": 11,
+      "interestUsers": 89
+    },
+    {
+      "storeId": "dj-441",
+      "visitCount": 148,
+      "likeCount": 28,
+      "saveCount": 4,
+      "interestUsers": 118
+    },
+    {
+      "storeId": "dj-442",
+      "visitCount": 21,
+      "likeCount": 3,
+      "saveCount": 2,
+      "interestUsers": 10
+    },
+    {
+      "storeId": "dj-444",
+      "visitCount": 68,
+      "likeCount": 9,
+      "saveCount": 4,
+      "interestUsers": 53
+    },
+    {
+      "storeId": "dj-445",
+      "visitCount": 84,
+      "likeCount": 7,
+      "saveCount": 8,
+      "interestUsers": 67
+    },
+    {
+      "storeId": "dj-446",
+      "visitCount": 169,
+      "likeCount": 33,
+      "saveCount": 6,
+      "interestUsers": 73
+    },
+    {
+      "storeId": "dj-447",
+      "visitCount": 104,
+      "likeCount": 16,
+      "saveCount": 7,
+      "interestUsers": 63
+    },
+    {
+      "storeId": "dj-449",
+      "visitCount": 58,
+      "likeCount": 4,
+      "saveCount": 7,
+      "interestUsers": 35
+    },
+    {
+      "storeId": "dj-450",
+      "visitCount": 39,
+      "likeCount": 3,
+      "saveCount": 4,
+      "interestUsers": 25
+    },
+    {
+      "storeId": "dj-451",
+      "visitCount": 83,
+      "likeCount": 6,
+      "saveCount": 3,
+      "interestUsers": 45
+    },
+    {
+      "storeId": "dj-453",
+      "visitCount": 55,
+      "likeCount": 8,
+      "saveCount": 5,
+      "interestUsers": 45
+    },
+    {
+      "storeId": "dj-458",
+      "visitCount": 69,
+      "likeCount": 7,
+      "saveCount": 4,
+      "interestUsers": 47
+    },
+    {
+      "storeId": "dj-459",
+      "visitCount": 40,
+      "likeCount": 3,
+      "saveCount": 2,
+      "interestUsers": 16
+    },
+    {
+      "storeId": "dj-462",
+      "visitCount": 45,
+      "likeCount": 5,
+      "saveCount": 3,
+      "interestUsers": 36
+    },
+    {
+      "storeId": "dj-463",
+      "visitCount": 128,
+      "likeCount": 15,
+      "saveCount": 4,
+      "interestUsers": 78
+    },
+    {
+      "storeId": "dj-464",
+      "visitCount": 86,
+      "likeCount": 10,
+      "saveCount": 11,
+      "interestUsers": 58
+    },
+    {
+      "storeId": "dj-467",
+      "visitCount": 65,
+      "likeCount": 6,
+      "saveCount": 6,
+      "interestUsers": 29
+    },
+    {
+      "storeId": "dj-468",
+      "visitCount": 112,
+      "likeCount": 12,
+      "saveCount": 13,
+      "interestUsers": 94
+    },
+    {
+      "storeId": "dj-473",
+      "visitCount": 39,
+      "likeCount": 6,
+      "saveCount": 4,
+      "interestUsers": 25
+    },
+    {
+      "storeId": "dj-479",
+      "visitCount": 67,
+      "likeCount": 13,
+      "saveCount": 7,
+      "interestUsers": 47
+    },
+    {
+      "storeId": "dj-486",
+      "visitCount": 40,
+      "likeCount": 5,
+      "saveCount": 2,
+      "interestUsers": 17
+    },
+    {
+      "storeId": "dj-488",
+      "visitCount": 28,
+      "likeCount": 2,
+      "saveCount": 2,
+      "interestUsers": 19
+    },
+    {
+      "storeId": "dj-490",
+      "visitCount": 21,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 13
+    },
+    {
+      "storeId": "dj-491",
+      "visitCount": 34,
+      "likeCount": 3,
+      "saveCount": 3,
+      "interestUsers": 17
+    },
+    {
+      "storeId": "dj-496",
+      "visitCount": 65,
+      "likeCount": 5,
+      "saveCount": 4,
+      "interestUsers": 39
+    },
+    {
+      "storeId": "dj-497",
+      "visitCount": 88,
+      "likeCount": 9,
+      "saveCount": 10,
+      "interestUsers": 70
+    },
+    {
+      "storeId": "dj-499",
+      "visitCount": 50,
+      "likeCount": 9,
+      "saveCount": 6,
+      "interestUsers": 26
+    },
+    {
+      "storeId": "dj-501",
+      "visitCount": 30,
+      "likeCount": 4,
+      "saveCount": 2,
+      "interestUsers": 18
+    },
+    {
+      "storeId": "dj-503",
+      "visitCount": 66,
+      "likeCount": 5,
+      "saveCount": 8,
+      "interestUsers": 42
+    },
+    {
+      "storeId": "dj-504",
+      "visitCount": 25,
+      "likeCount": 5,
+      "saveCount": 1,
+      "interestUsers": 21
+    },
+    {
+      "storeId": "dj-506",
+      "visitCount": 61,
+      "likeCount": 7,
+      "saveCount": 8,
+      "interestUsers": 39
+    },
+    {
+      "storeId": "dj-507",
+      "visitCount": 68,
+      "likeCount": 11,
+      "saveCount": 8,
+      "interestUsers": 41
+    },
+    {
+      "storeId": "dj-508",
+      "visitCount": 19,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 10
+    },
+    {
+      "storeId": "dj-511",
+      "visitCount": 15,
+      "likeCount": 3,
+      "saveCount": 2,
+      "interestUsers": 13
+    },
+    {
+      "storeId": "dj-513",
+      "visitCount": 58,
+      "likeCount": 3,
+      "saveCount": 3,
+      "interestUsers": 40
+    },
+    {
+      "storeId": "dj-514",
+      "visitCount": 42,
+      "likeCount": 8,
+      "saveCount": 2,
+      "interestUsers": 21
+    },
+    {
+      "storeId": "dj-515",
+      "visitCount": 81,
+      "likeCount": 15,
+      "saveCount": 10,
+      "interestUsers": 67
+    },
+    {
+      "storeId": "dj-517",
+      "visitCount": 37,
+      "likeCount": 6,
+      "saveCount": 4,
+      "interestUsers": 32
+    },
+    {
+      "storeId": "dj-522",
+      "visitCount": 16,
+      "likeCount": 1,
+      "saveCount": 1,
+      "interestUsers": 7
+    },
+    {
+      "storeId": "dj-525",
+      "visitCount": 14,
+      "likeCount": 2,
+      "saveCount": 2,
+      "interestUsers": 11
+    },
+    {
+      "storeId": "dj-526",
+      "visitCount": 46,
+      "likeCount": 6,
+      "saveCount": 4,
+      "interestUsers": 28
+    },
+    {
+      "storeId": "dj-527",
+      "visitCount": 52,
+      "likeCount": 9,
+      "saveCount": 3,
+      "interestUsers": 25
+    },
+    {
+      "storeId": "dj-529",
+      "visitCount": 41,
+      "likeCount": 8,
+      "saveCount": 2,
+      "interestUsers": 19
+    },
+    {
+      "storeId": "dj-538",
+      "visitCount": 75,
+      "likeCount": 12,
+      "saveCount": 6,
+      "interestUsers": 49
+    },
+    {
+      "storeId": "dj-539",
+      "visitCount": 45,
+      "likeCount": 6,
+      "saveCount": 4,
+      "interestUsers": 23
+    },
+    {
+      "storeId": "dj-541",
+      "visitCount": 40,
+      "likeCount": 6,
+      "saveCount": 2,
+      "interestUsers": 21
+    },
+    {
+      "storeId": "dj-544",
+      "visitCount": 61,
+      "likeCount": 7,
+      "saveCount": 4,
+      "interestUsers": 38
+    },
+    {
+      "storeId": "dj-545",
+      "visitCount": 52,
+      "likeCount": 7,
+      "saveCount": 6,
+      "interestUsers": 34
+    },
+    {
+      "storeId": "dj-546",
+      "visitCount": 91,
+      "likeCount": 7,
+      "saveCount": 8,
+      "interestUsers": 42
+    },
+    {
+      "storeId": "dj-547",
+      "visitCount": 29,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 18
+    },
+    {
+      "storeId": "dj-548",
+      "visitCount": 35,
+      "likeCount": 4,
+      "saveCount": 2,
+      "interestUsers": 27
+    },
+    {
+      "storeId": "dj-549",
+      "visitCount": 39,
+      "likeCount": 6,
+      "saveCount": 2,
+      "interestUsers": 19
+    },
+    {
+      "storeId": "dj-551",
+      "visitCount": 68,
+      "likeCount": 9,
+      "saveCount": 7,
+      "interestUsers": 55
+    },
+    {
+      "storeId": "dj-552",
+      "visitCount": 47,
+      "likeCount": 4,
+      "saveCount": 5,
+      "interestUsers": 35
+    },
+    {
+      "storeId": "dj-553",
+      "visitCount": 61,
+      "likeCount": 10,
+      "saveCount": 6,
+      "interestUsers": 47
+    },
+    {
+      "storeId": "dj-554",
+      "visitCount": 43,
+      "likeCount": 4,
+      "saveCount": 4,
+      "interestUsers": 34
+    },
+    {
+      "storeId": "dj-555",
+      "visitCount": 49,
+      "likeCount": 7,
+      "saveCount": 2,
+      "interestUsers": 25
+    },
+    {
+      "storeId": "dj-560",
+      "visitCount": 57,
+      "likeCount": 10,
+      "saveCount": 3,
+      "interestUsers": 37
+    },
+    {
+      "storeId": "dj-561",
+      "visitCount": 76,
+      "likeCount": 10,
+      "saveCount": 7,
+      "interestUsers": 44
+    },
+    {
+      "storeId": "dj-562",
+      "visitCount": 36,
+      "likeCount": 6,
+      "saveCount": 2,
+      "interestUsers": 19
+    },
+    {
+      "storeId": "dj-565",
+      "visitCount": 54,
+      "likeCount": 9,
+      "saveCount": 4,
+      "interestUsers": 36
+    },
+    {
+      "storeId": "dj-566",
+      "visitCount": 36,
+      "likeCount": 5,
+      "saveCount": 4,
+      "interestUsers": 23
+    },
+    {
+      "storeId": "dj-568",
+      "visitCount": 19,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 11
+    },
+    {
+      "storeId": "dj-570",
+      "visitCount": 25,
+      "likeCount": 5,
+      "saveCount": 3,
+      "interestUsers": 21
+    },
+    {
+      "storeId": "dj-572",
+      "visitCount": 38,
+      "likeCount": 2,
+      "saveCount": 3,
+      "interestUsers": 18
+    },
+    {
+      "storeId": "dj-578",
+      "visitCount": 48,
+      "likeCount": 9,
+      "saveCount": 3,
+      "interestUsers": 28
+    },
+    {
+      "storeId": "dj-581",
+      "visitCount": 50,
+      "likeCount": 9,
+      "saveCount": 5,
+      "interestUsers": 41
+    },
+    {
+      "storeId": "dj-582",
+      "visitCount": 20,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 12
+    },
+    {
+      "storeId": "dj-585",
+      "visitCount": 53,
+      "likeCount": 9,
+      "saveCount": 4,
+      "interestUsers": 26
+    },
+    {
+      "storeId": "dj-595",
+      "visitCount": 40,
+      "likeCount": 4,
+      "saveCount": 2,
+      "interestUsers": 19
+    },
+    {
+      "storeId": "dj-596",
+      "visitCount": 21,
+      "likeCount": 3,
+      "saveCount": 2,
+      "interestUsers": 15
+    },
+    {
+      "storeId": "dj-597",
+      "visitCount": 21,
+      "likeCount": 4,
+      "saveCount": 2,
+      "interestUsers": 14
+    },
+    {
+      "storeId": "dj-600",
+      "visitCount": 30,
+      "likeCount": 4,
+      "saveCount": 2,
+      "interestUsers": 21
+    },
+    {
+      "storeId": "dj-607",
+      "visitCount": 61,
+      "likeCount": 10,
+      "saveCount": 4,
+      "interestUsers": 46
+    },
+    {
+      "storeId": "dj-609",
+      "visitCount": 89,
+      "likeCount": 15,
+      "saveCount": 9,
+      "interestUsers": 60
+    },
+    {
+      "storeId": "dj-610",
+      "visitCount": 18,
+      "likeCount": 1,
+      "saveCount": 2,
+      "interestUsers": 11
+    },
+    {
+      "storeId": "dj-611",
+      "visitCount": 27,
+      "likeCount": 3,
+      "saveCount": 2,
+      "interestUsers": 18
+    },
+    {
+      "storeId": "dj-612",
+      "visitCount": 21,
+      "likeCount": 3,
+      "saveCount": 2,
+      "interestUsers": 13
+    },
+    {
+      "storeId": "dj-613",
+      "visitCount": 34,
+      "likeCount": 7,
+      "saveCount": 2,
+      "interestUsers": 27
+    },
+    {
+      "storeId": "dj-623",
+      "visitCount": 64,
+      "likeCount": 9,
+      "saveCount": 6,
+      "interestUsers": 32
+    },
+    {
+      "storeId": "dj-635",
+      "visitCount": 30,
+      "likeCount": 5,
+      "saveCount": 3,
+      "interestUsers": 16
+    },
+    {
+      "storeId": "dj-643",
+      "visitCount": 26,
+      "likeCount": 4,
+      "saveCount": 3,
+      "interestUsers": 22
+    },
+    {
+      "storeId": "dj-645",
+      "visitCount": 57,
+      "likeCount": 9,
+      "saveCount": 5,
+      "interestUsers": 40
+    },
+    {
+      "storeId": "dj-646",
+      "visitCount": 49,
+      "likeCount": 10,
+      "saveCount": 5,
+      "interestUsers": 35
+    },
+    {
+      "storeId": "dj-650",
+      "visitCount": 41,
+      "likeCount": 5,
+      "saveCount": 3,
+      "interestUsers": 21
+    },
+    {
+      "storeId": "dj-651",
+      "visitCount": 56,
+      "likeCount": 8,
+      "saveCount": 3,
+      "interestUsers": 41
+    },
+    {
+      "storeId": "dj-652",
+      "visitCount": 51,
+      "likeCount": 6,
+      "saveCount": 2,
+      "interestUsers": 23
+    },
+    {
+      "storeId": "dj-659",
+      "visitCount": 47,
+      "likeCount": 7,
+      "saveCount": 4,
+      "interestUsers": 23
+    },
+    {
+      "storeId": "dj-660",
+      "visitCount": 83,
+      "likeCount": 7,
+      "saveCount": 5,
+      "interestUsers": 35
+    },
+    {
+      "storeId": "dj-664",
+      "visitCount": 16,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 12
+    },
+    {
+      "storeId": "dj-665",
+      "visitCount": 80,
+      "likeCount": 16,
+      "saveCount": 3,
+      "interestUsers": 48
+    },
+    {
+      "storeId": "dj-666",
+      "visitCount": 30,
+      "likeCount": 3,
+      "saveCount": 3,
+      "interestUsers": 20
+    },
+    {
+      "storeId": "dj-667",
+      "visitCount": 86,
+      "likeCount": 15,
+      "saveCount": 4,
+      "interestUsers": 57
+    },
+    {
+      "storeId": "dj-668",
+      "visitCount": 62,
+      "likeCount": 9,
+      "saveCount": 2,
+      "interestUsers": 37
+    },
+    {
+      "storeId": "dj-669",
+      "visitCount": 27,
+      "likeCount": 5,
+      "saveCount": 3,
+      "interestUsers": 16
+    },
+    {
+      "storeId": "dj-671",
+      "visitCount": 33,
+      "likeCount": 4,
+      "saveCount": 1,
+      "interestUsers": 21
+    },
+    {
+      "storeId": "dj-672",
+      "visitCount": 23,
+      "likeCount": 3,
+      "saveCount": 3,
+      "interestUsers": 17
+    },
+    {
+      "storeId": "dj-675",
+      "visitCount": 55,
+      "likeCount": 4,
+      "saveCount": 2,
+      "interestUsers": 32
+    },
+    {
+      "storeId": "dj-679",
+      "visitCount": 84,
+      "likeCount": 10,
+      "saveCount": 9,
+      "interestUsers": 67
+    },
+    {
+      "storeId": "dj-680",
+      "visitCount": 93,
+      "likeCount": 17,
+      "saveCount": 9,
+      "interestUsers": 45
+    },
+    {
+      "storeId": "dj-683",
+      "visitCount": 46,
+      "likeCount": 9,
+      "saveCount": 3,
+      "interestUsers": 38
+    },
+    {
+      "storeId": "dj-685",
+      "visitCount": 72,
+      "likeCount": 10,
+      "saveCount": 7,
+      "interestUsers": 39
+    },
+    {
+      "storeId": "dj-687",
+      "visitCount": 32,
+      "likeCount": 4,
+      "saveCount": 4,
+      "interestUsers": 19
+    },
+    {
+      "storeId": "dj-689",
+      "visitCount": 42,
+      "likeCount": 5,
+      "saveCount": 3,
+      "interestUsers": 31
+    },
+    {
+      "storeId": "dj-690",
+      "visitCount": 66,
+      "likeCount": 11,
+      "saveCount": 4,
+      "interestUsers": 43
+    },
+    {
+      "storeId": "dj-691",
+      "visitCount": 95,
+      "likeCount": 15,
+      "saveCount": 9,
+      "interestUsers": 48
+    },
+    {
+      "storeId": "dj-695",
+      "visitCount": 71,
+      "likeCount": 4,
+      "saveCount": 7,
+      "interestUsers": 57
+    },
+    {
+      "storeId": "dj-709",
+      "visitCount": 15,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 9
+    },
+    {
+      "storeId": "dj-715",
+      "visitCount": 157,
+      "likeCount": 11,
+      "saveCount": 14,
+      "interestUsers": 108
+    },
+    {
+      "storeId": "dj-719",
+      "visitCount": 22,
+      "likeCount": 1,
+      "saveCount": 1,
+      "interestUsers": 12
+    },
+    {
+      "storeId": "dj-723",
+      "visitCount": 69,
+      "likeCount": 6,
+      "saveCount": 3,
+      "interestUsers": 40
+    },
+    {
+      "storeId": "dj-725",
+      "visitCount": 72,
+      "likeCount": 14,
+      "saveCount": 3,
+      "interestUsers": 40
+    },
+    {
+      "storeId": "dj-727",
+      "visitCount": 39,
+      "likeCount": 6,
+      "saveCount": 4,
+      "interestUsers": 30
+    },
+    {
+      "storeId": "dj-728",
+      "visitCount": 37,
+      "likeCount": 7,
+      "saveCount": 5,
+      "interestUsers": 27
+    },
+    {
+      "storeId": "dj-735",
+      "visitCount": 140,
+      "likeCount": 16,
+      "saveCount": 11,
+      "interestUsers": 97
+    },
+    {
+      "storeId": "dj-736",
+      "visitCount": 113,
+      "likeCount": 19,
+      "saveCount": 11,
+      "interestUsers": 84
+    },
+    {
+      "storeId": "dj-737",
+      "visitCount": 118,
+      "likeCount": 10,
+      "saveCount": 9,
+      "interestUsers": 51
+    },
+    {
+      "storeId": "dj-738",
+      "visitCount": 49,
+      "likeCount": 9,
+      "saveCount": 3,
+      "interestUsers": 33
+    },
+    {
+      "storeId": "dj-741",
+      "visitCount": 77,
+      "likeCount": 8,
+      "saveCount": 9,
+      "interestUsers": 58
+    },
+    {
+      "storeId": "dj-744",
+      "visitCount": 105,
+      "likeCount": 11,
+      "saveCount": 8,
+      "interestUsers": 71
+    },
+    {
+      "storeId": "dj-745",
+      "visitCount": 28,
+      "likeCount": 5,
+      "saveCount": 3,
+      "interestUsers": 17
+    },
+    {
+      "storeId": "dj-746",
+      "visitCount": 38,
+      "likeCount": 2,
+      "saveCount": 3,
+      "interestUsers": 18
+    },
+    {
+      "storeId": "dj-751",
+      "visitCount": 58,
+      "likeCount": 7,
+      "saveCount": 3,
+      "interestUsers": 33
+    },
+    {
+      "storeId": "dj-755",
+      "visitCount": 60,
+      "likeCount": 7,
+      "saveCount": 7,
+      "interestUsers": 46
+    },
+    {
+      "storeId": "dj-758",
+      "visitCount": 45,
+      "likeCount": 3,
+      "saveCount": 5,
+      "interestUsers": 19
+    },
+    {
+      "storeId": "dj-760",
+      "visitCount": 26,
+      "likeCount": 4,
+      "saveCount": 2,
+      "interestUsers": 17
+    },
+    {
+      "storeId": "dj-761",
+      "visitCount": 61,
+      "likeCount": 6,
+      "saveCount": 3,
+      "interestUsers": 24
+    },
+    {
+      "storeId": "dj-762",
+      "visitCount": 14,
+      "likeCount": 3,
+      "saveCount": 1,
+      "interestUsers": 9
+    },
+    {
+      "storeId": "dj-763",
+      "visitCount": 63,
+      "likeCount": 10,
+      "saveCount": 4,
+      "interestUsers": 28
+    },
+    {
+      "storeId": "dj-765",
+      "visitCount": 50,
+      "likeCount": 8,
+      "saveCount": 4,
+      "interestUsers": 25
+    },
+    {
+      "storeId": "dj-766",
+      "visitCount": 17,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 13
+    },
+    {
+      "storeId": "dj-767",
+      "visitCount": 34,
+      "likeCount": 4,
+      "saveCount": 2,
+      "interestUsers": 19
+    },
+    {
+      "storeId": "dj-770",
+      "visitCount": 12,
+      "likeCount": 1,
+      "saveCount": 1,
+      "interestUsers": 9
+    },
+    {
+      "storeId": "dj-771",
+      "visitCount": 14,
+      "likeCount": 2,
+      "saveCount": 2,
+      "interestUsers": 11
+    },
+    {
+      "storeId": "dj-772",
+      "visitCount": 35,
+      "likeCount": 5,
+      "saveCount": 4,
+      "interestUsers": 19
+    },
+    {
+      "storeId": "dj-773",
+      "visitCount": 12,
+      "likeCount": 1,
+      "saveCount": 0,
+      "interestUsers": 7
+    },
+    {
+      "storeId": "dj-774",
+      "visitCount": 18,
+      "likeCount": 1,
+      "saveCount": 2,
+      "interestUsers": 11
+    },
+    {
+      "storeId": "dj-775",
+      "visitCount": 59,
+      "likeCount": 7,
+      "saveCount": 4,
+      "interestUsers": 34
+    },
+    {
+      "storeId": "dj-776",
+      "visitCount": 43,
+      "likeCount": 8,
+      "saveCount": 1,
+      "interestUsers": 29
+    },
+    {
+      "storeId": "dj-778",
+      "visitCount": 80,
+      "likeCount": 14,
+      "saveCount": 8,
+      "interestUsers": 48
+    },
+    {
+      "storeId": "dj-779",
+      "visitCount": 53,
+      "likeCount": 11,
+      "saveCount": 3,
+      "interestUsers": 31
+    },
+    {
+      "storeId": "dj-781",
+      "visitCount": 73,
+      "likeCount": 10,
+      "saveCount": 3,
+      "interestUsers": 52
+    },
+    {
+      "storeId": "dj-782",
+      "visitCount": 52,
+      "likeCount": 10,
+      "saveCount": 5,
+      "interestUsers": 31
+    },
+    {
+      "storeId": "dj-783",
+      "visitCount": 58,
+      "likeCount": 6,
+      "saveCount": 5,
+      "interestUsers": 37
+    },
+    {
+      "storeId": "dj-784",
+      "visitCount": 46,
+      "likeCount": 4,
+      "saveCount": 4,
+      "interestUsers": 25
+    },
+    {
+      "storeId": "dj-786",
+      "visitCount": 14,
+      "likeCount": 1,
+      "saveCount": 1,
+      "interestUsers": 10
+    },
+    {
+      "storeId": "dj-787",
+      "visitCount": 48,
+      "likeCount": 7,
+      "saveCount": 2,
+      "interestUsers": 28
+    },
+    {
+      "storeId": "dj-788",
+      "visitCount": 21,
+      "likeCount": 1,
+      "saveCount": 1,
+      "interestUsers": 15
+    },
+    {
+      "storeId": "dj-789",
+      "visitCount": 15,
+      "likeCount": 3,
+      "saveCount": 1,
+      "interestUsers": 13
+    },
+    {
+      "storeId": "dj-790",
+      "visitCount": 36,
+      "likeCount": 4,
+      "saveCount": 2,
+      "interestUsers": 27
+    },
+    {
+      "storeId": "dj-791",
+      "visitCount": 57,
+      "likeCount": 5,
+      "saveCount": 2,
+      "interestUsers": 40
+    },
+    {
+      "storeId": "dj-794",
+      "visitCount": 38,
+      "likeCount": 7,
+      "saveCount": 2,
+      "interestUsers": 29
+    },
+    {
+      "storeId": "dj-795",
+      "visitCount": 26,
+      "likeCount": 3,
+      "saveCount": 3,
+      "interestUsers": 22
+    },
+    {
+      "storeId": "dj-796",
+      "visitCount": 87,
+      "likeCount": 9,
+      "saveCount": 3,
+      "interestUsers": 51
+    },
+    {
+      "storeId": "dj-799",
+      "visitCount": 47,
+      "likeCount": 4,
+      "saveCount": 5,
+      "interestUsers": 22
+    },
+    {
+      "storeId": "dj-800",
+      "visitCount": 32,
+      "likeCount": 3,
+      "saveCount": 3,
+      "interestUsers": 17
+    },
+    {
+      "storeId": "dj-801",
+      "visitCount": 24,
+      "likeCount": 4,
+      "saveCount": 2,
+      "interestUsers": 15
+    },
+    {
+      "storeId": "dj-802",
+      "visitCount": 32,
+      "likeCount": 3,
+      "saveCount": 1,
+      "interestUsers": 20
+    },
+    {
+      "storeId": "dj-803",
+      "visitCount": 79,
+      "likeCount": 15,
+      "saveCount": 5,
+      "interestUsers": 60
+    },
+    {
+      "storeId": "dj-804",
+      "visitCount": 28,
+      "likeCount": 3,
+      "saveCount": 1,
+      "interestUsers": 20
+    },
+    {
+      "storeId": "dj-805",
+      "visitCount": 90,
+      "likeCount": 9,
+      "saveCount": 7,
+      "interestUsers": 43
+    },
+    {
+      "storeId": "dj-807",
+      "visitCount": 44,
+      "likeCount": 3,
+      "saveCount": 5,
+      "interestUsers": 34
+    },
+    {
+      "storeId": "dj-810",
+      "visitCount": 55,
+      "likeCount": 4,
+      "saveCount": 6,
+      "interestUsers": 32
+    },
+    {
+      "storeId": "dj-812",
+      "visitCount": 25,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 18
+    },
+    {
+      "storeId": "dj-814",
+      "visitCount": 37,
+      "likeCount": 6,
+      "saveCount": 4,
+      "interestUsers": 31
+    },
+    {
+      "storeId": "dj-815",
+      "visitCount": 30,
+      "likeCount": 6,
+      "saveCount": 1,
+      "interestUsers": 15
+    },
+    {
+      "storeId": "dj-816",
+      "visitCount": 52,
+      "likeCount": 8,
+      "saveCount": 7,
+      "interestUsers": 28
+    },
+    {
+      "storeId": "dj-817",
+      "visitCount": 81,
+      "likeCount": 8,
+      "saveCount": 8,
+      "interestUsers": 63
+    },
+    {
+      "storeId": "dj-818",
+      "visitCount": 69,
+      "likeCount": 7,
+      "saveCount": 7,
+      "interestUsers": 45
+    },
+    {
+      "storeId": "dj-819",
+      "visitCount": 35,
+      "likeCount": 6,
+      "saveCount": 2,
+      "interestUsers": 29
+    },
+    {
+      "storeId": "dj-820",
+      "visitCount": 20,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 11
+    },
+    {
+      "storeId": "dj-821",
+      "visitCount": 27,
+      "likeCount": 5,
+      "saveCount": 3,
+      "interestUsers": 21
+    },
+    {
+      "storeId": "dj-822",
+      "visitCount": 60,
+      "likeCount": 3,
+      "saveCount": 6,
+      "interestUsers": 38
+    },
+    {
+      "storeId": "dj-824",
+      "visitCount": 29,
+      "likeCount": 2,
+      "saveCount": 2,
+      "interestUsers": 22
+    },
+    {
+      "storeId": "dj-827",
+      "visitCount": 36,
+      "likeCount": 4,
+      "saveCount": 4,
+      "interestUsers": 23
+    },
+    {
+      "storeId": "dj-828",
+      "visitCount": 40,
+      "likeCount": 3,
+      "saveCount": 5,
+      "interestUsers": 26
+    },
+    {
+      "storeId": "dj-831",
+      "visitCount": 39,
+      "likeCount": 5,
+      "saveCount": 2,
+      "interestUsers": 31
+    },
+    {
+      "storeId": "dj-832",
+      "visitCount": 33,
+      "likeCount": 3,
+      "saveCount": 3,
+      "interestUsers": 25
+    },
+    {
+      "storeId": "dj-834",
+      "visitCount": 38,
+      "likeCount": 4,
+      "saveCount": 5,
+      "interestUsers": 23
+    },
+    {
+      "storeId": "dj-835",
+      "visitCount": 15,
+      "likeCount": 3,
+      "saveCount": 1,
+      "interestUsers": 13
+    },
+    {
+      "storeId": "dj-836",
+      "visitCount": 64,
+      "likeCount": 12,
+      "saveCount": 5,
+      "interestUsers": 53
+    },
+    {
+      "storeId": "dj-838",
+      "visitCount": 69,
+      "likeCount": 8,
+      "saveCount": 3,
+      "interestUsers": 47
+    },
+    {
+      "storeId": "dj-839",
+      "visitCount": 56,
+      "likeCount": 6,
+      "saveCount": 2,
+      "interestUsers": 26
+    },
+    {
+      "storeId": "dj-840",
+      "visitCount": 57,
+      "likeCount": 9,
+      "saveCount": 4,
+      "interestUsers": 32
+    },
+    {
+      "storeId": "dj-841",
+      "visitCount": 17,
+      "likeCount": 2,
+      "saveCount": 2,
+      "interestUsers": 9
+    },
+    {
+      "storeId": "dj-842",
+      "visitCount": 53,
+      "likeCount": 9,
+      "saveCount": 3,
+      "interestUsers": 28
+    },
+    {
+      "storeId": "dj-846",
+      "visitCount": 27,
+      "likeCount": 4,
+      "saveCount": 1,
+      "interestUsers": 11
+    },
+    {
+      "storeId": "dj-848",
+      "visitCount": 30,
+      "likeCount": 4,
+      "saveCount": 4,
+      "interestUsers": 20
+    },
+    {
+      "storeId": "dj-850",
+      "visitCount": 17,
+      "likeCount": 3,
+      "saveCount": 2,
+      "interestUsers": 15
+    },
+    {
+      "storeId": "dj-851",
+      "visitCount": 18,
+      "likeCount": 3,
+      "saveCount": 2,
+      "interestUsers": 13
+    },
+    {
+      "storeId": "dj-853",
+      "visitCount": 42,
+      "likeCount": 7,
+      "saveCount": 4,
+      "interestUsers": 19
+    },
+    {
+      "storeId": "dj-854",
+      "visitCount": 17,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 12
+    },
+    {
+      "storeId": "dj-855",
+      "visitCount": 26,
+      "likeCount": 3,
+      "saveCount": 1,
+      "interestUsers": 18
+    },
+    {
+      "storeId": "dj-856",
+      "visitCount": 31,
+      "likeCount": 3,
+      "saveCount": 4,
+      "interestUsers": 18
+    },
+    {
+      "storeId": "dj-857",
+      "visitCount": 43,
+      "likeCount": 6,
+      "saveCount": 5,
+      "interestUsers": 20
+    },
+    {
+      "storeId": "dj-862",
+      "visitCount": 15,
+      "likeCount": 2,
+      "saveCount": 1,
+      "interestUsers": 9
+    },
+    {
+      "storeId": "dj-865",
+      "visitCount": 89,
+      "likeCount": 11,
+      "saveCount": 9,
+      "interestUsers": 48
+    },
+    {
+      "storeId": "dj-866",
+      "visitCount": 38,
+      "likeCount": 7,
+      "saveCount": 5,
+      "interestUsers": 28
+    },
+    {
+      "storeId": "dj-867",
+      "visitCount": 34,
+      "likeCount": 5,
+      "saveCount": 1,
+      "interestUsers": 23
+    },
+    {
+      "storeId": "dj-869",
+      "visitCount": 30,
+      "likeCount": 6,
+      "saveCount": 3,
+      "interestUsers": 16
+    },
+    {
+      "storeId": "dj-870",
+      "visitCount": 53,
+      "likeCount": 7,
+      "saveCount": 4,
+      "interestUsers": 35
+    },
+    {
+      "storeId": "dj-871",
+      "visitCount": 23,
+      "likeCount": 1,
+      "saveCount": 1,
+      "interestUsers": 14
+    },
+    {
+      "storeId": "dj-872",
+      "visitCount": 22,
+      "likeCount": 2,
+      "saveCount": 3,
+      "interestUsers": 18
+    },
+    {
+      "storeId": "dj-873",
+      "visitCount": 28,
+      "likeCount": 2,
+      "saveCount": 3,
+      "interestUsers": 14
+    },
+    {
+      "storeId": "dj-874",
+      "visitCount": 50,
+      "likeCount": 3,
+      "saveCount": 6,
+      "interestUsers": 27
+    },
+    {
+      "storeId": "dj-882",
+      "visitCount": 59,
+      "likeCount": 10,
+      "saveCount": 6,
+      "interestUsers": 45
+    },
+    {
+      "storeId": "dj-886",
+      "visitCount": 81,
+      "likeCount": 12,
+      "saveCount": 8,
+      "interestUsers": 67
+    },
+    {
+      "storeId": "dj-888",
+      "visitCount": 17,
+      "likeCount": 3,
+      "saveCount": 1,
+      "interestUsers": 8
+    },
+    {
+      "storeId": "dj-891",
+      "visitCount": 26,
+      "likeCount": 4,
+      "saveCount": 3,
+      "interestUsers": 22
+    },
+    {
+      "storeId": "dj-893",
+      "visitCount": 53,
+      "likeCount": 6,
+      "saveCount": 4,
+      "interestUsers": 36
+    },
+    {
+      "storeId": "dj-895",
+      "visitCount": 72,
+      "likeCount": 10,
+      "saveCount": 3,
+      "interestUsers": 48
+    },
+    {
+      "storeId": "dj-897",
+      "visitCount": 17,
+      "likeCount": 3,
+      "saveCount": 1,
+      "interestUsers": 11
+    },
+    {
+      "storeId": "dj-902",
+      "visitCount": 96,
+      "likeCount": 6,
+      "saveCount": 7,
+      "interestUsers": 60
+    },
+    {
+      "storeId": "dj-903",
+      "visitCount": 36,
+      "likeCount": 3,
+      "saveCount": 4,
+      "interestUsers": 20
+    },
+    {
+      "storeId": "dj-922",
+      "visitCount": 85,
+      "likeCount": 12,
+      "saveCount": 8,
+      "interestUsers": 61
+    },
+    {
+      "storeId": "dj-923",
+      "visitCount": 33,
+      "likeCount": 2,
+      "saveCount": 2,
+      "interestUsers": 22
+    },
+    {
+      "storeId": "dj-925",
+      "visitCount": 40,
+      "likeCount": 6,
+      "saveCount": 3,
+      "interestUsers": 24
+    },
+    {
+      "storeId": "dj-930",
+      "visitCount": 71,
+      "likeCount": 6,
+      "saveCount": 4,
+      "interestUsers": 52
+    },
+    {
+      "storeId": "dj-941",
+      "visitCount": 22,
+      "likeCount": 1,
+      "saveCount": 2,
+      "interestUsers": 11
+    },
+    {
+      "storeId": "dj-942",
+      "visitCount": 45,
+      "likeCount": 8,
+      "saveCount": 2,
+      "interestUsers": 21
+    },
+    {
+      "storeId": "dj-943",
+      "visitCount": 104,
+      "likeCount": 9,
+      "saveCount": 11,
+      "interestUsers": 81
+    },
+    {
+      "storeId": "dj-944",
+      "visitCount": 67,
+      "likeCount": 9,
+      "saveCount": 2,
+      "interestUsers": 27
+    },
+    {
+      "storeId": "dj-945",
+      "visitCount": 121,
+      "likeCount": 23,
+      "saveCount": 13,
+      "interestUsers": 67
+    },
+    {
+      "storeId": "dj-946",
+      "visitCount": 93,
+      "likeCount": 14,
+      "saveCount": 4,
+      "interestUsers": 69
+    },
+    {
+      "storeId": "dj-947",
+      "visitCount": 133,
+      "likeCount": 16,
+      "saveCount": 7,
+      "interestUsers": 80
+    },
+    {
+      "storeId": "dj-948",
+      "visitCount": 87,
+      "likeCount": 8,
+      "saveCount": 6,
+      "interestUsers": 55
+    },
+    {
+      "storeId": "dj-949",
+      "visitCount": 168,
+      "likeCount": 30,
+      "saveCount": 14,
+      "interestUsers": 115
+    },
+    {
+      "storeId": "dj-950",
+      "visitCount": 106,
+      "likeCount": 16,
+      "saveCount": 13,
+      "interestUsers": 65
+    },
+    {
+      "storeId": "dj-951",
+      "visitCount": 35,
+      "likeCount": 5,
+      "saveCount": 4,
+      "interestUsers": 17
+    },
+    {
+      "storeId": "dj-952",
+      "visitCount": 67,
+      "likeCount": 8,
+      "saveCount": 3,
+      "interestUsers": 49
+    },
+    {
+      "storeId": "dj-953",
+      "visitCount": 48,
+      "likeCount": 8,
+      "saveCount": 6,
+      "interestUsers": 35
+    },
+    {
+      "storeId": "dj-954",
+      "visitCount": 95,
+      "likeCount": 5,
+      "saveCount": 10,
+      "interestUsers": 58
+    }
+  ]
+}

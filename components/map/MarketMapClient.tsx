@@ -8,8 +8,9 @@ import { ErrorState, Notice } from "@/components/ui/States";
 import { cn } from "@/components/ui/cn";
 import type { StoreDTO } from "@/lib/api/schemas";
 import { recordView, useRecommendations } from "@/lib/client/recommendations";
-import { RECOMMENDED_MIN_SCORE } from "@/lib/recommendation/engine";
-import { STORE_CATEGORIES, type StoreCategory } from "@/lib/stores/types";
+import { RECOMMEND_MIN_SCORE as RECOMMENDED_MIN_SCORE } from "@/lib/recommendation/engine";
+import { displayCategory } from "@/lib/stores/parse";
+import { MAIN_CATEGORIES, type StoreCategory } from "@/lib/stores/types";
 import { KakaoMap } from "./KakaoMap";
 import { SchematicMap } from "./SchematicMap";
 import { SelectedStorePanel } from "./SelectedStorePanel";
@@ -72,7 +73,7 @@ export function MarketMapClient({
     return views;
   }, [stores, recById, order, browserLocations, hasProfile]);
 
-  const categories = useMemo(() => STORE_CATEGORIES.filter((c) => stores.some((s) => s.categories.includes(c))), [stores]);
+  const categories = useMemo(() => MAIN_CATEGORIES.filter((c) => stores.some((s) => s.categories.includes(c))), [stores]);
 
   const filtered = useMemo(
     () =>
@@ -162,7 +163,7 @@ export function MarketMapClient({
                 category === c ? "border-market-700 bg-market-700 text-white" : "border-ink-200 bg-paper text-ink-700 hover:border-ink-300",
               )}
             >
-              {c === "all" ? "전체" : c}
+              {c === "all" ? "전체" : displayCategory(c)}
             </button>
           ))}
         </div>

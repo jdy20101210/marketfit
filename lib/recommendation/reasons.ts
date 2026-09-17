@@ -24,6 +24,8 @@ const HEDGED_STORE_PHRASE: Record<TasteKey, string> = {
   practical: "실용적인 생활용품을 둘러보기 좋아요.",
   craft: "직접 만드는 취미에 쓸 재료를 찾아볼 수 있어요.",
   local: "대전 원도심 시장의 로컬 분위기를 느낄 수 있어요.",
+  discovery: "평소 가 보지 않던 새로운 가게를 발견하는 재미가 있을 수 있어요.",
+  price_sensitive: "시장 가게라 가격을 비교하며 둘러보기 좋아요. 실제 가격은 방문해서 확인해 주세요.",
 };
 
 export interface TemplateReasonInput {

@@ -4,8 +4,12 @@
  */
 import type { StoreDescriptionInput } from "@/lib/providers/ai/types";
 import { josa } from "@/lib/recommendation/reasons";
-import { ENTITY_KIND_LABEL } from "./parse";
+import { displayCategory, ENTITY_KIND_LABEL } from "./parse";
 import { MARKET_FEATURE_KEYS, MARKET_FEATURE_META, type Store } from "./types";
+
+export function categoryPath(main: string, sub: string): string {
+  return `${displayCategory(main)} > ${displayCategory(sub)}`;
+}
 
 export function storeDescriptionInput(store: Store): StoreDescriptionInput {
   const highlights = MARKET_FEATURE_KEYS.filter((k) => (store.features.market[k] ?? 0) >= 0.75)
@@ -16,26 +20,20 @@ export function storeDescriptionInput(store: Store): StoreDescriptionInput {
     name: store.name,
     storeType: store.storeType,
     entityLabel: ENTITY_KIND_LABEL[store.entityKind],
-    category: store.features.primaryCategory,
+    category: categoryPath(store.mainCategory, store.subCategory),
     confirmedItems: store.features.productHints,
     marketHighlights: highlights,
-    locationNote: store.addressDetail ?? store.addressRaw,
+    locationNote: store.addressDetail ?? store.zone ?? store.addressRaw,
   };
 }
 
 export function templateStoreDescription(s: StoreDescriptionInput): string {
-  if (s.entityLabel === "시장 안내") {
-    return `${josa(s.name, "은", "는")} 중앙시장 이용 안내와 문의를 맡는 창구예요. 개인화 추천 대상은 아니에요.`;
-  }
-  const kind = s.entityLabel === "개별 점포" ? "점포" : s.entityLabel;
-  // '의류 노점'처럼 유형 끝에 점포 형태가 붙어 있으면 품목 부분만 씁니다.
-  const typeCore = s.storeType.endsWith(` ${kind}`) ? s.storeType.slice(0, -kind.length - 1) : s.storeType;
-  const typeText = typeCore === s.name ? s.category : `'${typeCore}'`;
-  const lead = `${josa(s.name, "은", "는")} ${josa(typeText, "을", "를")} 다루는 ${josa(kind, "이에요", "예요")}.`;
-  const items = s.confirmedItems.filter((i) => !s.storeType.includes(i)).slice(0, 3);
-  const itemText = items.length ? ` 원본 자료에 ${items.join("·")} 품목이 함께 적혀 있어요.` : "";
+  const items = s.confirmedItems.slice(0, 4);
+  const itemText = items.length ? `'${items.join("·")}'` : `'${s.category.split(" > ").at(-1) ?? s.category}'`;
+  const lead = `${josa(s.name, "은", "는")} ${josa(itemText, "을", "를")} 다루는 ${josa(s.entityLabel, "이에요", "예요")}.`;
+  const category = ` 공식 점포 목록의 분류는 ${josa(s.category, "이에요", "예요")}.`;
   const highlight = s.marketHighlights.length
     ? ` MarketFit은 이곳을 중앙시장의 ${s.marketHighlights.slice(0, 2).join("·")} 요소가 두드러진 곳으로 분류했어요.`
     : "";
-  return `${lead}${itemText}${highlight}`;
+  return `${lead}${category}${highlight}`;
 }

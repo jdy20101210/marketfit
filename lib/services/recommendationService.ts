@@ -2,7 +2,7 @@ import "server-only";
 import type { InteractionState, RecommendationItem } from "@/lib/api/schemas";
 import { getRepository } from "@/lib/db";
 import { topTastes, type TasteVector } from "@/lib/recommendation/dimensions";
-import { diversifyOrder, exposureBoostFromCounts, rankStores, type ProfileVectors, type ScoredStore } from "@/lib/recommendation/engine";
+import { exposureBoostFromCounts, rankStores, type ProfileVectors, type ScoredStore } from "@/lib/recommendation/engine";
 import { currentState, INTERACTION_WEIGHTS, type InteractionEvent } from "@/lib/recommendation/feedback";
 import { templateReason } from "@/lib/recommendation/reasons";
 import { generateReasonsWithFallback } from "@/lib/providers/ai";
@@ -10,13 +10,7 @@ import { ENTITY_KIND_LABEL, type EntityKind } from "@/lib/stores/parse";
 import { getStores } from "@/lib/stores/catalog";
 import type { Store } from "@/lib/stores/types";
 
-const ENTITY_NOUN: Record<EntityKind, string> = {
-  store: "점포",
-  street_vendor: "노점",
-  arcade: "상가",
-  product_zone: "상권",
-  association: "안내소",
-};
+const ENTITY_NOUN: Record<EntityKind, string> = ENTITY_KIND_LABEL;
 
 const LIST_BY_KIND = { like: "liked", bookmark: "bookmarked", visit: "visited", dismiss: "dismissed" } as const;
 
@@ -124,11 +118,7 @@ export async function computeRecommendations(
     },
   );
   const byId = new Map(stores.map((s) => [s.id, s]));
-  const ordered = diversifyOrder(ranked, (id) => ({
-    type: byId.get(id)!.storeType,
-    category: byId.get(id)!.features.primaryCategory,
-  }));
-  return { items: ordered.map((r) => toItem(byId.get(r.storeId)!, r)), interactions: merged };
+  return { items: ranked.map((r) => toItem(byId.get(r.storeId)!, r)), interactions: merged };
 }
 
 /** 상위 점포의 추천 이유를 Gemini로 생성 (실패/미설정 시 빈 결과 → 템플릿 유지) */

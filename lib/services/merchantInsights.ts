@@ -40,6 +40,8 @@ const IDEAS: Record<TasteKey, string> = {
   living: "계절 인테리어 추천 진열",
   kitchen: "1~2인 가구 주방 스타터 구성",
   practical: "실속 묶음 구성",
+  discovery: "처음 오는 손님을 위한 대표 품목 안내판",
+  price_sensitive: "가격대별 추천 진열",
 };
 
 function shareFromVectors(vectors: TasteVector[]): { key: TasteKey; share: number }[] {

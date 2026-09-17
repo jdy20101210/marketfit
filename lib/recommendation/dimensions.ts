@@ -21,6 +21,8 @@ export const TASTE_KEYS = [
   "practical",
   "craft",
   "local",
+  "discovery",
+  "price_sensitive",
 ] as const;
 
 export type TasteKey = (typeof TASTE_KEYS)[number];
@@ -44,6 +46,18 @@ export const TASTE_META: Record<TasteKey, { label: string; short: string; emoji:
   practical: { label: "실용", short: "실용", emoji: "🧺", hint: "생활용품·가성비" },
   craft: { label: "수공예", short: "수공예", emoji: "✂️", hint: "원단·수예·DIY" },
   local: { label: "로컬 경험", short: "로컬", emoji: "📍", hint: "지역·시장 경험" },
+  discovery: { label: "새로운 발견", short: "발견", emoji: "🔎", hint: "흔하지 않은 것·숨은 가게" },
+  price_sensitive: { label: "가성비", short: "가성비", emoji: "💰", hint: "예산·가격을 중요하게 봄" },
+};
+
+/** 지침 예시 이름(tourism, local_experience 등)과 내부 차원의 대응 */
+export const TASTE_ALIASES: Record<string, TasteKey> = {
+  tourism: "travel",
+  local_experience: "local",
+  dining: "food",
+  snack: "dessert",
+  budget: "price_sensitive",
+  unique: "discovery",
 };
 
 export function emptyVector(): TasteVector {
@@ -72,6 +86,13 @@ export function round3(n: number): number {
 
 export function isTasteKey(value: string): value is TasteKey {
   return (TASTE_KEYS as readonly string[]).includes(value);
+}
+
+/** 차원 이름 또는 별칭을 내부 차원으로 바꿉니다 (모르는 이름이면 null). */
+export function resolveTasteKey(value: string): TasteKey | null {
+  const key = value.trim().toLowerCase();
+  if (isTasteKey(key)) return key;
+  return TASTE_ALIASES[key] ?? null;
 }
 
 export function topTastes(vector: TasteVector, count = 5, minScore = 0.05): { key: TasteKey; score: number }[] {
