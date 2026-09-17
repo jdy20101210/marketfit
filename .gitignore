@@ -30,7 +30,12 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files — 비밀 값은 절대 커밋하지 않습니다 (.env.example 만 예외)
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
 .env*
 
 # vercel

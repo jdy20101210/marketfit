@@ -1,5 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { emptyVector, TASTE_KEYS } from "@/lib/recommendation/dimensions";
+import { extractSlots } from "@/lib/preferences/extract";
+import { INTERVIEW_GREETING, MAX_QUESTIONS, MIN_ANSWERS, type ChatMessage } from "@/lib/preferences/types";
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
@@ -9,20 +11,37 @@ function geminiBody(payload: unknown) {
   return { candidates: [{ content: { parts: [{ text: JSON.stringify(payload) }] }, finishReason: "STOP" }] };
 }
 
-const validProfile = {
-  persona_label: "감성 캠퍼형",
-  summary: "캠핑과 커피를 즐기는 취향이에요.",
-  taste_vector: { ...emptyVector(), camping: 0.9, coffee: 0.85, vintage: 0.6, gift: 0.4 },
-  recent_vector: { ...emptyVector(), coffee: 0.9, camping: 0.8 },
+const emptyContext = {
+  intent: null,
+  intent_label: null,
+  looking_for: null,
+  budget_min: null,
+  budget_max: null,
+  companion: null,
+  occasion: null,
+  preferred_style: [],
+  discovery_preference: null,
+};
+
+const validPreference = {
+  persona_label: "선물 탐험가",
+  summary: "대전에서만 볼 수 있는 2만원 이하 선물을 찾고 있어요.",
+  categories: { ...emptyVector(), gift: 0.94, local: 0.91, discovery: 0.89, practical: 0.55 },
+  focus: { ...emptyVector(), gift: 0.95, local: 0.9 },
+  context: { ...emptyContext, intent: "birthday_gift", intent_label: "생일 선물", budget_max: 20000, discovery_preference: "unique" },
   top_categories: [
-    { key: "camping", score: 0.9, evidence: "캠핑 의자" },
+    { key: "gift", score: 0.94, evidence: "친구 생일 선물" },
     { key: "not_a_key", score: 0.9, evidence: "무시되어야 함" },
   ],
-  item_insights: [
-    { input: "드립커피", keys: ["coffee"], note: "커피 관심" },
-    { input: "입력에 없던 상품", keys: ["gift"], note: "무시" },
+  keyword_insights: [
+    { input: "선물", keys: ["gift"], expanded_terms: ["기념품"], note: "선물 관심" },
+    { input: "입력에 없던 키워드", keys: ["coffee"], expanded_terms: [], note: "무시" },
   ],
 };
+
+function interviewInput(messages: ChatMessage[]) {
+  return { messages, known: extractSlots(messages), answeredCount: messages.filter((m) => m.role === "user").length, askedSlots: [], maxQuestions: MAX_QUESTIONS, minAnswers: MIN_ANSWERS };
+}
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -30,15 +49,17 @@ afterEach(() => {
   vi.resetModules();
 });
 
-describe("GeminiProvider (fetch mock)", () => {
+describe("GeminiProvider · 취향 분석 (fetch mock)", () => {
   it("구조화 JSON을 검증하고 규칙 기반 vector와 섞는다", async () => {
-    const fetchMock = vi.fn(async (_url: string | URL | Request, _init?: RequestInit) => jsonResponse(geminiBody(validProfile)));
+    const fetchMock = vi.fn(async (_url: string | URL | Request, _init?: RequestInit) => jsonResponse(geminiBody(validPreference)));
     vi.stubGlobal("fetch", fetchMock);
     const { GeminiProvider } = await import("@/lib/providers/ai/GeminiProvider");
     const provider = new GeminiProvider("test-key-1234567890abcdefgh", "gemini-flash-latest");
-    const result = await provider.analyzeProfile({
-      instagram: { mode: "mock", interests: [{ keyword: "캠핑", score: 0.89 }], captionsSample: [] },
-      items: ["드립커피", "캠핑 의자", "빈티지 소품"],
+    const result = await provider.analyzePreferences({
+      mode: "keywords",
+      messages: [],
+      keywords: ["선물", "빈티지"],
+      known: extractSlots([]),
     });
 
     const [url, init] = fetchMock.mock.calls[0]!;
@@ -46,51 +67,56 @@ describe("GeminiProvider (fetch mock)", () => {
     expect((init!.headers as Record<string, string>)["x-goog-api-key"]).toBe("test-key-1234567890abcdefgh");
     const body = JSON.parse(String(init!.body));
     expect(body.generationConfig.responseMimeType).toBe("application/json");
-    expect(body.generationConfig.responseSchema.required).toContain("taste_vector");
+    expect(body.generationConfig.responseSchema.required).toContain("categories");
+    // API 키를 URL(로그·리퍼러에 남는 위치)에 넣지 않습니다.
     expect(String(url)).not.toContain("test-key");
 
-    expect(result.personaLabel).toBe("감성 캠퍼형");
-    expect(result.tasteVector.camping).toBeGreaterThan(0.8);
+    expect(result.personaLabel).toBe("선물 탐험가");
+    expect(result.profile.categories.gift).toBeGreaterThan(0.8);
+    // 사용자가 금액을 말하지 않았으므로 AI가 적어 낸 예산은 채택하지 않습니다.
+    expect(result.profile.budget).toBeNull();
     expect(result.topCategories.map((c) => c.key)).not.toContain("not_a_key");
-    expect(result.itemInsights.map((i) => i.input)).toEqual(["드립커피"]);
+    // 입력하지 않은 키워드에 대한 해석은 버립니다.
+    expect(result.keywordInsights.map((i) => i.input)).toEqual(["선물"]);
     for (const k of TASTE_KEYS) {
-      expect(result.tasteVector[k]).toBeGreaterThanOrEqual(0);
-      expect(result.tasteVector[k]).toBeLessThanOrEqual(1);
+      expect(result.profile.categories[k]).toBeGreaterThanOrEqual(0);
+      expect(result.profile.categories[k]).toBeLessThanOrEqual(1);
     }
   });
 
-  it("모델이 없으면(404) 다음 후보 모델로 재시도한다", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(jsonResponse({ error: { code: 404, message: "models/old-model is not found", status: "NOT_FOUND" } }, 404))
-      .mockResolvedValueOnce(jsonResponse(geminiBody(validProfile)));
-    vi.stubGlobal("fetch", fetchMock);
-    const { GeminiProvider } = await import("@/lib/providers/ai/GeminiProvider");
-    const provider = new GeminiProvider("test-key-1234567890abcdefgh", "old-model");
-    await provider.analyzeProfile({ instagram: null, items: ["드립커피", "캠핑 의자", "빈티지 소품"] });
-    expect(String(fetchMock.mock.calls[1]![0])).toContain("/models/gemini-flash-latest:generateContent");
-    expect(provider.model).toBe("gemini-flash-latest");
-  });
-
-  it("비어 있는 취향 vector는 거부한다", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => jsonResponse(geminiBody({ ...validProfile, taste_vector: emptyVector() }))));
+  it("사용자가 말한 예산은 규칙 파싱 값을 우선한다", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => jsonResponse(geminiBody({ ...validPreference, context: { ...validPreference.context, budget_max: 500000 } }))),
+    );
     const { GeminiProvider } = await import("@/lib/providers/ai/GeminiProvider");
     const provider = new GeminiProvider("test-key-1234567890abcdefgh", "gemini-flash-latest");
-    await expect(provider.analyzeProfile({ instagram: null, items: ["a", "b", "c"] })).rejects.toThrow();
+    const messages: ChatMessage[] = [INTERVIEW_GREETING, { role: "user", text: "친구 생일 선물, 2만원 정도로 찾고 있어요" }];
+    const result = await provider.analyzePreferences({ mode: "chat", messages, keywords: [], known: extractSlots(messages) });
+    expect(result.profile.budget?.max).toBe(20000);
   });
 
-  it("추천 이유에서 가격·전화번호·허용되지 않은 점포는 버린다", async () => {
+  it("잘못된 응답(JSON 아님)은 오류로 처리한다", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => jsonResponse({ candidates: [{ content: { parts: [{ text: "죄송해요, JSON을 만들 수 없어요" }] }, finishReason: "STOP" }] })),
+    );
+    const { GeminiProvider } = await import("@/lib/providers/ai/GeminiProvider");
+    const provider = new GeminiProvider("test-key-1234567890abcdefgh", "gemini-flash-latest");
+    await expect(provider.analyzePreferences({ mode: "keywords", messages: [], keywords: ["선물"], known: extractSlots([]) })).rejects.toThrow();
+  });
+
+  it("추천 이유는 요청한 점포 id만, 위험한 표현은 빼고 돌려준다", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () =>
         jsonResponse(
           geminiBody({
             reasons: [
-              { store_id: "jm-001", reason: "패션 취향과 잘 맞는 여성복 점포예요. 둘러보기 좋아요." },
-              { store_id: "jm-002", reason: "지금 30,000원 할인 중인 옷이 있어요." },
-              { store_id: "jm-003", reason: "30년 전통을 이어온 원조 가게라 믿고 살 수 있어요." },
-              { store_id: "jm-004", reason: "대전에서 유일한 곳으로 오전 9시부터 문을 열어요." },
-              { store_id: "jm-999", reason: "존재하지 않는 점포에 대한 설명이에요." },
+              { store_id: "dj-001", reason: "선물하기 좋은 품목을 다뤄요." },
+              { store_id: "dj-002", reason: "전화 042-123-4567로 문의하세요." },
+              { store_id: "dj-003", reason: "대전 최초·유일한 원조 맛집이에요." },
+              { store_id: "dj-999", reason: "요청하지 않은 점포" },
             ],
           }),
         ),
@@ -100,98 +126,138 @@ describe("GeminiProvider (fetch mock)", () => {
     const provider = new GeminiProvider("test-key-1234567890abcdefgh", "gemini-flash-latest");
     const reasons = await provider.generateReasons({
       personaLabel: null,
-      userTop: [{ key: "fashion", score: 0.9 }],
-      stores: ["jm-001", "jm-002", "jm-003", "jm-004"].map((id) => ({
+      summary: null,
+      intentLabel: null,
+      userTop: [{ key: "gift", score: 0.9 }],
+      stores: ["dj-001", "dj-002", "dj-003", "dj-004"].map((id) => ({
         id,
         name: id,
-        storeType: "여성복",
-        entityLabel: "개별 점포",
-        category: "패션·의류",
-        confirmedItems: ["여성복"],
-        matchedTastes: ["fashion"],
+        storeType: "잡화·악세서리",
+        entityLabel: "점포",
+        category: "주거·생활 > 생활용품",
+        confirmedItems: ["잡화"],
+        matchedTastes: ["gift"],
         locationNote: "",
       })),
     });
-    expect(Object.keys(reasons)).toEqual(["jm-001"]);
+    expect(Object.keys(reasons)).toEqual(["dj-001"]);
   });
 
   it("키가 잘못되면 fallback으로 데모 AI 결과를 돌려준다", async () => {
     vi.stubEnv("GEMINI_API_KEY", "invalid-key-1234567890abcdef");
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => jsonResponse({ error: { code: 400, message: "API key not valid. Please pass a valid API key.", status: "INVALID_ARGUMENT", details: [{ reason: "API_KEY_INVALID" }] } }, 400)),
+      vi.fn(async () =>
+        jsonResponse({ error: { code: 400, message: "API key not valid. Please pass a valid API key.", status: "INVALID_ARGUMENT", details: [{ reason: "API_KEY_INVALID" }] } }, 400),
+      ),
     );
-    const { analyzeProfileWithFallback } = await import("@/lib/providers/ai");
-    const res = await analyzeProfileWithFallback({ instagram: null, items: ["드립커피", "캠핑 의자", "빈티지 소품"] });
+    const { analyzePreferencesWithFallback } = await import("@/lib/providers/ai");
+    const res = await analyzePreferencesWithFallback({ mode: "keywords", messages: [], keywords: ["커피", "빈티지"], known: extractSlots([]) });
     expect(res.provider).toBe("mock");
     expect(res.fallbackReason).toContain("API 키");
-    expect(res.result.tasteVector.coffee).toBeGreaterThan(0.5);
+    expect(res.result.profile.categories.coffee).toBeGreaterThan(0.5);
   });
 });
 
-describe("Instagram API adapter (fetch mock)", () => {
-  beforeEach(() => vi.resetModules());
+describe("AI 인터뷰", () => {
+  it("MockGeminiProvider는 아직 모르는 항목을 물어보고, 충분히 들으면 끝낸다", async () => {
+    const { MockGeminiProvider } = await import("@/lib/providers/ai/MockGeminiProvider");
+    const provider = new MockGeminiProvider();
+    const first = await provider.interviewTurn(interviewInput([INTERVIEW_GREETING, { role: "user", text: "친구 생일 선물을 찾고 있어요" }]));
+    expect(first.reply.length).toBeGreaterThan(0);
+    expect(first.done).toBe(false);
 
-  it("authorize URL에 필수 파라미터를 넣는다", async () => {
-    const { buildAuthorizeUrl } = await import("@/lib/providers/instagram/instagramApi");
-    const url = new URL(buildAuthorizeUrl({ appId: "123456789", redirectUri: "https://example.com/api/instagram/callback", state: "abc", scopes: ["instagram_business_basic"] }));
-    expect(url.origin + url.pathname).toBe("https://www.instagram.com/oauth/authorize");
-    expect(url.searchParams.get("client_id")).toBe("123456789");
-    expect(url.searchParams.get("response_type")).toBe("code");
-    expect(url.searchParams.get("scope")).toBe("instagram_business_basic");
-    expect(url.searchParams.get("state")).toBe("abc");
+    const messages: ChatMessage[] = [
+      INTERVIEW_GREETING,
+      { role: "user", text: "친구 생일 선물을 찾고 있어요" },
+      { role: "assistant", text: first.reply },
+      { role: "user", text: "2만원 정도요" },
+      { role: "assistant", text: "어떤 스타일이 좋으세요?" },
+      { role: "user", text: "대전에서만 볼 수 있는 독특한 상품이 좋아요" },
+      { role: "assistant", text: "누구와 함께 가시나요?" },
+      { role: "user", text: "친구랑 같이 가요" },
+      { role: "assistant", text: "마지막으로 더 알려주실 게 있을까요?" },
+      { role: "user", text: "없어요" },
+    ];
+    const last = await provider.interviewTurn(interviewInput(messages));
+    expect(last.done).toBe(true);
   });
 
-  it("토큰 응답의 두 가지 형식과 큰 user_id를 처리하고 '#_'를 제거한다", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(new Response('{"data":[{"access_token":"IGQ-short","user_id":17841400000000123,"permissions":"instagram_business_basic"}]}'))
-      .mockResolvedValueOnce(new Response('{"access_token":"IGQ-short2","user_id":"17841400000000999","permissions":["instagram_business_basic"]}'));
-    vi.stubGlobal("fetch", fetchMock);
-    const { exchangeCodeForToken } = await import("@/lib/providers/instagram/instagramApi");
-    const a = await exchangeCodeForToken({ appId: "1", appSecret: "s", redirectUri: "https://x/cb", code: "CODE123#_" });
-    expect(a).toEqual({ accessToken: "IGQ-short", userId: "17841400000000123", permissions: ["instagram_business_basic"] });
-    const body = fetchMock.mock.calls[0]![1]!.body as URLSearchParams;
-    expect(body.get("code")).toBe("CODE123");
-    expect(body.get("grant_type")).toBe("authorization_code");
-    const b = await exchangeCodeForToken({ appId: "1", appSecret: "s", redirectUri: "https://x/cb", code: "C" });
-    expect(b.userId).toBe("17841400000000999");
-    expect(b.permissions).toEqual(["instagram_business_basic"]);
+  it("규칙 파서가 예산·동행·목적을 뽑아낸다", async () => {
+    const slots = extractSlots([
+      INTERVIEW_GREETING,
+      { role: "user", text: "친구 생일 선물을 찾고 있어요" },
+      { role: "assistant", text: "예산은 어느 정도 생각하고 계세요?" },
+      { role: "user", text: "2만원 정도요" },
+    ]);
+    expect(slots.budget?.max).toBe(20000);
+    expect(slots.intent).toBe("birthday_gift");
+    expect(slots.companion).toBe("friend");
   });
 
-  it("OAuth 오류를 인증 오류로 분류한다", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => jsonResponse({ error: { message: "Invalid OAuth access token", type: "OAuthException", code: 190 } }, 400)));
-    const { fetchProfile, InstagramApiError } = await import("@/lib/providers/instagram/instagramApi");
-    const err = await fetchProfile({ accessToken: "bad", version: null }).catch((e) => e);
-    expect(err).toBeInstanceOf(InstagramApiError);
-    expect(err.isAuthError).toBe(true);
-  });
-
-  it("본인 게시물 캡션에서 관심 키워드를 뽑는다", async () => {
+  it("Gemini가 이미 답한 것을 또 묻거나 너무 일찍 끝내려 하면 서버 규칙이 이긴다", async () => {
+    vi.stubEnv("GEMINI_API_KEY", "test-key-1234567890abcdefgh");
     vi.stubGlobal(
       "fetch",
-      vi
-        .fn()
-        .mockResolvedValueOnce(new Response('{"id":"26000000000000001","user_id":"17841400000000123","username":"market_lover","account_type":"BUSINESS","media_count":3}'))
-        .mockResolvedValueOnce(
-          jsonResponse({
-            data: [
-              { id: "1", caption: "주말 #캠핑 에서 내린 #드립커피", media_type: "IMAGE", timestamp: "2026-09-10T00:00:00+0000" },
-              { id: "2", caption: "빈티지 소품 구경 #빈티지 #대전", media_type: "IMAGE", timestamp: "2026-09-01T00:00:00+0000" },
-              { id: "3", caption: null, media_type: "VIDEO", timestamp: "2026-08-01T00:00:00+0000" },
-            ],
-          }),
-        ),
+      vi.fn(async () =>
+        jsonResponse(geminiBody({ reply: "충분히 들었어요!", next_slot: null, done: true, suggestions: [], extracted: { looking_for: null, intent: null, intent_label: null, companion: null, occasion: null, preferred_style: [], discovery_preference: null } })),
+      ),
     );
-    const api = await import("@/lib/providers/instagram/instagramApi");
-    const { extractInterests } = await import("@/lib/providers/instagram/keywordExtractor");
-    const profile = await api.fetchProfile({ accessToken: "t", version: "v24.0" });
-    expect(profile).toMatchObject({ id: "26000000000000001", userId: "17841400000000123", username: "market_lover", accountType: "BUSINESS" });
-    const media = await api.fetchRecentMedia({ accessToken: "t", version: "v24.0" });
-    const interests = extractInterests(media);
-    const keywords = interests.map((i) => i.keyword);
-    expect(keywords).toEqual(expect.arrayContaining(["캠핑", "드립커피", "빈티지"]));
-    for (const i of interests) expect(i.score).toBeLessThanOrEqual(0.95);
+    const { runInterviewTurn } = await import("@/lib/services/preferenceService");
+    const turn = await runInterviewTurn([INTERVIEW_GREETING, { role: "user", text: "선물 찾고 있어요" }]);
+    // 답변이 1개뿐이므로 종료하지 않고 규칙 질문으로 되돌립니다.
+    expect(turn.done).toBe(false);
+    expect(turn.provider).toBe("rule");
+  });
+});
+
+describe("상인 AI 홍보 도우미", () => {
+  it("원본 품목만 confirmed로 두고 확인할 수 없는 단정 표현은 제거한다", async () => {
+    const { sanitizePromo, isSafePromoText } = await import("@/lib/merchant/promo");
+    const cleaned = sanitizePromo(
+      {
+        interestSummary: "선물 취향 손님이 많아요.",
+        conversionInsight: "30% 할인 행사를 하세요.",
+        displayIdeas: [
+          { title: "건어물 선물 세트", detail: "건어물을 소포장해 보세요.", basis: "confirmed", items: ["건어물"] },
+          { title: "40년 전통 강조", detail: "40년 전통을 앞세워 보세요.", basis: "idea", items: [] },
+          { title: "커피 사이드 메뉴", detail: "커피를 함께 팔아 보세요.", basis: "confirmed", items: ["커피"] },
+        ],
+        keywords: ["#대전중앙시장", "선물추천", "###"],
+        snsCopy: "042-123-4567로 문의하세요",
+        eventIdeas: [{ title: "주말 이벤트", detail: "주말 방문 손님께 안내해 보세요." }],
+      },
+      ["건어물", "반찬"],
+    );
+    expect(cleaned.conversionInsight).not.toContain("30%");
+    expect(cleaned.displayIdeas.map((i) => i.title)).not.toContain("40년 전통 강조");
+    expect(cleaned.displayIdeas.find((i) => i.title === "건어물 선물 세트")?.basis).toBe("confirmed");
+    // 원본 품목에 없는 '커피'는 아이디어로 강등됩니다.
+    expect(cleaned.displayIdeas.find((i) => i.title === "커피 사이드 메뉴")?.basis).toBe("idea");
+    expect(cleaned.snsCopy).toBe("");
+    expect(cleaned.keywords).toContain("#선물추천");
+    expect(isSafePromoText("평점 4.9의 맛집")).toBe(false);
+  });
+
+  it("템플릿 초안도 같은 규칙을 지킨다", async () => {
+    const { templatePromo } = await import("@/lib/merchant/promo");
+    const draft = templatePromo({
+      store: { id: "dj-001", name: "테스트상회", category: "식품·요리 > 건어물·반찬", entityLabel: "점포", confirmedItems: ["건어물", "반찬"], locationNote: "" },
+      period: "최근 7일",
+      interestTop: [
+        { key: "gift", label: "선물", share: 27 },
+        { key: "local", label: "로컬", share: 21 },
+      ],
+      lowConversion: [{ key: "gift", label: "선물", interestShare: 27, visitShare: 12 }],
+      metrics: { interestUsers: 120, visits: 40, likes: 10, saves: 6 },
+    });
+    expect(draft.interestSummary).toContain("테스트상회");
+    expect(draft.displayIdeas[0]?.basis).toBe("confirmed");
+    expect(draft.keywords).toContain("#대전중앙시장");
+    for (const text of [draft.interestSummary, draft.conversionInsight, draft.snsCopy, ...draft.displayIdeas.map((i) => `${i.title} ${i.detail}`)]) {
+      expect(text).not.toMatch(/\d+\s*%\s*(할인|세일)/);
+      expect(text).not.toMatch(/원조|유일한|최초/);
+    }
   });
 });
 
@@ -220,86 +286,25 @@ describe("Kakao Local (fetch mock)", () => {
   });
 });
 
-describe("캡션 키워드 추출", () => {
-  it("긴 단어를 우선해 '닭강정'에서 '강정'을 따로 뽑지 않는다", async () => {
-    const { extractInterests } = await import("@/lib/providers/instagram/keywordExtractor");
-    const keywords = extractInterests([
-      { caption: "중앙시장 닭강정 맛집 발견", timestamp: "2026-09-10T00:00:00+0000" },
-      { caption: "떡볶이 먹고 전통시장 구경", timestamp: "2026-09-09T00:00:00+0000" },
-    ]).map((i) => i.keyword);
-    expect(keywords).toEqual(expect.arrayContaining(["닭강정", "떡볶이", "전통시장", "중앙시장", "맛집"]));
-    expect(keywords).not.toContain("강정");
-    expect(keywords).not.toContain("떡");
-    expect(keywords).not.toContain("시장");
-  });
-});
-
-describe("Instagram 토큰 갱신 (로컬 저장소)", () => {
-  it("만료 임박 토큰을 갱신하면 새 토큰·만료일을 저장하고 이전 값으로 되돌리지 않는다", async () => {
-    const { randomUUID } = await import("node:crypto");
-    const { getRepository } = await import("@/lib/db");
-    const { encryptString, decryptString } = await import("@/lib/security/crypto");
-    const { RealInstagramDataProvider } = await import("@/lib/providers/instagram/RealInstagramDataProvider");
-    const userId = randomUUID();
-    const repo = getRepository();
-    const oldExpiry = new Date(Date.now() + 3 * 86_400_000).toISOString();
-    await repo.upsertSocialConnection({
-      userId,
-      provider: "instagram",
-      status: "connected",
-      externalUserId: "17841400000000123",
-      username: "old_name",
-      accountType: "BUSINESS",
-      signals: null,
-      tokenEncrypted: encryptString("OLD_TOKEN", "instagram-token"),
-      tokenExpiresAt: oldExpiry,
-      updatedAt: new Date().toISOString(),
-    });
-    const usedTokens: string[] = [];
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async (input: string | URL | Request) => {
-        const url = new URL(String(input));
-        usedTokens.push(`${url.pathname}:${url.searchParams.get("access_token")}`);
-        if (url.pathname.endsWith("/refresh_access_token")) return jsonResponse({ access_token: "NEW_TOKEN", token_type: "bearer", expires_in: 5_184_000 });
-        if (url.pathname.endsWith("/me/media"))
-          return jsonResponse({ data: [{ id: "1", caption: "주말 #캠핑 #커피", media_type: "IMAGE", timestamp: "2026-09-10T00:00:00+0000" }] });
-        if (url.pathname.endsWith("/me")) return jsonResponse({ id: "1", user_id: "17841400000000123", username: "new_name", account_type: "BUSINESS", media_count: 1 });
-        return jsonResponse({ error: { message: "unexpected" } }, 404);
-      }),
-    );
-    const provider = new RealInstagramDataProvider({ appId: "123", appSecret: "secret-secret", redirectUri: null, graphVersion: "v24.0" });
-    const data = await provider.getProfileData(userId);
-    expect(data.username).toBe("new_name");
-    expect(usedTokens.find((t) => t.endsWith("/me:NEW_TOKEN"))).toBeTruthy();
-
-    const saved = await repo.getSocialConnection(userId, "instagram");
-    expect(saved?.username).toBe("new_name");
-    expect(decryptString(saved!.tokenEncrypted!, "instagram-token")).toBe("NEW_TOKEN");
-    expect(Date.parse(saved!.tokenExpiresAt!)).toBeGreaterThan(Date.parse(oldExpiry));
-    await repo.deleteUserData(userId);
-  });
-});
-
 describe("행동 이력 병합", () => {
   it("서버에 기록된 좋아요·관심 없음과 조회수를 브라우저 상태에 합친다", async () => {
     const { mergeInteractionState, feedbackFromState } = await import("@/lib/services/recommendationService");
     const events = [
-      { storeId: "jm-001", type: "like" as const, active: true, createdAt: "2026-09-01T00:00:00Z" },
-      { storeId: "jm-002", type: "dismiss" as const, active: true, createdAt: "2026-09-01T00:00:00Z" },
-      { storeId: "jm-003", type: "bookmark" as const, active: true, createdAt: "2026-09-01T00:00:00Z" },
-      { storeId: "jm-003", type: "bookmark" as const, active: false, createdAt: "2026-09-02T00:00:00Z" },
-      { storeId: "jm-004", type: "view" as const, active: true, createdAt: "2026-09-02T00:00:00Z" },
-      { storeId: "jm-004", type: "view" as const, active: true, createdAt: "2026-09-03T00:00:00Z" },
+      { storeId: "dj-001", type: "like" as const, active: true, createdAt: "2026-09-01T00:00:00Z" },
+      { storeId: "dj-002", type: "dismiss" as const, active: true, createdAt: "2026-09-01T00:00:00Z" },
+      { storeId: "dj-003", type: "bookmark" as const, active: true, createdAt: "2026-09-01T00:00:00Z" },
+      { storeId: "dj-003", type: "bookmark" as const, active: false, createdAt: "2026-09-02T00:00:00Z" },
+      { storeId: "dj-004", type: "view" as const, active: true, createdAt: "2026-09-02T00:00:00Z" },
+      { storeId: "dj-004", type: "view" as const, active: true, createdAt: "2026-09-03T00:00:00Z" },
     ];
-    const merged = mergeInteractionState({ liked: ["jm-005"], bookmarked: [], visited: [], dismissed: [] }, events);
-    expect(merged.liked.sort()).toEqual(["jm-001", "jm-005"]);
-    expect(merged.dismissed).toEqual(["jm-002"]);
+    const merged = mergeInteractionState({ liked: ["dj-005"], bookmarked: [], visited: [], dismissed: [] }, events);
+    expect(merged.liked.sort()).toEqual(["dj-001", "dj-005"]);
+    expect(merged.dismissed).toEqual(["dj-002"]);
     expect(merged.bookmarked).toEqual([]);
     const feedback = feedbackFromState(merged, events);
-    expect(feedback["jm-001"]).toBe(0.5);
-    expect(feedback["jm-002"]).toBe(-1);
-    expect(feedback["jm-004"]).toBeCloseTo(0.1);
+    expect(feedback["dj-001"]).toBe(0.5);
+    expect(feedback["dj-002"]).toBe(-1);
+    expect(feedback["dj-004"]).toBeCloseTo(0.1);
   });
 });
 

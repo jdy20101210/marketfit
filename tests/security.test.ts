@@ -1,7 +1,5 @@
-import { createHmac } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { decryptString, encryptString, parseMetaSignedRequest, safeEqual, signPayload, verifyPayload } from "@/lib/security/crypto";
-import { sanitizeNextPath } from "@/lib/services/instagramSession";
+import { decryptString, encryptString, safeEqual, signPayload, verifyPayload } from "@/lib/security/crypto";
 import { assertSameOrigin, getRequestOrigin } from "@/lib/http";
 
 describe("암호화·서명", () => {
@@ -30,29 +28,9 @@ describe("암호화·서명", () => {
     expect(safeEqual("abc", "abcd")).toBe(false);
   });
 
-  it("Meta signed_request 검증", () => {
-    const secret = "0123456789abcdef0123456789abcdef";
-    const payload = Buffer.from(JSON.stringify({ algorithm: "HMAC-SHA256", user_id: "17841400000000123", issued_at: 1 })).toString("base64url");
-    const sig = createHmac("sha256", secret).update(payload).digest("base64url");
-    expect(parseMetaSignedRequest<{ user_id: string }>(`${sig}.${payload}`, secret)?.user_id).toBe("17841400000000123");
-    expect(parseMetaSignedRequest(`${sig}.${payload}`, "wrong-secret")).toBeNull();
-  });
 });
 
 describe("요청 검증", () => {
-  it("리디렉션 경로는 사이트 내부 경로만 허용", () => {
-    expect(sanitizeNextPath("/onboarding?mode=both")).toBe("/onboarding?mode=both");
-    expect(sanitizeNextPath("https://evil.example")).toBe("/onboarding");
-    expect(sanitizeNextPath("//evil.example")).toBe("/onboarding");
-    expect(sanitizeNextPath("/\\evil")).toBe("/onboarding");
-    // URL 파서가 지우는 탭·개행으로 `//evil.com`을 만드는 우회 시도
-    expect(sanitizeNextPath("/\t/evil.example")).toBe("/onboarding");
-    expect(sanitizeNextPath("/\n/evil.example")).toBe("/onboarding");
-    expect(sanitizeNextPath("/\r/evil.example")).toBe("/onboarding");
-    expect(sanitizeNextPath("/%2F/evil.example")).toBe("/%2F/evil.example");
-    expect(sanitizeNextPath("/profile#x")).toBe("/profile");
-  });
-
   it("프록시 헤더로 외부 origin을 계산", () => {
     const req = new Request("http://localhost:3000/api/x", { headers: { host: "localhost:3000", "x-forwarded-host": "marketfit.vercel.app", "x-forwarded-proto": "https" } });
     expect(getRequestOrigin(req)).toBe("https://marketfit.vercel.app");
@@ -72,9 +50,8 @@ describe("연동 설정 저장", () => {
     vi.stubEnv("KAKAO_REST_API_KEY", "envkey0123456789abcdef");
     const { saveIntegrations, getIntegrations, validateIntegrationValue } = await import("@/lib/config/integrations");
     const { getRepository } = await import("@/lib/db");
-    expect(validateIntegrationValue("META_APP_ID", "abc")).not.toBeNull();
-    expect(validateIntegrationValue("INSTAGRAM_REDIRECT_URI", "http://example.com/cb")).not.toBeNull();
-    expect(validateIntegrationValue("INSTAGRAM_REDIRECT_URI", "https://example.com/api/instagram/callback")).toBeNull();
+    expect(validateIntegrationValue("GEMINI_API_KEY", "짧음")).not.toBeNull();
+    expect(validateIntegrationValue("KAKAO_JS_KEY", "0123456789abcdef")).toBeNull();
 
     const result = await saveIntegrations({ GEMINI_API_KEY: "AIzaTestKey0123456789abcdef", KAKAO_REST_API_KEY: "adminkey0123456789abcd" });
     expect(result.saved).toContain("GEMINI_API_KEY");
@@ -130,13 +107,35 @@ describe("요청 한도 (클라이언트 식별)", () => {
 });
 
 describe("입력 검증", () => {
-  it("띄어쓰기만 다른 관심 상품 중복을 거부하고 한국어로 안내한다", async () => {
+  it("띄어쓰기만 다른 키워드 중복을 거부하고 한국어로 안내한다", async () => {
     const { AnalyzeRequestSchema } = await import("@/lib/api/schemas");
-    const dup = AnalyzeRequestSchema.safeParse({ items: ["캠핑 의자", "캠핑의자", "커피"], instagram: null });
+    const dup = AnalyzeRequestSchema.safeParse({ mode: "keywords", messages: [], keywords: ["캠핑 의자", "캠핑의자", "커피"] });
     expect(dup.success).toBe(false);
-    expect(dup.error?.issues[0]?.message).toBe("같은 관심 상품이 중복되었어요");
-    const wrongType = AnalyzeRequestSchema.safeParse({ items: [1, 2, 3], instagram: null });
+    expect(dup.error?.issues[0]?.message).toBe("같은 키워드가 중복되었어요");
+    const wrongType = AnalyzeRequestSchema.safeParse({ mode: "keywords", messages: [], keywords: [1, 2, 3] });
     expect(wrongType.error?.issues[0]?.message).toMatch(/[가-힣]/);
-    expect(AnalyzeRequestSchema.safeParse({ items: ["드립커피", "캠핑 의자", "빈티지 소품"], instagram: null }).success).toBe(true);
+    expect(AnalyzeRequestSchema.safeParse({ mode: "keywords", messages: [], keywords: ["드립커피", "캠핑 의자", "빈티지 소품"] }).success).toBe(true);
+  });
+
+  it("대화 모드는 질문·답변이 번갈아 나와야 한다", async () => {
+    const { AnalyzeRequestSchema } = await import("@/lib/api/schemas");
+    const bad = AnalyzeRequestSchema.safeParse({
+      mode: "chat",
+      messages: [
+        { role: "user", text: "선물 찾아요" },
+        { role: "user", text: "2만원" },
+      ],
+      keywords: [],
+    });
+    expect(bad.success).toBe(false);
+    const good = AnalyzeRequestSchema.safeParse({
+      mode: "chat",
+      messages: [
+        { role: "assistant", text: "무엇을 찾고 계세요?" },
+        { role: "user", text: "친구 생일 선물이요" },
+      ],
+      keywords: [],
+    });
+    expect(good.success).toBe(true);
   });
 });
