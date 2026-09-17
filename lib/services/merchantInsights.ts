@@ -1,160 +1,184 @@
 import "server-only";
 import { getRepository } from "@/lib/db";
-import type { InteractionType, MerchantInsightRecord } from "@/lib/db/types";
-import { topTastes, type TasteKey, type TasteVector } from "@/lib/recommendation/dimensions";
-import { cosineSimilarity } from "@/lib/recommendation/engine";
-import { vectorFromKeywords } from "@/lib/recommendation/keywords";
-import { MOCK_PERSONAS } from "@/lib/providers/instagram/personas";
-import { getStores } from "@/lib/stores/catalog";
+import type { InteractionType } from "@/lib/db/types";
+import { MARKET_INTEREST_META, recentInterestShares, risingInterests, type InterestShare } from "@/lib/mock/marketInterest";
+import { TASTE_META, topTastes, type TasteKey, type TasteVector } from "@/lib/recommendation/dimensions";
+import { COSINE_EXCLUDED_KEYS } from "@/lib/recommendation/engine";
+import { getStores, MOCK_ACTIVITY_META } from "@/lib/stores/catalog";
+import { categoryPath } from "@/lib/stores/description";
+import { ENTITY_KIND_LABEL } from "@/lib/stores/parse";
+import type { Store } from "@/lib/stores/types";
 
-/** 개인을 특정할 수 없도록 이 인원 미만이면 실제 집계를 공개하지 않습니다. */
+/**
+ * 상인·시장 인사이트 (집계 전용)
+ * - 개인 식별 정보(이름·세션 id·대화 원문)는 어떤 경로로도 반환하지 않습니다.
+ * - 실제 이용자 수가 MIN_USERS_FOR_INSIGHTS 미만이면 실제 취향 분포 대신 프로토타입 가상 집계만 보여줍니다.
+ */
 export const MIN_USERS_FOR_INSIGHTS = 5;
+export const INSIGHT_DAYS = 7;
+
+export interface InterestRow {
+  key: TasteKey;
+  label: string;
+  emoji: string;
+  /** 0~100 (%) */
+  share: number;
+  /** 직전 같은 기간 대비 증감률 (0.12 = +12%) */
+  change: number | null;
+}
+
+export interface StoreMetrics {
+  storeId: string;
+  name: string;
+  category: string;
+  entityLabel: string;
+  /** 관심 사용자 수 (가상 집계 + 실제 기록) */
+  interestUsers: number;
+  visits: number;
+  likes: number;
+  saves: number;
+  /** 실제 기록에서 더해진 수치 (0이면 전부 가상 집계) */
+  real: { view: number; like: number; bookmark: number; visit: number };
+}
 
 export interface MerchantInsights {
   scope: "market" | "store";
   storeId: string | null;
+  period: string;
+  /** 실제 이용자 취향 분포가 아니라 프로토타입 가상 집계인지 */
   isMock: boolean;
   distinctUsers: number | null;
   minUsers: number;
-  tasteShare: { key: TasteKey; share: number }[];
-  interactionCounts: Partial<Record<InteractionType, number>>;
-  productIdeas: string[];
+  notice: string;
+  /** 최근 7일 관심 분포 (상위) */
+  interest: InterestRow[];
+  rising: InterestRow[];
+  /** 관심 대비 방문이 낮은 분야 */
+  lowConversion: { key: TasteKey; label: string; interestShare: number; visitShare: number }[];
+  metrics: StoreMetrics | null;
+  /** 시장 전체 화면용 — 점포별 관심/방문 차이 상위 */
+  storeGaps: { storeId: string; name: string; category: string; interestUsers: number; visits: number; ratio: number }[];
   generatedAt: string;
 }
 
-const IDEAS: Record<TasteKey, string> = {
-  gift: "선물용 소포장·묶음 구성",
-  traditional: "전통 품목을 소개하는 체험형 진열",
-  camping: "캠핑·야외용 소형 구성 제안",
-  coffee: "홈카페 테마 진열",
-  travel: "여행객용 지역 기념품 패키지",
-  local: "지역 특산품 체험형 패키지",
-  family: "가족 단위 생활 묶음 구성",
-  date: "커플·친구용 2인 구성",
-  vintage: "레트로 감성 진열·포토존",
-  craft: "자투리 원단 DIY 키트",
-  food: "시장 먹거리 맛보기 소포장",
-  dessert: "간식 소포장·테이크아웃 구성",
-  fashion: "코디 제안 세트",
-  accessory: "잡화 코디 추천 진열",
-  living: "계절 인테리어 추천 진열",
-  kitchen: "1~2인 가구 주방 스타터 구성",
-  practical: "실속 묶음 구성",
-  discovery: "처음 오는 손님을 위한 대표 품목 안내판",
-  price_sensitive: "가격대별 추천 진열",
-};
-
-function shareFromVectors(vectors: TasteVector[]): { key: TasteKey; share: number }[] {
-  const acc: Record<string, number> = {};
-  for (const v of vectors) for (const t of topTastes(v, 3, 0.3)) acc[t.key] = (acc[t.key] ?? 0) + t.score;
-  const top = Object.entries(acc)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5) as [TasteKey, number][];
-  const total = top.reduce((s, [, w]) => s + w, 0) || 1;
-  const shares = top.map(([key, w]) => ({ key, share: Math.round((w / total) * 100) }));
-  // 반올림 오차 보정 (합계 100)
-  const diff = 100 - shares.reduce((s, x) => s + x.share, 0);
-  if (shares[0]) shares[0].share += diff;
-  return shares;
+function toRow(s: InterestShare): InterestRow {
+  return { key: s.key, label: s.label, emoji: s.emoji, share: Math.round(s.share * 1000) / 10, change: s.change };
 }
 
-/**
- * 데모 데이터: 데모 페르소나 6종의 취향 vector를 점포 성향과의 유사도로 가중해 만든 가상 분포.
- * 실제 이용자 데이터가 최소 인원 이상 쌓이면 사용되지 않습니다.
- */
-function mockInsights(storeTaste: TasteVector | null, storeId: string | null): Omit<MerchantInsights, "generatedAt"> {
-  const personas = MOCK_PERSONAS.map((p) => vectorFromKeywords(p.interests).vector);
-  const weighted: TasteVector[] = [];
-  for (const v of personas) {
-    const w = storeTaste ? cosineSimilarity(v, storeTaste) : 1;
-    const copies = Math.max(1, Math.round(w * 4));
-    for (let i = 0; i < copies; i++) weighted.push(v);
+/** 실제 이용자 취향 vector들의 분포 (상위 취향 기준 가중 합계) */
+function shareFromVectors(vectors: TasteVector[]): InterestRow[] {
+  const acc = new Map<TasteKey, number>();
+  for (const v of vectors) for (const t of topTastes(v, 3, 0.3)) acc.set(t.key, (acc.get(t.key) ?? 0) + t.score);
+  const rows = [...acc.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const total = rows.reduce((s, [, w]) => s + w, 0) || 1;
+  return rows.map(([key, w]) => ({ key, label: TASTE_META[key].label, emoji: TASTE_META[key].emoji, share: Math.round((w / total) * 1000) / 10, change: null }));
+}
+
+/** 점포 취향 성향을 방문 수로 가중해 만든 '방문 분포' — 관심 대비 방문이 낮은 분야를 찾는 데 씁니다. */
+function visitShares(stores: Store[], counts: Record<string, Partial<Record<InteractionType, number>>>): Map<TasteKey, number> {
+  const acc = new Map<TasteKey, number>();
+  let total = 0;
+  for (const store of stores) {
+    const real = counts[store.id] ?? {};
+    const visits = store.activity.visitCount + (real.visit ?? 0) + (real.view ?? 0) * 0.2;
+    if (visits <= 0) continue;
+    for (const t of topTastes(store.features.taste, 3, 0.3)) {
+      acc.set(t.key, (acc.get(t.key) ?? 0) + visits * t.score);
+      total += visits * t.score;
+    }
   }
-  const tasteShare = shareFromVectors(weighted);
-  const seed = [...(storeId ?? "market")].reduce((s, c) => s + c.charCodeAt(0), 0);
+  if (total > 0) for (const [k, v] of acc) acc.set(k, v / total);
+  return acc;
+}
+
+function metricsFor(store: Store, real: Partial<Record<InteractionType, number>>): StoreMetrics {
+  const counts = { view: real.view ?? 0, like: real.like ?? 0, bookmark: real.bookmark ?? 0, visit: real.visit ?? 0 };
   return {
-    scope: storeId ? "store" : "market",
-    storeId,
-    isMock: true,
-    distinctUsers: null,
-    minUsers: MIN_USERS_FOR_INSIGHTS,
-    tasteShare,
-    interactionCounts: { view: 40 + (seed % 60), like: 8 + (seed % 12), bookmark: 5 + (seed % 9), visit: 2 + (seed % 6) },
-    productIdeas: [...new Set(tasteShare.slice(0, 3).map((t) => IDEAS[t.key]))],
+    storeId: store.id,
+    name: store.name,
+    category: categoryPath(store.mainCategory, store.subCategory),
+    entityLabel: ENTITY_KIND_LABEL[store.entityKind],
+    interestUsers: store.activity.interestUsers + counts.view + counts.like + counts.bookmark,
+    visits: store.activity.visitCount + counts.visit,
+    likes: store.activity.likeCount + counts.like,
+    saves: store.activity.saveCount + counts.bookmark,
+    real: counts,
   };
 }
 
-/** 실제 집계 스냅샷을 재사용하는 시간 (merchant_insights 테이블) */
-const SNAPSHOT_TTL_MS = 5 * 60 * 1000;
-
-function fromSnapshot(r: MerchantInsightRecord): MerchantInsights {
-  return {
-    scope: r.storeId ? "store" : "market",
-    storeId: r.storeId,
-    isMock: r.isMock,
-    distinctUsers: r.distinctUsers,
-    minUsers: MIN_USERS_FOR_INSIGHTS,
-    tasteShare: r.tasteDistribution,
-    interactionCounts: r.interactionCounts,
-    productIdeas: r.productIdeas,
-    generatedAt: r.createdAt,
-  };
+function sinceIso(days: number): string {
+  return new Date(Date.now() - days * 86_400_000).toISOString();
 }
-
-const toDate = (iso: string) => iso.slice(0, 10);
 
 /**
- * 상인 인사이트 (익명 집계)
- * 1) 5분 이내의 실제 집계 스냅샷이 있으면 재사용
- * 2) 긍정 행동(좋아요·찜·방문)을 남긴 서로 다른 이용자가 5명 이상이면 취향 분포를 집계해 merchant_insights에 저장
- * 3) 그 미만이면 데모 데이터(저장하지 않음)
+ * 집계 인사이트 계산
+ * 1) 관심 분포: 실제 취향 기록이 MIN_USERS_FOR_INSIGHTS명 이상이면 실제 분포, 아니면 가상 집계
+ * 2) 점포 지표: 가상 집계 + 실제 상호작용 수를 더해서 보여줍니다(어느 쪽인지 화면에 함께 표시)
  */
 export async function getMerchantInsights(storeId: string | null): Promise<MerchantInsights> {
   const repo = getRepository();
   const stores = await getStores();
-  const store = storeId ? stores.find((s) => s.id === storeId) ?? null : null;
+  const store = storeId ? (stores.find((s) => s.id === storeId) ?? null) : null;
   if (storeId && !store) throw new Error("존재하지 않는 점포입니다.");
 
-  const snapshot = await repo.latestMerchantInsight(storeId).catch(() => null);
-  if (snapshot && !snapshot.isMock && Date.now() - Date.parse(snapshot.createdAt) < SNAPSHOT_TTL_MS) {
-    return fromSnapshot(snapshot);
-  }
-
-  let positives: Awaited<ReturnType<typeof repo.listPositiveInteractions>> = [];
-  let counts: Partial<Record<InteractionType, number>> = {};
+  const since = sinceIso(INSIGHT_DAYS);
+  let counts: Record<string, Partial<Record<InteractionType, number>>> = {};
+  let realVectors: TasteVector[] = [];
   try {
-    positives = (await repo.listPositiveInteractions(5000)).filter((i) => !storeId || i.storeId === storeId);
-    const byStore = await repo.countInteractionsByStore();
-    if (storeId) counts = byStore[storeId] ?? {};
-    else
-      for (const c of Object.values(byStore))
-        for (const [t, n] of Object.entries(c) as [InteractionType, number][]) counts[t] = (counts[t] ?? 0) + n;
+    counts = await repo.countInteractionsByStore(since);
   } catch (err) {
-    console.warn("[merchant] 집계 데이터를 불러오지 못했습니다:", err);
+    console.warn("[insights] 상호작용 집계를 불러오지 못했습니다:", err);
+  }
+  try {
+    // 같은 사람이 여러 번 분석해도 1명으로 셉니다 (최소 인원 기준이 사람 수를 뜻하도록).
+    const recent = await repo.listRecentPreferences(since, 500);
+    const perUser = new Map<string, TasteVector>();
+    for (const r of recent) perUser.set(r.userKey, r.tasteVector);
+    realVectors = [...perUser.values()];
+  } catch (err) {
+    console.warn("[insights] 최근 취향 기록을 불러오지 못했습니다:", err);
   }
 
-  const userIds = [...new Set(positives.map((p) => p.userId))];
-  const generatedAt = new Date().toISOString();
-  if (userIds.length < MIN_USERS_FOR_INSIGHTS) {
-    return { ...mockInsights(store?.features.taste ?? null, storeId), generatedAt };
-  }
-  const prefs = await repo.latestPreferences(userIds).catch(() => []);
-  if (prefs.length < MIN_USERS_FOR_INSIGHTS) {
-    return { ...mockInsights(store?.features.taste ?? null, storeId), generatedAt };
-  }
-  const tasteShare = shareFromVectors(prefs.map((p) => p.tasteVector));
-  const dates = positives.map((p) => p.createdAt).sort();
-  const record: MerchantInsightRecord = {
-    storeId,
-    periodStart: dates[0] ? toDate(dates[0]) : null,
-    periodEnd: dates.at(-1) ? toDate(dates.at(-1)!) : null,
-    distinctUsers: prefs.length,
-    tasteDistribution: tasteShare,
-    interactionCounts: counts,
-    productIdeas: [...new Set(tasteShare.slice(0, 3).map((t) => IDEAS[t.key]))],
-    isMock: false,
-    createdAt: generatedAt,
+  const useReal = realVectors.length >= MIN_USERS_FOR_INSIGHTS;
+  const mockShares = recentInterestShares(INSIGHT_DAYS);
+  const interest = useReal ? shareFromVectors(realVectors) : mockShares.slice(0, 6).map(toRow);
+  const rising = risingInterests(INSIGHT_DAYS, 4).map(toRow);
+
+  const visits = visitShares(store ? [store] : stores, counts);
+  const lowConversion = interest
+    // '새로운 발견'은 점포가 가질 수 있는 성질이 아니라 손님의 태도여서 방문 비중과 비교하지 않습니다.
+    .filter((row) => !(COSINE_EXCLUDED_KEYS as readonly string[]).includes(row.key))
+    .map((row) => ({ key: row.key, label: row.label, interestShare: row.share, visitShare: Math.round((visits.get(row.key) ?? 0) * 1000) / 10 }))
+    .filter((r) => r.interestShare - r.visitShare >= 3)
+    .sort((a, b) => b.interestShare - b.visitShare - (a.interestShare - a.visitShare))
+    .slice(0, 3);
+
+  const storeGaps = stores
+    .map((s) => {
+      const m = metricsFor(s, counts[s.id] ?? {});
+      return { storeId: s.id, name: s.name, category: m.category, interestUsers: m.interestUsers, visits: m.visits, ratio: m.visits > 0 ? m.interestUsers / m.visits : 0 };
+    })
+    .filter((g) => g.interestUsers >= 20)
+    .sort((a, b) => b.ratio - a.ratio)
+    .slice(0, 8);
+
+  return {
+    scope: store ? "store" : "market",
+    storeId: store?.id ?? null,
+    period: `최근 ${INSIGHT_DAYS}일`,
+    isMock: !useReal,
+    distinctUsers: useReal ? realVectors.length : null,
+    minUsers: MIN_USERS_FOR_INSIGHTS,
+    notice: useReal
+      ? `실제 이용자 ${realVectors.length}명의 취향 분포입니다. 개인을 식별할 수 있는 정보는 포함하지 않습니다.`
+      : `${MARKET_INTEREST_META.notice} 실제 이용자가 ${MIN_USERS_FOR_INSIGHTS}명 이상 모이면 실제 분포로 바뀝니다.`,
+    interest,
+    rising,
+    lowConversion,
+    metrics: store ? metricsFor(store, counts[store.id] ?? {}) : null,
+    storeGaps,
+    generatedAt: new Date().toISOString(),
   };
-  await repo.saveMerchantInsight(record).catch((err) => console.warn("[merchant] 인사이트 스냅샷 저장 실패:", err));
-  return fromSnapshot(record);
 }
+
+export const ACTIVITY_NOTICE = MOCK_ACTIVITY_META.notice;
