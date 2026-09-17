@@ -1,26 +1,218 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  --font-sans:
+    "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR",
+    "Malgun Gothic", sans-serif;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* MarketFit 로고 색 체계 — 노란 차양(#f5cc5f) · 라임 그린 핀(#bedb5e) · 차콜 워드마크(#232621)
+     중앙시장 입구의 초록 차양·노란 간판과도 같은 조합입니다. 짙은 단계(600~)는 텍스트 대비 4.5:1 이상. */
+  --color-cream: #fbf6ec;
+  --color-paper: #fffdf8;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --color-ink-50: #faf8f5;
+  --color-ink-100: #f2eee8;
+  --color-ink-200: #e4ddd3;
+  --color-ink-300: #cfc5b8;
+  --color-ink-400: #a89b8c;
+  --color-ink-500: #75695d;
+  --color-ink-600: #5c5249;
+  --color-ink-700: #443c35;
+  --color-ink-800: #37352f;
+  --color-ink-900: #232621;
+
+  /* market = 브랜드 그린 (400이 로고의 'Fit' 색) */
+  --color-market-50: #f5fae5;
+  --color-market-100: #eaf4cb;
+  --color-market-200: #daeda5;
+  --color-market-300: #cce481;
+  --color-market-400: #bedb5e;
+  --color-market-500: #97bb3e;
+  --color-market-600: #527925;
+  --color-market-700: #406726;
+  --color-market-800: #2d4f20;
+  --color-market-900: #1c3516;
+  --color-market-950: #0f1f0c;
+
+  /* sign = 차양·간판 노랑 (400이 로고 차양 색) */
+  --color-sign-50: #fefaed;
+  --color-sign-100: #fef2d1;
+  --color-sign-200: #fde6ab;
+  --color-sign-300: #fcd97d;
+  --color-sign-400: #f5cc5f;
+  --color-sign-500: #edae2c;
+  --color-sign-600: #c6811c;
+  --color-sign-700: #a1621a;
+  --color-sign-800: #7a4717;
+  --color-sign-900: #593211;
+
+  --color-brick-50: #fdf0ed;
+  --color-brick-100: #fadad3;
+  --color-brick-300: #eb9a8a;
+  --color-brick-400: #e0674f;
+  --color-brick-500: #c94a33;
+  --color-brick-600: #a93a27;
+  --color-brick-700: #86301f;
+
+  --shadow-card: 0 1px 2px rgb(35 38 33 / 0.05), 0 10px 30px -16px rgb(35 38 33 / 0.28);
+  --shadow-float: 0 16px 44px -14px rgb(35 38 33 / 0.4);
+
+  --animate-rise: rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-pulse-soft: pulse-soft 1.6s ease-in-out infinite;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes pulse-soft {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.45;
+    }
   }
 }
 
+:root {
+  color-scheme: light;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 5rem;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-cream);
+  color: var(--color-ink-900);
+  font-family: var(--font-sans);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+::selection {
+  background: var(--color-sign-200);
+}
+
+/* 키보드 포커스 표시 — 밝은 배경은 짙은 그린, 사진·어두운 영역(.on-dark)은 노랑.
+   base 레이어에 두어 컴포넌트 유틸리티(rounded, ring 등)를 덮어쓰지 않게 합니다. */
+@layer base {
+  :focus-visible {
+    outline: 3px solid var(--color-market-700);
+    outline-offset: 2px;
+  }
+  .on-dark :focus-visible {
+    outline-color: var(--color-sign-300);
+  }
+}
+
+@utility container-page {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  @media (width >= 640px) {
+    padding-inline: 1.5rem;
+  }
+}
+
+/* 로고의 노란 차양(어닝) 모티프 — 장식용 줄무늬 */
+@utility awning {
+  background-image: repeating-linear-gradient(90deg, var(--color-sign-400) 0 28px, transparent 28px 32px);
+}
+
+/* 아래가 둥근 차양 (높이 10px 이상에서 사용) */
+@utility awning-scallop {
+  background-image: repeating-linear-gradient(90deg, transparent 0 2px, var(--color-sign-400) 2px 30px, transparent 30px 32px);
+  -webkit-mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - 6px) no-repeat,
+    radial-gradient(14px 6px at 16px 0, #000 97%, transparent 100%) bottom left / 32px 6px repeat-x;
+  mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - 6px) no-repeat,
+    radial-gradient(14px 6px at 16px 0, #000 97%, transparent 100%) bottom left / 32px 6px repeat-x;
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Kakao 지도 커스텀 오버레이 (DOM으로 직접 생성) */
+.mf-pin {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px 5px 6px;
+  border-radius: 999px;
+  font: 700 13px/1 var(--font-sans);
+  background: #fffdf8;
+  color: var(--color-ink-800);
+  border: 2px solid var(--color-ink-300);
+  box-shadow: 0 6px 16px -8px rgb(35 38 33 / 0.45);
+  cursor: pointer;
+  white-space: nowrap;
+  transform: translateY(-4px);
+  transition: transform 0.15s ease;
+}
+.mf-pin:hover,
+.mf-pin:focus-visible,
+.mf-pin[data-selected="true"] {
+  transform: translateY(-7px) scale(1.04);
+  z-index: 5;
+}
+.mf-pin[data-level="top"] {
+  background: var(--color-market-700);
+  border-color: #fffdf8;
+  color: #fff;
+}
+.mf-pin[data-level="info"] {
+  background: var(--color-sign-100);
+  border-color: var(--color-sign-500);
+}
+.mf-pin[data-approx="true"] {
+  border-style: dashed;
+}
+.mf-pin[data-selected="true"] {
+  outline: 3px solid var(--color-sign-400);
+  outline-offset: 1px;
+}
+.mf-pin__count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--color-sign-400);
+  color: var(--color-ink-900);
+  font-size: 11px;
+}
+.mf-pin__dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  background: var(--color-ink-100);
+  font-size: 12px;
+}
+.mf-pin[data-level="top"] .mf-pin__dot {
+  background: rgb(255 255 255 / 0.18);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

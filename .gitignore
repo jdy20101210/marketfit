@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# MarketFit 로컬 데이터 (개발용 파일 DB·암호화 키)
+/.data/
+/.data-test/
+
+# 환경변수 예시는 커밋
+!.env.example
