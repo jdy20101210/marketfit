@@ -5,7 +5,7 @@ import { toSummary } from "@/components/stores/StoreBits";
 import { toStoreDTO } from "@/lib/services/storeDto";
 import { getStores } from "@/lib/stores/catalog";
 
-export const metadata: Metadata = { title: "나의 취향 프로필" };
+export const metadata: Metadata = { title: "내 기록" };
 
 export default async function ProfilePage() {
   await connection();

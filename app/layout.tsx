@@ -4,12 +4,16 @@ import "./globals.css";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 
+/**
+ * 공유 미리보기(OG) 절대 주소 계산 — 배포 주소를 코드에 적지 않습니다.
+ * 우선순위: APP_URL 환경변수 > Vercel이 주입한 배포 도메인 > 로컬 개발 서버(PORT)
+ */
 function siteUrl(): URL {
   const explicit = process.env.APP_URL;
   if (explicit) return new URL(explicit);
   const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL;
   if (vercel) return new URL(`https://${vercel}`);
-  return new URL("http://localhost:3000");
+  return new URL(`http://127.0.0.1:${process.env.PORT ?? "3000"}`);
 }
 
 export const metadata: Metadata = {
@@ -22,7 +26,7 @@ export const metadata: Metadata = {
   applicationName: "MarketFit",
   openGraph: {
     title: "MarketFit — AI가 발견하는 나만의 중앙시장",
-    description: "Instagram 관심사와 관심 상품으로 대전 중앙시장 개인화 추천",
+    description: "AI와 대화하거나 키워드를 입력하면 대전 중앙시장에서 나와 맞는 점포를 추천해요.",
     images: [{ url: "/images/og-cover.jpg", width: 1200, height: 630, alt: "MarketFit 로고와 대전 중앙시장 입구 — AI가 발견하는 나만의 중앙시장" }],
     locale: "ko_KR",
     type: "website",

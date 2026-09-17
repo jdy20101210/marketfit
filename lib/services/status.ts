@@ -11,7 +11,8 @@ import {
 import { getRepository, getRepositoryHealth, isSupabaseConfigured } from "@/lib/db";
 import { getAppSecret } from "@/lib/security/crypto";
 import { getAdminMode } from "@/lib/security/session";
-import { getStoreCatalog } from "@/lib/stores/catalog";
+import { getStoreCatalog, MOCK_ACTIVITY_META, SEED_META } from "@/lib/stores/catalog";
+import { MARKET_INTEREST_META } from "@/lib/mock/marketInterest";
 
 export interface FieldStatus {
   key: IntegrationKey;
@@ -40,7 +41,7 @@ function lastTest(target: string): TestResult | null {
   return globalForTests.__marketfitTests?.[target] ?? null;
 }
 
-const DISPLAYABLE: IntegrationKey[] = ["GEMINI_MODEL", "INSTAGRAM_REDIRECT_URI", "INSTAGRAM_GRAPH_API_VERSION"];
+const DISPLAYABLE: IntegrationKey[] = ["GEMINI_MODEL"];
 
 export async function getSystemStatus(requestOrigin: string) {
   const integrations = await getIntegrations();
@@ -62,11 +63,10 @@ export async function getSystemStatus(requestOrigin: string) {
 
   const geminiTest = lastTest("gemini");
   const kakaoTest = lastTest("kakao");
-  const igTest = lastTest("instagram");
+  const mockTest = lastTest("mock");
   const dbTest = lastTest("database");
 
   const located = catalog.stores.filter((s) => s.location.lat !== null);
-  const redirectUri = v.INSTAGRAM_REDIRECT_URI ?? `${requestOrigin}/api/instagram/callback`;
 
   return {
     environment: {
@@ -82,19 +82,18 @@ export async function getSystemStatus(requestOrigin: string) {
       model: v.GEMINI_MODEL ?? null,
       lastTest: geminiTest,
     },
-    instagram: {
-      mode: v.META_APP_ID && v.META_APP_SECRET ? "REAL" : "MOCK",
-      missing: (["META_APP_ID", "META_APP_SECRET"] as const).filter((k) => !v[k]),
-      redirectUri,
-      redirectUriSource: v.INSTAGRAM_REDIRECT_URI ? "설정값" : "현재 접속 주소 기준 자동",
-      deauthorizeUrl: `${requestOrigin}/api/instagram/deauthorize`,
-      dataDeletionUrl: `${requestOrigin}/api/instagram/data-deletion`,
-      privacyPolicyUrl: `${requestOrigin}/privacy`,
-      lastTest: igTest,
+    mock: {
+      /** Gemini가 없을 때 쓰이는 대체 provider와 프로토타입 가상 집계 데이터 상태 */
+      aiFallback: v.GEMINI_API_KEY ? "STANDBY" : "ACTIVE",
+      storeSeed: `${SEED_META.sourceFile} · ${SEED_META.storeCount}개 점포 (원본 ${SEED_META.rowCount}행)`,
+      activityNotice: MOCK_ACTIVITY_META.notice,
+      interestNotice: MARKET_INTEREST_META.notice,
+      lastTest: mockTest,
     },
     map: {
       mode: v.KAKAO_JS_KEY ? "REAL" : "MOCK",
       geocoding: v.KAKAO_REST_API_KEY ? "REAL" : "MOCK",
+      /** Kakao 개발자 콘솔에 등록해야 하는 현재 접속 도메인 (하드코딩하지 않고 요청에서 가져옴) */
       siteDomain: requestOrigin,
       locatedStores: located.length,
       exactStores: located.filter((s) => s.location.accuracy === "exact").length,

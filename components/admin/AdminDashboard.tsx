@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Bot,
-  Camera,
+  FlaskConical,
   ChevronDown,
   Database,
   KeyRound,
@@ -31,7 +31,7 @@ import type { SystemStatus, TestResult } from "@/lib/services/status";
 import { ENTITY_KIND_LABEL } from "@/lib/stores/parse";
 import { MARKET_FEATURE_KEYS, MARKET_FEATURE_META } from "@/lib/stores/types";
 
-type TestTarget = "gemini" | "kakao" | "instagram" | "database";
+type TestTarget = "gemini" | "kakao" | "mock" | "database";
 
 export function AdminDashboard({ status, stores, devOpen }: { status: SystemStatus; stores: StoreDTO[]; devOpen: boolean }) {
   const router = useRouter();
@@ -120,18 +120,14 @@ export function AdminDashboard({ status, stores, devOpen }: { status: SystemStat
             onTest={() => runTest("gemini")}
           />
           <StatusCard
-            icon={<Camera className="size-5" aria-hidden />}
-            title="Instagram"
-            state={status.instagram.mode}
-            good={status.instagram.mode === "REAL"}
-            lines={
-              status.instagram.mode === "REAL"
-                ? ["Instagram API with Instagram Login", `콜백: ${status.instagram.redirectUri}`]
-                : ["MockInstagramDataProvider 사용", `필요: ${status.instagram.missing.join(", ")}`]
-            }
-            test={tests.instagram ?? status.instagram.lastTest}
-            testing={testing === "instagram"}
-            onTest={() => runTest("instagram")}
+            icon={<FlaskConical className="size-5" aria-hidden />}
+            title="Mock 데이터"
+            state={status.mock.aiFallback}
+            good={status.mock.aiFallback === "STANDBY"}
+            lines={[`점포 seed: ${status.mock.storeSeed}`, status.mock.aiFallback === "ACTIVE" ? "Gemini 미설정 → 데모 AI가 분석" : "Gemini 실패 시에만 사용"]}
+            test={tests.mock ?? status.mock.lastTest}
+            testing={testing === "mock"}
+            onTest={() => runTest("mock")}
           />
           <StatusCard
             icon={<MapIcon className="size-5" aria-hidden />}

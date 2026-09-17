@@ -8,15 +8,12 @@ import { getSystemStatus } from "@/lib/services/status";
 
 export const metadata: Metadata = { title: "연동 설정", robots: { index: false, follow: false } };
 
-export default async function IntegrationsPage(props: PageProps<"/admin/integrations">) {
+export default async function IntegrationsPage() {
   await connection();
   const mode = getAdminMode();
   if (mode === "locked") return <AdminLocked />;
   if (!(await isAdmin())) return <AdminLogin />;
-  const params = await props.searchParams;
   const origin = await getServerOrigin();
   const status = await getSystemStatus(origin);
-  const ig = typeof params.instagram === "string" ? params.instagram : null;
-  const reason = typeof params.reason === "string" ? params.reason : null;
-  return <IntegrationsClient initialStatus={status} origin={origin} instagramCallback={ig ? { status: ig, reason } : null} />;
+  return <IntegrationsClient initialStatus={status} origin={origin} />;
 }

@@ -10,7 +10,7 @@ export function SiteFooter() {
           <div className="mt-2">
             <p className="font-bold text-ink-800">AI가 발견하는 나만의 중앙시장</p>
             <p className="mt-1 max-w-md leading-relaxed">
-              점포 정보는 대전중앙시장 공식 상점소개·상인회 등재 정보 등을 정리한 40개 데이터를 사용합니다. 영업 여부와 연락처는 방문 전 확인해주세요.
+              점포 정보는 대전중앙시장 공식 사이트 점포 목록을 정리한 433개 점포·상권 데이터를 사용합니다. 영업 여부와 연락처는 변동될 수 있으니 방문 전 확인해주세요.
             </p>
           </div>
         </div>
@@ -23,6 +23,16 @@ export function SiteFooter() {
           <li>
             <Link className="hover:text-ink-900" href="/data-deletion">
               데이터 삭제
+            </Link>
+          </li>
+          <li>
+            <Link className="hover:text-ink-900" href="/market-insight">
+              시장 인사이트
+            </Link>
+          </li>
+          <li>
+            <Link className="hover:text-ink-900" href="/merchant">
+              상인 인사이트
             </Link>
           </li>
           <li>

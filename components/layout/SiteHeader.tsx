@@ -2,27 +2,29 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Compass, Home, MapPinned, Sparkles, Store, UserRound } from "lucide-react";
+import { BarChart3, Compass, Home, MapPinned, Sparkles, Store, UserRound } from "lucide-react";
 import { cn } from "@/components/ui/cn";
 import { Logo } from "./Logo";
 
 const NAV = [
-  { href: "/onboarding", label: "취향 분석", icon: Sparkles },
-  { href: "/profile", label: "나의 취향", icon: UserRound },
-  { href: "/market-map", label: "AI 시장 지도", icon: MapPinned },
+  { href: "/discover", label: "취향 분석", icon: Sparkles },
+  { href: "/market-map", label: "추천 지도", icon: MapPinned },
+  { href: "/profile", label: "내 기록", icon: UserRound },
+  { href: "/market-insight", label: "시장 인사이트", icon: BarChart3 },
   { href: "/merchant", label: "상인 인사이트", icon: Store },
 ];
 
 const TABS = [
   { href: "/", label: "홈", icon: Home },
-  { href: "/onboarding", label: "분석", icon: Sparkles },
-  { href: "/profile", label: "내 취향", icon: UserRound },
+  { href: "/discover", label: "분석", icon: Sparkles },
   { href: "/market-map", label: "지도", icon: Compass },
+  { href: "/profile", label: "내 기록", icon: UserRound },
 ];
 
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
-  if (href === "/onboarding") return pathname.startsWith("/onboarding") || pathname.startsWith("/analysis");
+  if (href === "/discover") return pathname.startsWith("/discover") || pathname.startsWith("/analysis");
+  if (href === "/market-map") return pathname.startsWith("/market-map") || pathname.startsWith("/store");
   return pathname.startsWith(href);
 }
 

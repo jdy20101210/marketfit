@@ -1,17 +1,21 @@
 import { z } from "zod";
-import { getGeminiConfig, getInstagramConfig, getKakaoConfig, resolveRedirectUri } from "@/lib/config/integrations";
-import { getRepository } from "@/lib/db";
-import { getRequestOrigin, handle, ok, readJson } from "@/lib/http";
+import { getGeminiConfig, getKakaoConfig } from "@/lib/config/integrations";
+import { checkAnonAccess, getRepository, isSupabaseConfigured } from "@/lib/db";
+import { handle, ok, readJson } from "@/lib/http";
 import { listGeminiModels } from "@/lib/providers/ai";
 import { KakaoMapProvider } from "@/lib/providers/map/KakaoMapProvider";
+import { MockGeminiProvider } from "@/lib/providers/ai/MockGeminiProvider";
 import { requireAdmin } from "@/lib/security/adminGuard";
 import { recordTestResult, type TestResult } from "@/lib/services/status";
-import { getStoreCatalog } from "@/lib/stores/catalog";
+import { getStoreCatalog, MOCK_ACTIVITY_META, SEED_META } from "@/lib/stores/catalog";
+import { MARKET_INTEREST_META, recentInterestShares } from "@/lib/mock/marketInterest";
 import { MARKET_REPRESENTATIVE_ADDRESS } from "@/lib/stores/parse";
+import { extractSlots } from "@/lib/preferences/extract";
+import { INTERVIEW_GREETING, MAX_QUESTIONS, MIN_ANSWERS, type ChatMessage } from "@/lib/preferences/types";
 
 export const maxDuration = 30;
 
-const Body = z.object({ target: z.enum(["gemini", "kakao", "instagram", "database"]) });
+const Body = z.object({ target: z.enum(["gemini", "kakao", "mock", "database"]) });
 
 function message(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
@@ -60,20 +64,29 @@ async function testKakao(): Promise<TestResult> {
   }
 }
 
-async function testInstagram(origin: string): Promise<TestResult> {
-  const config = await getInstagramConfig();
-  if (!config) return { ok: false, message: "Instagram 앱 ID/시크릿이 없어 데모 모드로 동작합니다.", at: new Date().toISOString() };
-  const redirectUri = resolveRedirectUri(config.redirectUri, origin);
-  return {
-    ok: true,
-    message: "앱 정보가 설정되었습니다. [Instagram 로그인 테스트]로 실제 연결을 확인하세요.",
-    details: [
-      `Meta에 등록할 리디렉션 URI: ${redirectUri}`,
-      "권한(scope): instagram_business_basic",
-      "프로페셔널(비즈니스/크리에이터) 계정 + 앱 역할(테스터) 등록 필요 (개발 모드)",
-    ],
-    at: new Date().toISOString(),
-  };
+/** Gemini 없이도 서비스가 도는지(MockGeminiProvider) + 가상 집계 데이터가 로드되는지 확인 */
+async function testMock(): Promise<TestResult> {
+  try {
+    const provider = new MockGeminiProvider();
+    const messages: ChatMessage[] = [INTERVIEW_GREETING, { role: "user", text: "친구 생일 선물을 찾고 있어요" }];
+    const known = extractSlots(messages);
+    const turn = await provider.interviewTurn({ messages, known, answeredCount: 1, askedSlots: [], maxQuestions: MAX_QUESTIONS, minAnswers: MIN_ANSWERS });
+    const analysis = await provider.analyzePreferences({ mode: "keywords", messages: [], keywords: ["선물", "커피"], known: extractSlots([]) });
+    const shares = recentInterestShares(7).slice(0, 3);
+    return {
+      ok: Boolean(turn.reply) && analysis.topCategories.length > 0,
+      message: "Mock provider 정상 · Gemini 실패 시에도 인터뷰·분석이 동작합니다.",
+      details: [
+        `점포 seed: ${SEED_META.sourceFile} · ${SEED_META.storeCount}개 (원본 ${SEED_META.rowCount}행)`,
+        `가상 활동 집계: ${MOCK_ACTIVITY_META.notice}`,
+        `가상 관심도 집계: 최근 ${MARKET_INTEREST_META.days}일 · 상위 ${shares.map((s) => `${s.label} ${Math.round(s.share * 100)}%`).join(", ")}`,
+        `대체 질문 예시: ${turn.reply}`,
+      ],
+      at: new Date().toISOString(),
+    };
+  } catch (err) {
+    return { ok: false, message: message(err), at: new Date().toISOString() };
+  }
 }
 
 async function testDatabase(): Promise<TestResult> {
@@ -82,10 +95,11 @@ async function testDatabase(): Promise<TestResult> {
     await repo.readSettings();
     const catalog = await getStoreCatalog();
     const info = repo.info();
+    const rls = isSupabaseConfigured() ? await checkAnonAccess() : null;
     return {
-      ok: true,
+      ok: rls ? !rls.checked || rls.personalBlocked : true,
       message: `${info.kind} 연결 확인 · 점포 데이터 출처: ${catalog.source === "database" ? "DB" : "seed JSON"} (${catalog.stores.length}개)`,
-      details: [info.detail],
+      details: [info.detail, ...(rls ? [rls.detail] : [])],
       at: new Date().toISOString(),
     };
   } catch (err) {
@@ -96,14 +110,13 @@ async function testDatabase(): Promise<TestResult> {
 export const POST = handle(async (request: Request) => {
   await requireAdmin(request, { mutating: true });
   const { target } = await readJson(request, Body);
-  const origin = getRequestOrigin(request);
   const result =
     target === "gemini"
       ? await testGemini()
       : target === "kakao"
         ? await testKakao()
-        : target === "instagram"
-          ? await testInstagram(origin)
+        : target === "mock"
+          ? await testMock()
           : await testDatabase();
   recordTestResult(target, result);
   return ok(result);

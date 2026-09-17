@@ -15,6 +15,13 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   // Supabase SDK는 서버 번들에서만 사용
   serverExternalPackages: ["@supabase/supabase-js"],
+  // 이전 버전(/onboarding)의 링크·북마크를 새 취향 분석 화면으로 보냅니다.
+  async redirects() {
+    return [
+      { source: "/onboarding", destination: "/discover", permanent: false },
+      { source: "/onboarding/:path*", destination: "/discover", permanent: false },
+    ];
+  },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },

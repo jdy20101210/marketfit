@@ -3,7 +3,7 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Bot, Camera, Check, Copy, Database, Eye, EyeOff, ExternalLink, Map as MapIcon, ShieldCheck, TriangleAlert } from "lucide-react";
+import { ArrowLeft, Bot, Check, Copy, Database, Eye, EyeOff, ExternalLink, Map as MapIcon, ShieldCheck, TriangleAlert } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -14,17 +14,9 @@ import { loadKakaoMaps } from "@/lib/map/kakaoLoader";
 import type { FieldStatus, SystemStatus, TestResult } from "@/lib/services/status";
 import type { PublicConfig } from "@/lib/api/schemas";
 
-type Group = "kakao" | "instagram" | "gemini";
+type Group = "kakao" | "gemini";
 
-export function IntegrationsClient({
-  initialStatus,
-  origin,
-  instagramCallback,
-}: {
-  initialStatus: SystemStatus;
-  origin: string;
-  instagramCallback: { status: string; reason: string | null } | null;
-}) {
+export function IntegrationsClient({ initialStatus, origin }: { initialStatus: SystemStatus; origin: string }) {
   const [status, setStatus] = useState(initialStatus);
   const fieldsBy = (g: Group) => status.fields.filter((f) => f.group === g);
   const storageText =
@@ -92,74 +84,6 @@ export function IntegrationsClient({
         />
 
         <ProviderSection
-          id="instagram"
-          icon={<Camera className="size-5" aria-hidden />}
-          title="Instagram (Meta)"
-          badge={<Badge tone={status.instagram.mode === "REAL" ? "market" : "sign"}>{status.instagram.mode}</Badge>}
-          guide={
-            <ol className="list-decimal space-y-1.5 pl-5">
-              <li>
-                <ExtLink href="https://developers.facebook.com/apps">Meta for Developers</ExtLink> → 앱 만들기 → Instagram 관련 사용 사례 선택
-              </li>
-              <li>
-                앱 대시보드 &gt; Instagram &gt; <strong>API setup with Instagram login</strong> &gt; Set up Instagram business login
-              </li>
-              <li>
-                Business login settings의 <strong>OAuth redirect URIs</strong>에 아래 리디렉션 URI를 정확히 등록 (끝 슬래시 포함 여부까지 동일)
-              </li>
-              <li>Deauthorize callback URL, Data deletion request URL, 개인정보처리방침 URL에 아래 값을 등록</li>
-              <li>
-                같은 화면의 <strong>Instagram 앱 ID / Instagram 앱 시크릿</strong>을 아래에 입력 (Facebook 앱 ID와 다를 수 있음)
-              </li>
-              <li>
-                개발 모드에서는 앱 역할에 Instagram 테스터로 등록·수락한 <strong>프로페셔널(비즈니스·크리에이터) 계정</strong>만 로그인 가능
-              </li>
-              <li>일반 사용자에게 공개하려면 instagram_business_basic 권한 앱 검수(Advanced Access)가 필요</li>
-            </ol>
-          }
-          copyValues={[
-            { label: "OAuth 리디렉션 URI", value: status.instagram.redirectUri },
-            { label: "Deauthorize callback URL", value: status.instagram.deauthorizeUrl },
-            { label: "Data deletion request URL", value: status.instagram.dataDeletionUrl },
-            { label: "개인정보처리방침 URL", value: status.instagram.privacyPolicyUrl },
-          ]}
-          fields={fieldsBy("instagram")}
-          testTarget="instagram"
-          onSaved={setStatus}
-          lastTest={status.instagram.lastTest}
-          extra={
-            <div className="space-y-2">
-              {instagramCallback ? (
-                instagramCallback.status === "connected" ? (
-                  <Notice tone="market">Instagram 로그인 테스트 성공 — 계정이 연결되고 관심 신호를 수집했어요.</Notice>
-                ) : instagramCallback.status === "demo" ? (
-                  <Notice>앱 ID/시크릿이 저장되지 않아 데모 모드로 돌아왔어요.</Notice>
-                ) : (
-                  <ErrorState title="Instagram 로그인 테스트 실패" message={instagramCallback.reason ?? instagramCallback.status} />
-                )
-              ) : null}
-              {status.instagram.mode === "REAL" ? (
-                <a
-                  href={`/api/instagram/auth?next=${encodeURIComponent("/admin/integrations")}`}
-                  className="inline-flex h-10 items-center gap-2 rounded-xl bg-market-700 px-4 text-sm font-semibold text-white hover:bg-market-800"
-                >
-                  <Camera className="size-4" aria-hidden /> Instagram 로그인 테스트
-                </a>
-              ) : (
-                <button
-                  type="button"
-                  disabled
-                  className="inline-flex h-10 cursor-not-allowed items-center gap-2 rounded-xl bg-ink-100 px-4 text-sm font-semibold text-ink-500"
-                  title="앱 ID와 시크릿을 저장하면 사용할 수 있어요"
-                >
-                  <Camera className="size-4" aria-hidden /> Instagram 로그인 테스트 (앱 ID·시크릿 저장 후)
-                </button>
-              )}
-            </div>
-          }
-        />
-
-        <ProviderSection
           id="gemini"
           icon={<Bot className="size-5" aria-hidden />}
           title="Gemini AI"
@@ -190,12 +114,12 @@ export function IntegrationsClient({
           </div>
           <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-sm leading-relaxed text-ink-700">
             <li>
-              <ExtLink href="https://supabase.com/dashboard">Supabase</ExtLink>에서 프로젝트 생성 → SQL Editor에서 <code>supabase/migrations/0001_init.sql</code> 실행
+              <ExtLink href="https://supabase.com/dashboard">Supabase</ExtLink>에서 프로젝트 생성 → SQL Editor에서 <code>supabase/migrations/</code>의 SQL 파일을 번호 순서대로 실행
             </li>
             <li>
               Project Settings &gt; API의 URL과 <strong>service_role</strong> 키를 배포 환경변수 <code>SUPABASE_URL</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code>로 등록
             </li>
-            <li>재배포 후 관리자 대시보드의 [Supabase에 40개 점포 seed] 실행 (또는 로컬에서 npm run seed)</li>
+            <li>재배포 후 관리자 대시보드의 [Supabase에 점포 seed] 실행 (또는 로컬에서 npm run seed)</li>
           </ol>
           <p className="mt-2 text-xs text-ink-500">service_role 키는 모든 데이터에 접근할 수 있어 화면 입력을 지원하지 않아요. 절대 NEXT_PUBLIC_ 접두사를 붙이지 마세요.</p>
         </Card>
@@ -256,7 +180,7 @@ function ProviderSection(props: {
   guide: ReactNode;
   copyValues: { label: string; value: string }[];
   fields: FieldStatus[];
-  testTarget: "kakao" | "instagram" | "gemini";
+  testTarget: "kakao" | "gemini";
   lastTest: TestResult | null;
   onSaved: (status: SystemStatus) => void;
   extra?: ReactNode;

@@ -1,35 +1,36 @@
 import Image from "next/image";
 import Link from "next/link";
 import { connection } from "next/server";
-import { ArrowRight, Bot, Camera, Layers, MapPinned, PenLine, Sparkles } from "lucide-react";
+import { ArrowRight, Bot, Layers, MapPinned, MessageSquare, Sparkles, Tags } from "lucide-react";
 import { LinkButton } from "@/components/ui/Button";
 import { ModeBadge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { getPublicModes } from "@/lib/config/integrations";
 import { getStoreCatalog, SEED_META } from "@/lib/stores/catalog";
+import { RECOMMEND_FALLBACK_SCORE, RECOMMEND_MIN_SCORE } from "@/lib/recommendation/engine";
 import { displayCategory } from "@/lib/stores/parse";
 import { MAIN_CATEGORIES } from "@/lib/stores/types";
 
-function steps(modes: Awaited<ReturnType<typeof getPublicModes>>) {
+function steps(modes: Awaited<ReturnType<typeof getPublicModes>>, storeCount: number) {
   return [
     {
-      icon: Camera,
-      title: "관심사 모으기",
-      body: modes.instagram === "real" ? "Instagram 공식 API와 직접 입력한 관심 상품 3~5개" : "Instagram(현재 데모 데이터)과 직접 입력한 관심 상품 3~5개",
+      icon: MessageSquare,
+      title: "취향 말하기",
+      body: "AI와 3~6개 질문을 주고받거나, 관심 키워드를 바로 입력해요",
     },
     {
       icon: Bot,
       title: "AI 취향 분석",
       body:
         modes.ai === "gemini"
-          ? "Gemini가 17가지 취향 차원으로 나의 취향 vector를 만들어요"
-          : "데모 AI(키워드 규칙)가 17가지 취향 차원으로 취향 vector를 만들어요 · Gemini 연결 시 자동 전환",
+          ? "Gemini가 자연어를 읽어 19가지 취향 차원의 vector와 상황 정보를 만들어요"
+          : "데모 AI(규칙 기반)가 19가지 취향 차원의 vector를 만들어요 · Gemini 연결 시 자동 전환",
     },
-    { icon: Layers, title: "점포와 매칭", body: "40개 점포·상권의 성향과 cosine 유사도로 점수를 계산해요" },
+    { icon: Layers, title: "점포와 매칭", body: `${storeCount}개 점포·상권의 성향과 cosine 유사도로 0~100점을 계산해요 (AI가 아닌 알고리즘)` },
     {
       icon: MapPinned,
-      title: "취향 지도 탐색",
-      body: modes.map === "kakao" ? "Kakao 지도에서 나와 잘 맞는 점포를 발견해요" : "지도(현재 데모 안내도)에서 나와 잘 맞는 점포를 발견해요",
+      title: "추천 지도",
+      body: `${RECOMMEND_MIN_SCORE}점 이상 점포만 순위와 함께 지도에 표시해요`,
     },
   ];
 }
@@ -39,7 +40,7 @@ export default async function HomePage() {
   const [modes, catalog] = await Promise.all([getPublicModes(), getStoreCatalog()]);
   const categoryCounts = MAIN_CATEGORIES.map((c) => ({
     category: c,
-    count: catalog.stores.filter((s) => s.features.categories.includes(c)).length,
+    count: catalog.stores.filter((s) => s.mainCategory === c).length,
   })).filter((c) => c.count > 0);
 
   return (
@@ -67,32 +68,24 @@ export default async function HomePage() {
                 나만의 중앙시장
               </span>
             </h1>
-            <p className="mt-5 text-[17px] leading-relaxed text-white/90">
-              사람마다 좋아하는 것이 다르듯,
-              <br />
-              좋아할 시장도 다릅니다.
-            </p>
+            <p className="mt-5 text-[17px] leading-relaxed text-white/90">지금 어떤 곳이나 상품을 찾고 있나요?</p>
 
             <div className="mt-7 grid gap-2.5 sm:max-w-md">
-              <LinkButton href="/onboarding?mode=instagram" size="lg" variant="secondary" className="border-transparent" icon={<Camera className="size-5" aria-hidden />}>
-                Instagram으로 취향 분석
+              <LinkButton href="/discover?mode=chat" size="lg" variant="sign" icon={<MessageSquare className="size-5" aria-hidden />}>
+                AI와 대화하며 찾기
               </LinkButton>
               <LinkButton
-                href="/onboarding?mode=manual"
+                href="/discover?mode=keywords"
                 size="lg"
                 variant="ghost"
                 className="bg-white/10 text-white ring-1 ring-white/40 backdrop-blur hover:bg-white/20"
-                icon={<PenLine className="size-5" aria-hidden />}
+                icon={<Tags className="size-5" aria-hidden />}
               >
-                관심 상품 직접 입력
-              </LinkButton>
-              <LinkButton href="/onboarding?mode=both" size="lg" variant="sign" icon={<Sparkles className="size-5" aria-hidden />}>
-                둘 다 사용하기
+                키워드로 빠르게 분석하기
               </LinkButton>
             </div>
 
             <div className="mt-5 flex flex-wrap items-center gap-2" aria-label="현재 연동 상태">
-              <ModeBadge real={modes.instagram === "real"} realLabel="Instagram 실제 연동" mockLabel="Instagram 데모 모드" />
               <ModeBadge real={modes.ai === "gemini"} realLabel="Gemini AI 분석" mockLabel="데모 AI 분석" />
               <ModeBadge real={modes.map === "kakao"} realLabel="Kakao 지도" mockLabel="데모 안내도" />
             </div>
@@ -104,55 +97,59 @@ export default async function HomePage() {
       </section>
 
       <div className="container-page">
-      <section className="mt-14" aria-labelledby="how-title">
-        <h2 id="how-title" className="text-xl font-extrabold text-ink-900">
-          이렇게 추천해요
-        </h2>
-        <ol className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {steps(modes).map((step, i) => (
-            <li key={step.title}>
-              <Card className="h-full p-4 sm:p-5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="grid size-9 place-items-center rounded-xl bg-market-50 text-market-700">
-                    <step.icon className="size-5" aria-hidden />
-                  </span>
-                  <span className="text-xs font-bold text-sign-700">STEP {i + 1}</span>
-                </div>
-                <p className="mt-3 font-bold text-ink-900">{step.title}</p>
-                <p className="mt-1 text-[13px] leading-relaxed text-ink-600 sm:text-sm">{step.body}</p>
-              </Card>
-            </li>
-          ))}
-        </ol>
-      </section>
+        <section className="mt-14" aria-labelledby="how-title">
+          <h2 id="how-title" className="text-xl font-extrabold text-ink-900">
+            이렇게 추천해요
+          </h2>
+          <ol className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {steps(modes, catalog.stores.length).map((step, i) => (
+              <li key={step.title}>
+                <Card className="h-full p-4 sm:p-5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="grid size-9 place-items-center rounded-xl bg-market-50 text-market-700">
+                      <step.icon className="size-5" aria-hidden />
+                    </span>
+                    <span className="text-xs font-bold text-sign-700">STEP {i + 1}</span>
+                  </div>
+                  <p className="mt-3 font-bold text-ink-900">{step.title}</p>
+                  <p className="mt-1 text-[13px] leading-relaxed text-ink-600 sm:text-sm">{step.body}</p>
+                </Card>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-3 text-xs leading-relaxed text-ink-500">
+            추천 점수는 알고리즘이 계산하고, AI는 취향 해석과 설명 문장만 담당해요. {RECOMMEND_MIN_SCORE}점 이상 점포가 한 곳도 없으면 기준을 {RECOMMEND_FALLBACK_SCORE}점까지만 내려
+            안내하고, 점수를 올려 표시하지는 않아요.
+          </p>
+        </section>
 
-      <section className="mt-12" aria-labelledby="data-title">
-        <Card className="overflow-hidden">
-          <div aria-hidden className="awning h-2" />
-          <div className="grid gap-6 p-6 md:grid-cols-[1fr_1.2fr] md:p-8">
-            <div>
-              <h2 id="data-title" className="text-xl font-extrabold text-ink-900">
-                실제 중앙시장 데이터로 추천해요
-              </h2>
-              <p className="mt-2 text-sm leading-relaxed text-ink-600">
-                {SEED_META.sourceFile}의 {SEED_META.rowCount}개 점포·상권만 사용합니다. 존재하지 않는 점포를 만들지 않고, 확인되지 않은 연락처와 위치는 그대로
-                &lsquo;미확인&rsquo;으로 표시해요.
-              </p>
-              <Link href="/market-map" className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-market-700 hover:underline">
-                시장 지도 둘러보기 <ArrowRight className="size-4" aria-hidden />
-              </Link>
+        <section className="mt-12" aria-labelledby="data-title">
+          <Card className="overflow-hidden">
+            <div aria-hidden className="awning h-2" />
+            <div className="grid gap-6 p-6 md:grid-cols-[1fr_1.2fr] md:p-8">
+              <div>
+                <h2 id="data-title" className="text-xl font-extrabold text-ink-900">
+                  실제 중앙시장 데이터로 추천해요
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-ink-600">
+                  {SEED_META.source.split(" (")[0]}에서 정리한 {SEED_META.storeCount}개 점포·상권만 사용합니다. 존재하지 않는 점포를 만들지 않고, 확인되지 않은 연락처와 위치는
+                  그대로 &lsquo;미확인&rsquo;으로 표시해요.
+                </p>
+                <Link href="/market-map" className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-market-700 hover:underline">
+                  시장 지도 둘러보기 <ArrowRight className="size-4" aria-hidden />
+                </Link>
+              </div>
+              <ul className="flex flex-wrap content-start gap-2" aria-label="카테고리별 점포 수">
+                {categoryCounts.map((c) => (
+                  <li key={c.category} className="rounded-2xl border border-ink-200 bg-cream px-3.5 py-2 text-sm">
+                    <span className="font-semibold text-ink-800">{displayCategory(c.category)}</span>
+                    <span className="tabular ml-1.5 text-ink-500">{c.count}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul className="flex flex-wrap content-start gap-2" aria-label="카테고리별 점포 수">
-              {categoryCounts.map((c) => (
-                <li key={c.category} className="rounded-2xl border border-ink-200 bg-cream px-3.5 py-2 text-sm">
-                  <span className="font-semibold text-ink-800">{displayCategory(c.category)}</span>
-                  <span className="tabular ml-1.5 text-ink-500">{c.count}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Card>
-      </section>
+          </Card>
+        </section>
       </div>
     </div>
   );
