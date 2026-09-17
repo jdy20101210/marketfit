@@ -123,19 +123,3 @@ export function safeEqual(a: string, b: string): boolean {
 export function randomToken(bytes = 24): string {
   return randomBytes(bytes).toString("base64url");
 }
-
-/** Meta signed_request 검증 (HMAC-SHA256, app secret) */
-export function parseMetaSignedRequest<T = Record<string, unknown>>(signedRequest: string, appSecret: string): T | null {
-  const [sigPart, payloadPart] = signedRequest.split(".", 2);
-  if (!sigPart || !payloadPart) return null;
-  const expected = createHmac("sha256", appSecret).update(payloadPart).digest();
-  const given = b64u.decode(sigPart);
-  if (given.length !== expected.length || !timingSafeEqual(given, expected)) return null;
-  try {
-    const payload = JSON.parse(b64u.decode(payloadPart).toString("utf8")) as T & { algorithm?: string };
-    if (payload.algorithm && payload.algorithm.toUpperCase() !== "HMAC-SHA256") return null;
-    return payload;
-  } catch {
-    return null;
-  }
-}

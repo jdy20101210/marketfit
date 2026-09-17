@@ -1,27 +1,28 @@
 import "server-only";
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import type { TasteVector } from "@/lib/recommendation/dimensions";
+import type { Store, StoreDescription, StoreLocation } from "@/lib/stores/types";
 import type {
+  InteractionCounts,
   InteractionRecord,
-  InteractionType,
   MerchantInsightRecord,
+  NewPreferenceRecord,
   PreferenceRecord,
+  RecentPreferenceSignal,
   RecommendationRecord,
   Repository,
   RepositoryInfo,
-  SocialConnectionRecord,
   StoreOverrides,
 } from "./types";
-import type { Store, StoreDescription, StoreLocation } from "@/lib/stores/types";
 
 interface LocalData {
-  version: 1;
+  version: 2;
   settings: Record<string, string>;
   users: Record<string, { createdAt: string; lastSeenAt: string }>;
   preferences: PreferenceRecord[];
   interactions: InteractionRecord[];
   recommendations: Record<string, RecommendationRecord[]>;
-  social: SocialConnectionRecord[];
   locations: StoreLocation[];
   descriptions: StoreDescription[];
   merchantInsights: MerchantInsightRecord[];
@@ -31,17 +32,51 @@ const LIMITS = { preferences: 5000, interactions: 50000, merchantInsights: 500 }
 
 function emptyData(): LocalData {
   return {
-    version: 1,
+    version: 2,
     settings: {},
     users: {},
     preferences: [],
     interactions: [],
     recommendations: {},
-    social: [],
     locations: [],
     descriptions: [],
     merchantInsights: [],
   };
+}
+
+/** v1 파일(Instagram 연결 정보·버전 없는 취향 기록)을 v2 구조로 옮깁니다. 연결·토큰 정보는 버립니다. */
+function migrate(parsed: Record<string, unknown>): LocalData {
+  const base = { ...emptyData(), ...(parsed as Partial<LocalData>), version: 2 as const };
+  delete (base as Record<string, unknown>).social;
+  if (parsed.version !== 2) {
+    const counters = new Map<string, number>();
+    base.preferences = ((parsed.preferences as Record<string, unknown>[] | undefined) ?? []).map((p, i) => {
+      const userId = String(p.userId);
+      const version = (counters.get(userId) ?? 0) + 1;
+      counters.set(userId, version);
+      return {
+        id: `legacy-${i}`,
+        userId,
+        analysisVersion: version,
+        inputMode: "keywords",
+        tasteVector: p.tasteVector as TasteVector,
+        recentVector: (p.recentVector ?? p.tasteVector) as TasteVector,
+        topCategories: (p.topCategories as PreferenceRecord["topCategories"]) ?? [],
+        keywords: (p.interestInputs as string[]) ?? [],
+        context: { intent: null, intentLabel: null, budget: null, companion: null, occasion: null, preferredStyle: [], discoveryPreference: null },
+        personaLabel: (p.personaLabel as string | null) ?? null,
+        summary: (p.summary as string | null) ?? null,
+        aiProvider: p.aiProvider === "gemini" ? "gemini" : "mock",
+        aiModel: null,
+        isActive: false,
+        createdAt: String(p.createdAt ?? new Date(0).toISOString()),
+      } satisfies PreferenceRecord;
+    });
+    const latest = new Map<string, PreferenceRecord>();
+    for (const p of base.preferences) latest.set(p.userId, p);
+    for (const p of latest.values()) p.isActive = true;
+  }
+  return base;
 }
 
 /**
@@ -71,8 +106,7 @@ export class LocalRepository implements Repository {
   private load(): LocalData {
     if (!this.file || !existsSync(this.file)) return emptyData();
     try {
-      const parsed = JSON.parse(readFileSync(this.file, "utf8")) as Partial<LocalData>;
-      return { ...emptyData(), ...parsed, version: 1 };
+      return migrate(JSON.parse(readFileSync(this.file, "utf8")) as Record<string, unknown>);
     } catch (err) {
       console.warn("[db] 로컬 데이터 파일을 읽지 못해 새로 시작합니다:", err);
       return emptyData();
@@ -118,18 +152,57 @@ export class LocalRepository implements Repository {
     await this.persist();
   }
 
-  async savePreference(record: PreferenceRecord) {
+  async savePreference(record: NewPreferenceRecord, options: { minVersion?: number } = {}) {
     this.markUser(record.userId);
-    this.data.preferences.push(record);
+    const mine = this.data.preferences.filter((p) => p.userId === record.userId);
+    const maxVersion = mine.reduce((m, p) => Math.max(m, p.analysisVersion), 0);
+    const analysisVersion = Math.max(maxVersion, (options.minVersion ?? 1) - 1) + 1;
+    for (const p of mine) p.isActive = false;
+    this.data.preferences.push({ ...record, analysisVersion, isActive: true });
     if (this.data.preferences.length > LIMITS.preferences) this.data.preferences.splice(0, this.data.preferences.length - LIMITS.preferences);
+    await this.persist();
+    return { analysisVersion };
+  }
+
+  async activePreferences(userIds: string[]) {
+    const wanted = new Set(userIds);
+    const latest = new Map<string, PreferenceRecord>();
+    const active = new Map<string, PreferenceRecord>();
+    for (const p of this.data.preferences) {
+      if (!wanted.has(p.userId)) continue;
+      latest.set(p.userId, p);
+      if (p.isActive) active.set(p.userId, p);
+    }
+    return [...latest.keys()].map((id) => active.get(id) ?? latest.get(id)!);
+  }
+
+  async listPreferenceHistory(userId: string, limit: number) {
+    return this.data.preferences
+      .filter((p) => p.userId === userId)
+      .sort((a, b) => b.analysisVersion - a.analysisVersion)
+      .slice(0, limit);
+  }
+
+  async activatePreference(userId: string, id: string) {
+    const target = this.data.preferences.find((p) => p.userId === userId && p.id === id);
+    if (!target) return false;
+    for (const p of this.data.preferences) if (p.userId === userId) p.isActive = p === target;
+    await this.persist();
+    return true;
+  }
+
+  async updateActivePreferenceVector(userId: string, tasteVector: TasteVector) {
+    const [active] = await this.activePreferences([userId]);
+    if (!active) return;
+    active.tasteVector = tasteVector;
     await this.persist();
   }
 
-  async latestPreferences(userIds: string[]) {
-    const wanted = new Set(userIds);
-    const latest = new Map<string, PreferenceRecord>();
-    for (const p of this.data.preferences) if (wanted.has(p.userId)) latest.set(p.userId, p);
-    return [...latest.values()];
+  async listRecentPreferences(sinceIso: string, limit: number): Promise<RecentPreferenceSignal[]> {
+    return this.data.preferences
+      .filter((p) => p.createdAt >= sinceIso)
+      .slice(-limit)
+      .map((p) => ({ userKey: p.userId, tasteVector: p.tasteVector, createdAt: p.createdAt }));
   }
 
   async addInteraction(record: InteractionRecord) {
@@ -143,14 +216,16 @@ export class LocalRepository implements Repository {
     return this.data.interactions.filter((i) => i.userId === userId);
   }
 
-  async listPositiveInteractions(limit: number) {
-    return this.data.interactions.filter((i) => i.active && ["like", "bookmark", "visit"].includes(i.type)).slice(-limit);
+  async listPositiveInteractions(limit: number, sinceIso?: string) {
+    return this.data.interactions
+      .filter((i) => i.active && ["like", "bookmark", "visit"].includes(i.type) && (!sinceIso || i.createdAt >= sinceIso))
+      .slice(-limit);
   }
 
-  async countInteractionsByStore() {
-    const out: Record<string, Partial<Record<InteractionType, number>>> = {};
+  async countInteractionsByStore(sinceIso?: string) {
+    const out: InteractionCounts = {};
     for (const i of this.data.interactions) {
-      if (!i.active) continue;
+      if (!i.active || (sinceIso && i.createdAt < sinceIso)) continue;
       const bucket = (out[i.storeId] ??= {});
       bucket[i.type] = (bucket[i.type] ?? 0) + 1;
     }
@@ -179,39 +254,11 @@ export class LocalRepository implements Repository {
     return null;
   }
 
-  async upsertSocialConnection(record: SocialConnectionRecord) {
-    this.markUser(record.userId);
-    const idx = this.data.social.findIndex((s) => s.userId === record.userId && s.provider === record.provider);
-    if (idx >= 0) this.data.social[idx] = record;
-    else this.data.social.push(record);
-    await this.persist();
-  }
-
-  async getSocialConnection(userId: string, provider: "instagram") {
-    return this.data.social.find((s) => s.userId === userId && s.provider === provider) ?? null;
-  }
-
-  async revokeSocialByExternalId(provider: "instagram", externalUserId: string) {
-    const affected: string[] = [];
-    for (const s of this.data.social) {
-      if (s.provider === provider && s.externalUserId === externalUserId) {
-        s.status = "revoked";
-        s.tokenEncrypted = null;
-        s.signals = null;
-        s.updatedAt = new Date().toISOString();
-        affected.push(s.userId);
-      }
-    }
-    await this.persist();
-    return affected;
-  }
-
   async deleteUserData(userId: string) {
     delete this.data.users[userId];
     this.data.preferences = this.data.preferences.filter((p) => p.userId !== userId);
     this.data.interactions = this.data.interactions.filter((i) => i.userId !== userId);
     delete this.data.recommendations[userId];
-    this.data.social = this.data.social.filter((s) => s.userId !== userId);
     await this.persist();
   }
 
@@ -235,6 +282,6 @@ export class LocalRepository implements Repository {
 
   async seedStores(stores: Store[]) {
     // 로컬 모드에서는 data/stores/*.json이 곧 seed 데이터입니다.
-    return { stores: stores.length, features: stores.length };
+    return { stores: stores.length, features: stores.length, removed: 0 };
   }
 }

@@ -1,5 +1,6 @@
 /** 클라이언트 ↔ 서버 공용 요청/응답 스키마 */
 import { z } from "zod";
+import { INPUT_MODES, INTERVIEW_SLOTS, MAX_QUESTIONS } from "@/lib/preferences/types";
 import { TASTE_KEYS, type TasteKey, type TasteVector } from "@/lib/recommendation/dimensions";
 import type { ScoreComponents } from "@/lib/recommendation/engine";
 import type { LocationAccuracy, StoreCategory } from "@/lib/stores/types";
@@ -12,45 +13,76 @@ const unit = z.number().min(0).max(1);
 
 export const TasteVectorSchema = z.object(Object.fromEntries(TASTE_KEYS.map((k) => [k, unit])) as Record<TasteKey, typeof unit>);
 
-export const InterestItemSchema = z
-  .string()
-  .trim()
-  .min(1, "빈 항목이 있어요")
-  .max(30, "관심 상품은 30자 이내로 입력해주세요")
-  .refine((v) => !/[<>{}]/.test(v), "사용할 수 없는 문자가 있어요");
-
-/** 띄어쓰기·대소문자만 다른 항목도 같은 상품으로 봅니다. */
-export const normalizeInterestItem = (v: string) => v.toLowerCase().replace(/\s+/g, "");
-
-export const InterestItemsSchema = z
-  .array(InterestItemSchema)
-  .max(5, "관심 상품은 최대 5개까지 입력할 수 있어요")
-  .refine((items) => new Set(items.map(normalizeInterestItem)).size === items.length, "같은 관심 상품이 중복되었어요");
-
-export const InstagramInterestSchema = z.object({
-  keyword: z.string().trim().min(1).max(30),
-  score: unit,
-});
+const storeId = z.string().min(1).max(20);
 
 export const InteractionStateSchema = z.object({
-  liked: z.array(z.string().max(20)).max(100).default([]),
-  bookmarked: z.array(z.string().max(20)).max(100).default([]),
-  visited: z.array(z.string().max(20)).max(100).default([]),
-  dismissed: z.array(z.string().max(20)).max(100).default([]),
+  liked: z.array(storeId).max(200).default([]),
+  bookmarked: z.array(storeId).max(200).default([]),
+  visited: z.array(storeId).max(200).default([]),
+  dismissed: z.array(storeId).max(200).default([]),
 });
 export type InteractionState = z.infer<typeof InteractionStateSchema>;
 
-export const AnalyzeRequestSchema = z.object({
-  items: InterestItemsSchema,
-  instagram: z
-    .object({
-      mode: z.enum(["real", "mock"]),
-      personaId: z.string().max(30).nullable().optional(),
-      interests: z.array(InstagramInterestSchema).max(20),
-    })
-    .nullable(),
+// ---------- 취향 입력 ----------
+
+const safeText = (max: number, label: string) =>
+  z
+    .string()
+    .trim()
+    .min(1, `${label}을(를) 입력해주세요`)
+    .max(max, `${label}은(는) ${max}자 이내로 입력해주세요`)
+    .refine((v) => !/[<>{}]/.test(v), "사용할 수 없는 문자가 있어요");
+
+export const ChatMessageSchema = z.object({
+  role: z.enum(["assistant", "user"]),
+  text: safeText(300, "메시지"),
+  slot: z.enum(INTERVIEW_SLOTS).nullable().optional(),
 });
+
+/** 인사말 1개 + (답변·질문) 최대 6쌍 */
+const MAX_MESSAGES = MAX_QUESTIONS * 2 + 1;
+
+export const ConversationSchema = z
+  .array(ChatMessageSchema)
+  .max(MAX_MESSAGES, "대화가 너무 길어요. 지금까지 내용으로 분석해 주세요.")
+  .refine((messages) => messages.every((m, i) => m.role === (i % 2 === 0 ? "assistant" : "user")), "대화 순서가 올바르지 않아요.");
+
+export const InterviewRequestSchema = z.object({
+  messages: ConversationSchema.refine((m) => m.length >= 2 && m.at(-1)?.role === "user", "답변을 입력해주세요."),
+});
+
+/** 띄어쓰기·대소문자만 다른 키워드도 같은 키워드로 봅니다. */
+export const normalizeKeyword = (v: string) => v.toLowerCase().replace(/\s+/g, "");
+
+export const KeywordsSchema = z
+  .array(safeText(20, "키워드"))
+  .max(10, "키워드는 최대 10개까지 입력할 수 있어요")
+  .refine((items) => new Set(items.map(normalizeKeyword)).size === items.length, "같은 키워드가 중복되었어요");
+
+export const AnalyzeRequestSchema = z
+  .object({
+    mode: z.enum(INPUT_MODES),
+    messages: ConversationSchema.default([]),
+    keywords: KeywordsSchema.default([]),
+    /** 브라우저에 저장된 마지막 분석 버전 (서버 저장소가 초기화돼도 버전이 거꾸로 가지 않도록) */
+    previousVersion: z.number().int().min(0).max(100000).optional(),
+  })
+  .superRefine((body, ctx) => {
+    const answers = body.messages.filter((m) => m.role === "user").length;
+    if (body.mode !== "keywords" && answers === 0) {
+      ctx.addIssue({ code: "custom", message: "AI와 대화한 내용이 없어요. 먼저 질문에 답해주세요.", path: ["messages"] });
+    }
+    if (body.mode !== "chat" && body.keywords.length === 0) {
+      ctx.addIssue({ code: "custom", message: "키워드를 1개 이상 입력해주세요.", path: ["keywords"] });
+    }
+  });
 export type AnalyzeRequest = z.infer<typeof AnalyzeRequestSchema>;
+
+export const ActivateAnalysisRequestSchema = z.object({
+  analysisId: z.string().min(1).max(64),
+});
+
+// ---------- 추천 ----------
 
 export const RecommendationRequestSchema = z.object({
   profile: z.object({
@@ -58,32 +90,29 @@ export const RecommendationRequestSchema = z.object({
     recent: TasteVectorSchema.nullable(),
   }),
   interactions: InteractionStateSchema.optional(),
+  /** 추천 기준 미만이어도 상세 점수가 필요한 점포 (상세 화면) */
+  include: z.array(storeId).max(5).optional(),
+  analysisVersion: z.number().int().min(0).max(100000).nullable().optional(),
 });
 
 export const ReasonsRequestSchema = z.object({
   personaLabel: z.string().max(40).nullable(),
+  summary: z.string().max(300).nullable().optional(),
+  intentLabel: z.string().max(40).nullable().optional(),
   taste: TasteVectorSchema,
   recent: TasteVectorSchema.nullable(),
-  storeIds: z.array(z.string().max(20)).min(1).max(12),
+  storeIds: z.array(storeId).min(1).max(12),
 });
 
 export const InteractionRequestSchema = z.object({
-  storeId: z.string().max(20),
+  storeId,
   type: z.enum(["view", "like", "bookmark", "dismiss", "visit"]),
   active: z.boolean().default(true),
   taste: TasteVectorSchema.nullable().optional(),
 });
 
-export const SaveProfileRequestSchema = z.object({
-  taste: TasteVectorSchema,
-  recent: TasteVectorSchema,
-  topCategories: z.array(z.object({ key: z.enum(TASTE_KEYS), score: unit })).max(10),
-  items: InterestItemsSchema,
-  instagramKeywords: z.array(InstagramInterestSchema).max(20),
-  instagramMode: z.enum(["real", "mock", "none"]),
-  personaLabel: z.string().max(40).nullable(),
-  summary: z.string().max(400).nullable(),
-  aiProvider: z.enum(["gemini", "mock"]),
+export const MerchantPromoRequestSchema = z.object({
+  storeId: storeId.nullable(),
 });
 
 // ---------- 응답 DTO ----------
@@ -147,41 +176,47 @@ export interface StoreDTO {
 
 export interface RecommendationItem {
   storeId: string;
+  /** 추천 순위 (기준 점수 이상일 때만, 지도·목록 공통) */
+  rank: number | null;
   score: number;
   raw: number;
   components: ScoreComponents;
   matchedTastes: { key: TasteKey; user: number; store: number; contribution: number }[];
   matchedProducts: string[];
+  facet: TasteKey | null;
   reason: string;
   reasonProvider: "gemini" | "template";
   recommendable: boolean;
   dismissed: boolean;
 }
 
-export interface ProfileResult {
-  personaLabel: string;
-  summary: string;
-  taste: TasteVector;
-  recent: TasteVector;
-  topCategories: { key: TasteKey; score: number; evidence: string }[];
-  itemInsights: { input: string; keys: TasteKey[]; note: string }[];
-  provider: "gemini" | "mock";
-  model: string | null;
-  fallbackReason: string | null;
+export interface RecommendationThreshold {
+  primary: number;
+  fallback: number;
+  /** 실제 적용된 기준 (없으면 일치하는 점포 없음) */
+  applied: number | null;
+  usedFallback: boolean;
+}
+
+export interface RecommendationsResponse {
+  /** 순위가 매겨진 추천 점포(점수 내림차순) + include로 요청한 점포 */
+  items: RecommendationItem[];
+  threshold: RecommendationThreshold;
+  counts: { atPrimary: number; atFallback: number; scored: number; dismissed: number };
+  bestScore: number;
+  /** 전체 점포 점수 (상세 화면·목록 표시용, 기준 미만 포함) */
+  scores: Record<string, number>;
+  interactions: InteractionState;
+  analysisVersion: number | null;
+  generatedAt: string;
 }
 
 export interface PublicConfig {
   modes: {
-    instagram: "real" | "mock";
     ai: "gemini" | "mock";
     map: "kakao" | "mock";
     geocoding: "kakao" | "mock";
     storage: "supabase" | "local-file" | "memory";
   };
   kakaoJsKey: string | null;
-  instagram: {
-    connected: boolean;
-    username: string | null;
-    mediaAnalyzed: number;
-  };
 }

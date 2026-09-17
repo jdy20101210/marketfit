@@ -11,7 +11,6 @@ import { decryptString, encryptString } from "@/lib/security/crypto";
  */
 
 export const DEFAULT_GEMINI_MODEL = "gemini-flash-latest";
-export const INSTAGRAM_SCOPES = ["instagram_business_basic"] as const;
 
 const lenientKey = (min: number, max: number) =>
   z
@@ -51,42 +50,6 @@ export const INTEGRATION_FIELDS = {
     envNames: ["KAKAO_REST_API_KEY"],
     schema: lenientKey(16, 64),
     help: "주소→좌표 변환(Kakao Local)용, 서버에서만 사용",
-  },
-  META_APP_ID: {
-    group: "instagram",
-    label: "Instagram 앱 ID",
-    secret: false,
-    envNames: ["META_APP_ID", "INSTAGRAM_APP_ID"],
-    schema: z.string().trim().regex(/^\d{5,25}$/, "숫자로 된 앱 ID를 입력하세요"),
-    help: "Meta 앱 대시보드 > Instagram > API setup with Instagram login 의 'Instagram 앱 ID'",
-  },
-  META_APP_SECRET: {
-    group: "instagram",
-    label: "Instagram 앱 시크릿",
-    secret: true,
-    envNames: ["META_APP_SECRET", "INSTAGRAM_APP_SECRET"],
-    schema: lenientKey(16, 64),
-    help: "같은 화면의 'Instagram 앱 시크릿' (서버에서만 사용)",
-  },
-  INSTAGRAM_REDIRECT_URI: {
-    group: "instagram",
-    label: "리디렉션 URI",
-    secret: false,
-    envNames: ["INSTAGRAM_REDIRECT_URI"],
-    schema: z
-      .string()
-      .trim()
-      .pipe(z.url("URL 형식이 아닙니다"))
-      .refine((v) => v.startsWith("https://") || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(v), "배포 환경은 https 주소여야 합니다"),
-    help: "비우면 현재 접속 주소 기준 /api/instagram/callback 을 자동 사용",
-  },
-  INSTAGRAM_GRAPH_API_VERSION: {
-    group: "instagram",
-    label: "Graph API 버전",
-    secret: false,
-    envNames: ["INSTAGRAM_GRAPH_API_VERSION"],
-    schema: z.string().trim().regex(/^v\d+\.\d+$/, "예: v24.0"),
-    help: "비우면 앱 기본 버전 사용 (예: v24.0)",
   },
 } as const;
 
@@ -195,24 +158,6 @@ export function validateIntegrationValue(key: IntegrationKey, value: string): st
 
 // ---------- 모드 판단 ----------
 
-export interface InstagramConfig {
-  appId: string;
-  appSecret: string;
-  redirectUri: string | null;
-  graphVersion: string | null;
-}
-
-export async function getInstagramConfig(): Promise<InstagramConfig | null> {
-  const { values } = await getIntegrations();
-  if (!values.META_APP_ID || !values.META_APP_SECRET) return null;
-  return {
-    appId: values.META_APP_ID,
-    appSecret: values.META_APP_SECRET,
-    redirectUri: values.INSTAGRAM_REDIRECT_URI ?? null,
-    graphVersion: values.INSTAGRAM_GRAPH_API_VERSION ?? null,
-  };
-}
-
 export async function getGeminiConfig(): Promise<{ apiKey: string; model: string } | null> {
   const { values } = await getIntegrations();
   if (!values.GEMINI_API_KEY) return null;
@@ -225,26 +170,16 @@ export async function getKakaoConfig(): Promise<{ jsKey: string | null; restKey:
 }
 
 export interface PublicModes {
-  instagram: "real" | "mock";
   ai: "gemini" | "mock";
   map: "kakao" | "mock";
   geocoding: "kakao" | "mock";
 }
 
 export async function getPublicModes(): Promise<PublicModes> {
-  const [ig, gemini, kakao] = await Promise.all([getInstagramConfig(), getGeminiConfig(), getKakaoConfig()]);
+  const [gemini, kakao] = await Promise.all([getGeminiConfig(), getKakaoConfig()]);
   return {
-    instagram: ig ? "real" : "mock",
     ai: gemini ? "gemini" : "mock",
     map: kakao.jsKey ? "kakao" : "mock",
     geocoding: kakao.restKey ? "kakao" : "mock",
   };
-}
-
-/** 요청 URL 기준 Instagram 콜백 주소 */
-export function resolveRedirectUri(configured: string | null, requestOrigin: string): string {
-  if (configured) return configured;
-  const appUrl = getEnv().APP_URL;
-  const base = appUrl ? appUrl.replace(/\/$/, "") : requestOrigin;
-  return `${base}/api/instagram/callback`;
 }

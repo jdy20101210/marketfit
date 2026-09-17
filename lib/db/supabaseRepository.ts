@@ -1,16 +1,20 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { toVector } from "@/lib/recommendation/dimensions";
+import { toVector, type TasteVector } from "@/lib/recommendation/dimensions";
+import type { InputMode } from "@/lib/preferences/types";
 import type { MarketFeatures, Store, StoreCategory, StoreDescription, StoreFeatures, StoreLocation, StoreSeed } from "@/lib/stores/types";
 import type {
+  InteractionCounts,
   InteractionRecord,
   InteractionType,
   MerchantInsightRecord,
+  NewPreferenceRecord,
+  PreferenceContextRecord,
   PreferenceRecord,
+  RecentPreferenceSignal,
   RecommendationRecord,
   Repository,
   RepositoryInfo,
-  SocialConnectionRecord,
   StoreOverrides,
 } from "./types";
 
@@ -21,6 +25,45 @@ function must<T>(result: { data: T; error: { message: string } | null }, what: s
   return result.data;
 }
 
+const EMPTY_CONTEXT: PreferenceContextRecord = {
+  intent: null,
+  intentLabel: null,
+  budget: null,
+  companion: null,
+  occasion: null,
+  preferredStyle: [],
+  discoveryPreference: null,
+};
+
+const INPUT_MODES: InputMode[] = ["chat", "keywords", "both"];
+
+function mapPreference(r: Row): PreferenceRecord {
+  return {
+    id: String(r.analysis_id ?? r.id),
+    userId: String(r.user_id),
+    analysisVersion: Number(r.analysis_version ?? 1),
+    inputMode: INPUT_MODES.includes(r.input_mode as InputMode) ? (r.input_mode as InputMode) : "keywords",
+    tasteVector: toVector(r.taste_vector as Record<string, unknown>),
+    recentVector: toVector(r.recent_vector as Record<string, unknown>),
+    topCategories: (r.top_categories as PreferenceRecord["topCategories"]) ?? [],
+    keywords: (r.keywords as string[]) ?? [],
+    context: { ...EMPTY_CONTEXT, ...((r.context as Partial<PreferenceContextRecord> | null) ?? {}) },
+    personaLabel: (r.persona_label as string | null) ?? null,
+    summary: (r.summary as string | null) ?? null,
+    aiProvider: r.ai_provider === "gemini" ? "gemini" : "mock",
+    aiModel: (r.ai_model as string | null) ?? null,
+    isActive: Boolean(r.is_active),
+    createdAt: String(r.created_at),
+  };
+}
+
+const PREFERENCE_COLUMNS =
+  "analysis_id, user_id, analysis_version, input_mode, taste_vector, recent_vector, top_categories, keywords, context, persona_label, summary, ai_provider, ai_model, is_active, created_at";
+
+/**
+ * Supabase PostgreSQL 저장소 (service_role 키, 서버 전용)
+ * 스키마: supabase/migrations/0001 → 0002 → 0003 순서로 적용
+ */
 export class SupabaseRepository implements Repository {
   private readonly db: SupabaseClient;
 
@@ -58,57 +101,100 @@ export class SupabaseRepository implements Repository {
     );
   }
 
-  async savePreference(r: PreferenceRecord) {
+  // ---------- 취향 분석 결과 (버전 관리) ----------
+
+  async savePreference(r: NewPreferenceRecord, options: { minVersion?: number } = {}) {
     await this.touchUser(r.userId);
+    const latest = must(
+      await this.db.from("user_preferences").select("analysis_version").eq("user_id", r.userId).order("analysis_version", { ascending: false }).limit(1),
+      "분석 버전 조회 (supabase/migrations/0003 적용 필요)",
+    ) as Row[];
+    const maxVersion = Number(latest[0]?.analysis_version ?? 0);
+    const analysisVersion = Math.max(maxVersion, (options.minVersion ?? 1) - 1) + 1;
+    must(await this.db.from("user_preferences").update({ is_active: false }).eq("user_id", r.userId).eq("is_active", true), "이전 분석 비활성화");
     must(
       await this.db.from("user_preferences").insert({
+        analysis_id: r.id,
         user_id: r.userId,
+        analysis_version: analysisVersion,
+        input_mode: r.inputMode,
         taste_vector: r.tasteVector,
         recent_vector: r.recentVector,
         top_categories: r.topCategories,
-        interest_inputs: r.interestInputs,
-        instagram_keywords: r.instagramKeywords,
-        instagram_mode: r.instagramMode,
+        keywords: r.keywords,
+        context: r.context,
         persona_label: r.personaLabel,
         summary: r.summary,
         ai_provider: r.aiProvider,
+        ai_model: r.aiModel,
+        is_active: true,
         created_at: r.createdAt,
       }),
       "취향 저장",
     );
+    return { analysisVersion };
   }
 
-  async latestPreferences(userIds: string[]) {
+  async activePreferences(userIds: string[]) {
     if (userIds.length === 0) return [];
     const rows = must(
       await this.db
         .from("user_preferences")
-        .select("*")
+        .select(PREFERENCE_COLUMNS)
         .in("user_id", userIds.slice(0, 1000))
-        .order("created_at", { ascending: false })
+        .order("is_active", { ascending: false })
+        .order("analysis_version", { ascending: false })
         .limit(5000),
       "취향 조회",
     ) as Row[];
-    const latest = new Map<string, PreferenceRecord>();
+    const byUser = new Map<string, PreferenceRecord>();
     for (const r of rows) {
       const userId = String(r.user_id);
-      if (latest.has(userId)) continue;
-      latest.set(userId, {
-        userId,
-        tasteVector: toVector(r.taste_vector as Record<string, unknown>),
-        recentVector: toVector(r.recent_vector as Record<string, unknown>),
-        topCategories: (r.top_categories as PreferenceRecord["topCategories"]) ?? [],
-        interestInputs: (r.interest_inputs as string[]) ?? [],
-        instagramKeywords: (r.instagram_keywords as PreferenceRecord["instagramKeywords"]) ?? [],
-        instagramMode: (r.instagram_mode as PreferenceRecord["instagramMode"]) ?? "none",
-        personaLabel: (r.persona_label as string | null) ?? null,
-        summary: (r.summary as string | null) ?? null,
-        aiProvider: r.ai_provider === "gemini" ? "gemini" : "mock",
-        createdAt: String(r.created_at),
-      });
+      if (!byUser.has(userId)) byUser.set(userId, mapPreference(r));
     }
-    return [...latest.values()];
+    return [...byUser.values()];
   }
+
+  async listPreferenceHistory(userId: string, limit: number) {
+    const rows = must(
+      await this.db.from("user_preferences").select(PREFERENCE_COLUMNS).eq("user_id", userId).order("analysis_version", { ascending: false }).limit(limit),
+      "분석 기록 조회",
+    ) as Row[];
+    return rows.map(mapPreference);
+  }
+
+  async activatePreference(userId: string, id: string) {
+    const found = must(
+      await this.db.from("user_preferences").select("analysis_id").eq("user_id", userId).eq("analysis_id", id).limit(1),
+      "분석 결과 확인",
+    ) as Row[];
+    if (found.length === 0) return false;
+    must(await this.db.from("user_preferences").update({ is_active: false }).eq("user_id", userId).eq("is_active", true), "이전 분석 비활성화");
+    must(await this.db.from("user_preferences").update({ is_active: true }).eq("user_id", userId).eq("analysis_id", id), "분석 결과 활성화");
+    return true;
+  }
+
+  async updateActivePreferenceVector(userId: string, tasteVector: TasteVector) {
+    must(
+      await this.db.from("user_preferences").update({ taste_vector: tasteVector }).eq("user_id", userId).eq("is_active", true),
+      "취향 업데이트",
+    );
+  }
+
+  async listRecentPreferences(sinceIso: string, limit: number): Promise<RecentPreferenceSignal[]> {
+    const rows = must(
+      await this.db
+        .from("user_preferences")
+        .select("user_id, taste_vector, created_at")
+        .gte("created_at", sinceIso)
+        .order("created_at", { ascending: false })
+        .limit(limit),
+      "최근 취향 집계 조회",
+    ) as Row[];
+    return rows.map((r) => ({ userKey: String(r.user_id), tasteVector: toVector(r.taste_vector as Record<string, unknown>), createdAt: String(r.created_at) }));
+  }
+
+  // ---------- 행동 기록 ----------
 
   async addInteraction(r: InteractionRecord) {
     await this.touchUser(r.userId);
@@ -147,31 +233,22 @@ export class SupabaseRepository implements Repository {
     return rows.map((r) => this.mapInteraction(r));
   }
 
-  async listPositiveInteractions(limit: number) {
-    const rows = must(
-      await this.db
-        .from("user_interactions")
-        .select("user_id, store_id, interaction_type, active, created_at")
-        .in("interaction_type", ["like", "bookmark", "visit"])
-        .eq("active", true)
-        .order("created_at", { ascending: false })
-        .limit(limit),
-      "집계용 행동 조회",
-    ) as Row[];
+  async listPositiveInteractions(limit: number, sinceIso?: string) {
+    let query = this.db
+      .from("user_interactions")
+      .select("user_id, store_id, interaction_type, active, created_at")
+      .in("interaction_type", ["like", "bookmark", "visit"])
+      .eq("active", true);
+    if (sinceIso) query = query.gte("created_at", sinceIso);
+    const rows = must(await query.order("created_at", { ascending: false }).limit(limit), "집계용 행동 조회") as Row[];
     return rows.map((r) => this.mapInteraction(r));
   }
 
-  async countInteractionsByStore() {
-    const rows = must(
-      await this.db
-        .from("user_interactions")
-        .select("store_id, interaction_type")
-        .eq("active", true)
-        .order("created_at", { ascending: false })
-        .limit(20000),
-      "행동 집계",
-    ) as Row[];
-    const out: Record<string, Partial<Record<InteractionType, number>>> = {};
+  async countInteractionsByStore(sinceIso?: string) {
+    let query = this.db.from("user_interactions").select("store_id, interaction_type").eq("active", true);
+    if (sinceIso) query = query.gte("created_at", sinceIso);
+    const rows = must(await query.order("created_at", { ascending: false }).limit(20000), "행동 집계") as Row[];
+    const out: InteractionCounts = {};
     for (const r of rows) {
       const bucket = (out[String(r.store_id)] ??= {});
       const type = r.interaction_type as InteractionType;
@@ -193,6 +270,7 @@ export class SupabaseRepository implements Repository {
           components: r.components,
           reason: r.reason,
           reason_provider: r.reasonProvider,
+          analysis_version: r.analysisVersion,
           created_at: r.createdAt,
         })),
       ),
@@ -235,100 +313,12 @@ export class SupabaseRepository implements Repository {
     } satisfies MerchantInsightRecord;
   }
 
-  async upsertSocialConnection(r: SocialConnectionRecord) {
-    await this.touchUser(r.userId);
-    const row = must(
-      await this.db
-        .from("social_connections")
-        .upsert(
-          {
-            user_id: r.userId,
-            provider: r.provider,
-            status: r.status,
-            external_user_id: r.externalUserId,
-            username: r.username,
-            account_type: r.accountType,
-            signals: r.signals,
-            updated_at: r.updatedAt,
-          },
-          { onConflict: "user_id,provider" },
-        )
-        .select("id")
-        .single(),
-      "연결 저장",
-    ) as Row;
-    const connectionId = Number(row.id);
-    if (r.tokenEncrypted) {
-      must(
-        await this.db.from("social_tokens").upsert({
-          connection_id: connectionId,
-          access_token_encrypted: r.tokenEncrypted,
-          expires_at: r.tokenExpiresAt,
-          updated_at: new Date().toISOString(),
-        }),
-        "토큰 저장",
-      );
-    } else {
-      must(await this.db.from("social_tokens").delete().eq("connection_id", connectionId), "토큰 삭제");
-    }
-  }
-
-  async getSocialConnection(userId: string, provider: "instagram") {
-    const row = must(
-      await this.db
-        .from("social_connections")
-        .select("*, social_tokens(access_token_encrypted, expires_at)")
-        .eq("user_id", userId)
-        .eq("provider", provider)
-        .maybeSingle(),
-      "연결 조회",
-    ) as Row | null;
-    if (!row) return null;
-    const tokenRel = row.social_tokens as Row | Row[] | null;
-    const token = Array.isArray(tokenRel) ? tokenRel[0] : tokenRel;
-    return {
-      userId,
-      provider,
-      status: row.status as SocialConnectionRecord["status"],
-      externalUserId: (row.external_user_id as string | null) ?? null,
-      username: (row.username as string | null) ?? null,
-      accountType: (row.account_type as string | null) ?? null,
-      signals: (row.signals as SocialConnectionRecord["signals"]) ?? null,
-      tokenEncrypted: (token?.access_token_encrypted as string | undefined) ?? null,
-      tokenExpiresAt: (token?.expires_at as string | undefined) ?? null,
-      updatedAt: String(row.updated_at),
-    };
-  }
-
-  async revokeSocialByExternalId(provider: "instagram", externalUserId: string) {
-    const rows = must(
-      await this.db
-        .from("social_connections")
-        .update({ status: "revoked", signals: null, updated_at: new Date().toISOString() })
-        .eq("provider", provider)
-        .eq("external_user_id", externalUserId)
-        .select("id, user_id"),
-      "연결 해제",
-    ) as Row[];
-    if (rows.length) {
-      must(
-        await this.db
-          .from("social_tokens")
-          .delete()
-          .in(
-            "connection_id",
-            rows.map((r) => Number(r.id)),
-          ),
-        "토큰 삭제",
-      );
-    }
-    return rows.map((r) => String(r.user_id));
-  }
-
   async deleteUserData(userId: string) {
-    // users 삭제 시 on delete cascade로 관련 데이터가 함께 삭제됩니다.
+    // users 삭제 시 on delete cascade로 취향·행동·추천 기록이 함께 삭제됩니다.
     must(await this.db.from("users").delete().eq("id", userId), "사용자 데이터 삭제");
   }
+
+  // ---------- 점포 ----------
 
   async loadStoreOverrides(): Promise<StoreOverrides> {
     const storeRows = must(await this.db.from("stores").select("*").order("id"), "점포 조회") as Row[];
@@ -389,7 +379,6 @@ export class SupabaseRepository implements Repository {
         provider: (r.location_provider as StoreLocation["provider"]) ?? null,
         geocodedAt: (r.geocoded_at as string | null) ?? null,
       }));
-    // 0002 마이그레이션의 소개 컬럼 (적용 전이면 값이 없음)
     const descriptions: StoreDescription[] = featureRows
       .filter((r) => typeof r.description === "string" && r.description.length > 0)
       .map((r) => ({
@@ -448,68 +437,78 @@ export class SupabaseRepository implements Repository {
     }
   }
 
+  /** 점포·feature를 반영하고, 현재 원본에 없는 이전 점포 행은 삭제합니다. */
   async seedStores(stores: Store[]) {
     const now = new Date().toISOString();
-    must(
-      await this.db.from("stores").upsert(
-        stores.map((s) => ({
-          id: s.id,
-          source_ids: s.sourceIds,
-          name: s.name,
-          store_type: s.storeType,
-          items: s.items,
-          items_raw: s.itemsRaw,
-          categories_raw: s.categoriesRaw,
-          main_category: s.mainCategory,
-          sub_category: s.subCategory,
-          address_raw: s.addressRaw,
-          address_clean: s.addressClean,
-          zone: s.zone,
-          loc_level: s.locLevel,
-          phone_raw: s.phoneRaw,
-          phone: s.phone,
-          phone_status: s.phoneStatus,
-          source: s.source,
-          collected_at: s.collectedAt || null,
-          note: s.note,
-          entity_kind: s.entityKind,
-          geocode_query: s.geocodeQuery,
-          address_detail: s.addressDetail,
-          location_basis: s.locationBasis,
-          source_row: s.sourceRow,
-          lat: s.location.lat,
-          lng: s.location.lng,
-          location_accuracy: s.location.accuracy,
-          location_note: s.location.note,
-          location_provider: s.location.provider,
-          geocoded_at: s.location.geocodedAt,
-          updated_at: now,
-        })),
-        { onConflict: "id" },
-      ),
-      "점포 seed",
-    );
-    must(
-      await this.db.from("store_features").upsert(
-        stores.map((s) => ({
-          store_id: s.id,
-          primary_category: s.features.primaryCategory,
-          categories: s.features.categories,
-          sub_category: s.features.subCategory,
-          inferred_by: s.features.inferredBy,
-          taste: s.features.taste,
-          market: s.features.market,
-          exposure: s.features.exposure,
-          tags: s.features.tags,
-          product_hints: s.features.productHints,
-          recommendable: s.features.recommendable,
-          rationale: s.features.rationale,
-          updated_at: now,
-        })),
-        { onConflict: "store_id" },
-      ),
-      "점포 feature seed",
-    );
-    return { stores: stores.length, features: stores.length };
+    for (let i = 0; i < stores.length; i += 200) {
+      const chunk = stores.slice(i, i + 200);
+      must(
+        await this.db.from("stores").upsert(
+          chunk.map((s) => ({
+            id: s.id,
+            source_ids: s.sourceIds,
+            name: s.name,
+            store_type: s.storeType,
+            items: s.items,
+            items_raw: s.itemsRaw,
+            categories_raw: s.categoriesRaw,
+            main_category: s.mainCategory,
+            sub_category: s.subCategory,
+            address_raw: s.addressRaw,
+            address_clean: s.addressClean,
+            zone: s.zone,
+            loc_level: s.locLevel,
+            phone_raw: s.phoneRaw,
+            phone: s.phone,
+            phone_status: s.phoneStatus,
+            source: s.source,
+            collected_at: s.collectedAt || null,
+            note: s.note,
+            entity_kind: s.entityKind,
+            geocode_query: s.geocodeQuery,
+            address_detail: s.addressDetail,
+            location_basis: s.locationBasis,
+            source_row: s.sourceRow,
+            lat: s.location.lat,
+            lng: s.location.lng,
+            location_accuracy: s.location.accuracy,
+            location_note: s.location.note,
+            location_provider: s.location.provider,
+            geocoded_at: s.location.geocodedAt,
+            updated_at: now,
+          })),
+          { onConflict: "id" },
+        ),
+        "점포 seed (supabase/migrations/0003 적용 필요)",
+      );
+      must(
+        await this.db.from("store_features").upsert(
+          chunk.map((s) => ({
+            store_id: s.id,
+            primary_category: s.features.primaryCategory,
+            categories: s.features.categories,
+            sub_category: s.features.subCategory,
+            inferred_by: s.features.inferredBy,
+            taste: s.features.taste,
+            market: s.features.market,
+            exposure: s.features.exposure,
+            tags: s.features.tags,
+            product_hints: s.features.productHints,
+            recommendable: s.features.recommendable,
+            rationale: s.features.rationale,
+            updated_at: now,
+          })),
+          { onConflict: "store_id" },
+        ),
+        "점포 feature seed",
+      );
+    }
+    const keep = new Set(stores.map((s) => s.id));
+    const existing = must(await this.db.from("stores").select("id").limit(10000), "기존 점포 조회") as Row[];
+    const stale = existing.map((r) => String(r.id)).filter((id) => !keep.has(id));
+    for (let i = 0; i < stale.length; i += 100) {
+      must(await this.db.from("stores").delete().in("id", stale.slice(i, i + 100)), "이전 점포 정리");
+    }
+    return { stores: stores.length, features: stores.length, removed: stale.length };
   }
 }

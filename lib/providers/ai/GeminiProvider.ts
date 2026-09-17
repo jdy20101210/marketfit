@@ -1,29 +1,42 @@
 import "server-only";
-import { vectorFromKeywords } from "@/lib/recommendation/keywords";
 import { DEFAULT_GEMINI_MODEL } from "@/lib/config/integrations";
+import { parseAmounts } from "@/lib/preferences/extract";
+import { applySouvenirExpansion, buildRuleProfile } from "@/lib/preferences/profile";
 import {
-  buildProfilePrompt,
+  buildInterviewPrompt,
+  buildMerchantPromoPrompt,
+  buildPreferencePrompt,
   buildReasonsPrompt,
   buildStoreDescriptionPrompt,
-  PROFILE_SYSTEM_PROMPT,
+  INTERVIEW_SYSTEM_PROMPT,
+  MERCHANT_PROMO_SYSTEM_PROMPT,
+  PREFERENCE_SYSTEM_PROMPT,
   REASONS_SYSTEM_PROMPT,
   STORE_DESCRIPTION_SYSTEM_PROMPT,
 } from "./prompts";
 import {
   blendVectors,
+  INTERVIEW_RESPONSE_SCHEMA,
   InvalidAIResponseError,
-  parseProfileResponse,
+  MERCHANT_PROMO_RESPONSE_SCHEMA,
+  parseInterviewResponse,
+  parsePreferenceResponse,
+  parsePromoResponse,
   parseReasonsResponse,
   parseStoreDescriptionsResponse,
-  PROFILE_RESPONSE_SCHEMA,
+  PREFERENCE_RESPONSE_SCHEMA,
   REASONS_RESPONSE_SCHEMA,
   STORE_DESCRIPTIONS_RESPONSE_SCHEMA,
 } from "./schemas";
 import {
   AIProviderError,
   type AIProvider,
-  type ProfileAnalysis,
-  type ProfileAnalysisInput,
+  type InterviewDraft,
+  type InterviewInput,
+  type MerchantPromoDraft,
+  type MerchantPromoInput,
+  type PreferenceDraft,
+  type PreferenceInput,
   type ReasonInput,
   type StoreDescriptionInput,
 } from "./types";
@@ -36,7 +49,8 @@ type GenerateResult = { json: unknown; model: string };
 /**
  * Gemini API (generateContent + 구조화 JSON 출력)
  * - API 키는 서버에서만 사용하며 x-goog-api-key 헤더로 전달합니다.
- * - Gemini는 취향 분석과 추천 "이유" 작성만 담당하고, 추천 점수는 계산하지 않습니다.
+ * - Gemini는 취향 해석·질문·설명 문장만 담당하고, 추천 점수와 순위는 계산하지 않습니다.
+ * - 모든 응답은 schemas.ts의 Zod 스키마로 검증합니다.
  */
 export class GeminiProvider implements AIProvider {
   readonly name = "gemini" as const;
@@ -54,27 +68,49 @@ export class GeminiProvider implements AIProvider {
     return this.resolvedModel;
   }
 
-  async analyzeProfile(input: ProfileAnalysisInput): Promise<ProfileAnalysis> {
+  async interviewTurn(input: InterviewInput): Promise<InterviewDraft> {
     const { json } = await this.generate({
-      system: PROFILE_SYSTEM_PROMPT,
-      prompt: buildProfilePrompt(input),
-      schema: PROFILE_RESPONSE_SCHEMA,
+      system: INTERVIEW_SYSTEM_PROMPT,
+      prompt: buildInterviewPrompt(input),
+      schema: INTERVIEW_RESPONSE_SCHEMA,
+      temperature: 0.4,
+      timeoutMs: 15_000,
+    });
+    return parseInterviewResponse(json);
+  }
+
+  async analyzePreferences(input: PreferenceInput): Promise<PreferenceDraft> {
+    const { json } = await this.generate({
+      system: PREFERENCE_SYSTEM_PROMPT,
+      prompt: buildPreferencePrompt(input),
+      schema: PREFERENCE_RESPONSE_SCHEMA,
       temperature: 0.3,
     });
-    const analysis = parseProfileResponse(json, input.items);
+    const userText = input.mode === "keywords" ? "" : input.messages.filter((m) => m.role === "user").map((m) => m.text).join(" ");
+    const draft = parsePreferenceResponse(json, input.mode === "chat" ? [] : input.keywords, {
+      hasBudgetMention: parseAmounts(userText).length > 0,
+    });
 
-    // 입력 키워드에서 계산한 규칙 기반 vector를 25% 섞어 과도한 추정을 완화합니다.
-    const ruleTaste = vectorFromKeywords([
-      ...(input.instagram?.interests ?? []),
-      ...input.items.map((keyword) => ({ keyword, score: 0.85 })),
-    ]).vector;
-    const ruleRecent = input.items.length
-      ? vectorFromKeywords(input.items.map((keyword) => ({ keyword, score: 0.85 }))).vector
-      : ruleTaste;
+    // 규칙 기반 결과를 25% 섞어 과도한 추정을 완화하고, 사용자가 적은 숫자(예산)는 규칙 파싱 값을 우선합니다.
+    const rule = buildRuleProfile({ mode: input.mode, messages: input.messages, keywords: input.keywords });
+    const known = rule.slots;
     return {
-      ...analysis,
-      tasteVector: blendVectors(analysis.tasteVector, ruleTaste),
-      recentVector: blendVectors(analysis.recentVector, ruleRecent),
+      ...draft,
+      profile: {
+        ...draft.profile,
+        // 규칙으로 해석할 신호가 없던 입력은 Gemini 결과만 사용합니다.
+        categories: applySouvenirExpansion(rule.empty ? draft.profile.categories : blendVectors(draft.profile.categories, rule.profile.categories)),
+        budget: known.budget ?? draft.profile.budget,
+        lookingFor: draft.profile.lookingFor ?? known.lookingFor,
+        intent: draft.profile.intent ?? known.intent,
+        intentLabel: draft.profile.intentLabel ?? known.intentLabel,
+        companion: draft.profile.companion ?? known.companion,
+        occasion: draft.profile.occasion ?? known.occasion,
+        preferredStyle: draft.profile.preferredStyle.length ? draft.profile.preferredStyle : known.preferredStyle,
+        discoveryPreference: draft.profile.discoveryPreference ?? known.discoveryPreference,
+      },
+      focus: rule.empty ? draft.focus : blendVectors(draft.focus, rule.focus),
+      keywordInsights: draft.keywordInsights.length ? draft.keywordInsights : rule.keywordInsights,
     };
   }
 
@@ -114,7 +150,17 @@ export class GeminiProvider implements AIProvider {
     return out;
   }
 
-  private async generate(args: { system: string; prompt: string; schema: object; temperature: number }): Promise<GenerateResult> {
+  async generateMerchantPromo(input: MerchantPromoInput): Promise<MerchantPromoDraft> {
+    const { json } = await this.generate({
+      system: MERCHANT_PROMO_SYSTEM_PROMPT,
+      prompt: buildMerchantPromoPrompt(input),
+      schema: MERCHANT_PROMO_RESPONSE_SCHEMA,
+      temperature: 0.7,
+    });
+    return parsePromoResponse(json);
+  }
+
+  private async generate(args: { system: string; prompt: string; schema: object; temperature: number; timeoutMs?: number }): Promise<GenerateResult> {
     const candidates = [...new Set([this.resolvedModel, ...FALLBACK_MODELS])];
     let lastError: unknown = null;
     for (const model of candidates) {
@@ -132,7 +178,10 @@ export class GeminiProvider implements AIProvider {
     throw lastError instanceof Error ? lastError : new AIProviderError("사용 가능한 Gemini 모델이 없습니다.", "not_found");
   }
 
-  private async callModel(model: string, args: { system: string; prompt: string; schema: object; temperature: number }): Promise<unknown> {
+  private async callModel(
+    model: string,
+    args: { system: string; prompt: string; schema: object; temperature: number; timeoutMs?: number },
+  ): Promise<unknown> {
     let res: Response;
     try {
       res = await fetch(`${API_BASE}/models/${encodeURIComponent(model)}:generateContent`, {
@@ -148,7 +197,7 @@ export class GeminiProvider implements AIProvider {
           },
         }),
         cache: "no-store",
-        signal: AbortSignal.timeout(this.timeoutMs),
+        signal: AbortSignal.timeout(args.timeoutMs ?? this.timeoutMs),
       });
     } catch (err) {
       const isTimeout = err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError");
@@ -158,14 +207,15 @@ export class GeminiProvider implements AIProvider {
     if (!res.ok) throw await toProviderError(res);
 
     const body = (await res.json()) as {
-      candidates?: { content?: { parts?: { text?: string }[] }; finishReason?: string }[];
+      candidates?: { content?: { parts?: { text?: string; thought?: boolean }[] }; finishReason?: string }[];
       promptFeedback?: { blockReason?: string };
     };
     if (body.promptFeedback?.blockReason) {
       throw new AIProviderError(`요청이 차단되었습니다 (${body.promptFeedback.blockReason}).`, "invalid_response");
     }
     const text = body.candidates?.[0]?.content?.parts
-      ?.map((p) => p.text ?? "")
+      ?.filter((p) => !p.thought)
+      .map((p) => p.text ?? "")
       .join("")
       .trim();
     if (!text) throw new AIProviderError("Gemini 응답이 비어 있습니다.", "invalid_response");

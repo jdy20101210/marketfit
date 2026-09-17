@@ -1,3 +1,4 @@
+import type { Budget, Companion, DiscoveryPreference, InputMode, Occasion, PreferredStyle } from "@/lib/preferences/types";
 import type { TasteKey, TasteVector } from "@/lib/recommendation/dimensions";
 import type { Store, StoreDescription, StoreFeatures, StoreLocation, StoreSeed } from "@/lib/stores/types";
 
@@ -13,19 +14,42 @@ export interface InteractionRecord {
   createdAt: string;
 }
 
+/**
+ * 서버에 저장하는 상황 정보 — 대화 원문은 저장하지 않고 구조화된 값만 보관합니다.
+ */
+export interface PreferenceContextRecord {
+  intent: string | null;
+  intentLabel: string | null;
+  budget: Budget | null;
+  companion: Companion | null;
+  occasion: Occasion | null;
+  preferredStyle: PreferredStyle[];
+  discoveryPreference: DiscoveryPreference | null;
+}
+
+/** 취향 분석 결과 1건 (다시 분석할 때마다 analysisVersion이 늘어난 새 행) */
 export interface PreferenceRecord {
+  id: string;
   userId: string;
+  analysisVersion: number;
+  inputMode: InputMode;
+  /** UserPreferenceProfile.categories */
   tasteVector: TasteVector;
+  /** 지금 찾는 것(focus) */
   recentVector: TasteVector;
   topCategories: { key: TasteKey; score: number }[];
-  interestInputs: string[];
-  instagramKeywords: { keyword: string; score: number }[];
-  instagramMode: "real" | "mock" | "none";
+  keywords: string[];
+  context: PreferenceContextRecord;
   personaLabel: string | null;
   summary: string | null;
   aiProvider: "gemini" | "mock";
+  aiModel: string | null;
+  /** 현재 추천에 쓰는 결과인지 (사용자당 1건) */
+  isActive: boolean;
   createdAt: string;
 }
+
+export type NewPreferenceRecord = Omit<PreferenceRecord, "analysisVersion" | "isActive">;
 
 export interface RecommendationRecord {
   userId: string;
@@ -35,30 +59,8 @@ export interface RecommendationRecord {
   components: Record<string, number>;
   reason: string | null;
   reasonProvider: "gemini" | "template" | null;
+  analysisVersion: number | null;
   createdAt: string;
-}
-
-export interface InstagramSignals {
-  username: string | null;
-  accountType: string | null;
-  mediaAnalyzed: number;
-  interests: { keyword: string; score: number }[];
-  captionsSample: string[];
-  fetchedAt: string;
-}
-
-export interface SocialConnectionRecord {
-  userId: string;
-  provider: "instagram";
-  status: "connected" | "disconnected" | "revoked" | "error";
-  externalUserId: string | null;
-  username: string | null;
-  accountType: string | null;
-  signals: InstagramSignals | null;
-  /** 암호화된 access token (평문 저장 금지) */
-  tokenEncrypted: string | null;
-  tokenExpiresAt: string | null;
-  updatedAt: string;
 }
 
 /** 상인 인사이트 스냅샷 — 익명 집계만 담습니다(개인 식별 정보 없음). */
@@ -75,6 +77,14 @@ export interface MerchantInsightRecord {
   createdAt: string;
 }
 
+/** 시장 관심도 집계용 — 개인 식별 정보 없이 취향 vector와 시각만 */
+export interface RecentPreferenceSignal {
+  /** 같은 사용자의 여러 분석을 한 번만 세기 위한 내부 키 (화면에 노출하지 않음) */
+  userKey: string;
+  tasteVector: TasteVector;
+  createdAt: string;
+}
+
 export interface RepositoryInfo {
   kind: "supabase" | "local-file" | "memory";
   persistent: boolean;
@@ -88,6 +98,8 @@ export interface StoreOverrides {
   descriptions: StoreDescription[];
 }
 
+export type InteractionCounts = Record<string, Partial<Record<InteractionType, number>>>;
+
 export interface Repository {
   info(): RepositoryInfo;
 
@@ -95,23 +107,29 @@ export interface Repository {
   writeSettings(patch: Record<string, string | null>): Promise<void>;
 
   touchUser(userId: string): Promise<void>;
-  savePreference(record: PreferenceRecord): Promise<void>;
-  latestPreferences(userIds: string[]): Promise<PreferenceRecord[]>;
+
+  /** 새 분석 결과를 저장하고 활성 결과로 지정합니다. 버전은 max(저장된 최대 버전, minVersion - 1) + 1 */
+  savePreference(record: NewPreferenceRecord, options?: { minVersion?: number }): Promise<{ analysisVersion: number }>;
+  /** 사용자별 활성 분석 결과 (없으면 가장 최근 결과) */
+  activePreferences(userIds: string[]): Promise<PreferenceRecord[]>;
+  listPreferenceHistory(userId: string, limit: number): Promise<PreferenceRecord[]>;
+  activatePreference(userId: string, id: string): Promise<boolean>;
+  /** 좋아요·방문 등 행동에 따른 취향 조정을 활성 결과에 반영합니다(새 버전을 만들지 않음). */
+  updateActivePreferenceVector(userId: string, tasteVector: TasteVector): Promise<void>;
+  listRecentPreferences(sinceIso: string, limit: number): Promise<RecentPreferenceSignal[]>;
+
   addInteraction(record: InteractionRecord): Promise<void>;
   listInteractions(userId: string): Promise<InteractionRecord[]>;
-  listPositiveInteractions(limit: number): Promise<InteractionRecord[]>;
-  countInteractionsByStore(): Promise<Record<string, Partial<Record<InteractionType, number>>>>;
+  listPositiveInteractions(limit: number, sinceIso?: string): Promise<InteractionRecord[]>;
+  countInteractionsByStore(sinceIso?: string): Promise<InteractionCounts>;
   saveRecommendations(userId: string, records: RecommendationRecord[]): Promise<void>;
   saveMerchantInsight(record: MerchantInsightRecord): Promise<void>;
   latestMerchantInsight(storeId: string | null): Promise<MerchantInsightRecord | null>;
 
-  upsertSocialConnection(record: SocialConnectionRecord): Promise<void>;
-  getSocialConnection(userId: string, provider: "instagram"): Promise<SocialConnectionRecord | null>;
-  revokeSocialByExternalId(provider: "instagram", externalUserId: string): Promise<string[]>;
   deleteUserData(userId: string): Promise<void>;
 
   loadStoreOverrides(): Promise<StoreOverrides>;
   saveStoreLocations(locations: StoreLocation[]): Promise<void>;
   saveStoreDescriptions(descriptions: StoreDescription[]): Promise<void>;
-  seedStores(stores: Store[]): Promise<{ stores: number; features: number }>;
+  seedStores(stores: Store[]): Promise<{ stores: number; features: number; removed: number }>;
 }

@@ -1,10 +1,22 @@
 import "server-only";
 import { getGeminiConfig } from "@/lib/config/integrations";
+import { sanitizePromo } from "@/lib/merchant/promo";
 import { GeminiProvider } from "./GeminiProvider";
 import { MockGeminiProvider } from "./MockGeminiProvider";
-import { AIProviderError, type AIProvider, type ProfileAnalysis, type ProfileAnalysisInput, type ReasonInput, type StoreDescriptionInput } from "./types";
+import {
+  AIProviderError,
+  type AIProvider,
+  type InterviewDraft,
+  type InterviewInput,
+  type MerchantPromoDraft,
+  type MerchantPromoInput,
+  type PreferenceDraft,
+  type PreferenceInput,
+  type ReasonInput,
+  type StoreDescriptionInput,
+} from "./types";
 
-export type { AIProvider, ProfileAnalysis, ProfileAnalysisInput, ReasonInput, StoreDescriptionInput } from "./types";
+export type { AIProvider, InterviewInput, MerchantPromoInput, PreferenceInput, ReasonInput, StoreDescriptionInput } from "./types";
 export { MockGeminiProvider } from "./MockGeminiProvider";
 export { GeminiProvider, listGeminiModels } from "./GeminiProvider";
 
@@ -21,27 +33,39 @@ export interface WithFallback<T> {
   fallbackReason: string | null;
 }
 
-function describe(err: unknown): string {
+export function describeError(err: unknown): string {
   if (err instanceof AIProviderError) return err.message;
   if (err instanceof Error) return err.message;
   return "알 수 없는 오류";
 }
 
-/** Gemini 호출 실패 시 Mock 결과로 대체합니다(데모가 멈추지 않도록). */
-export async function analyzeProfileWithFallback(input: ProfileAnalysisInput): Promise<WithFallback<ProfileAnalysis>> {
+/** Gemini 호출이 실패하면 MockGeminiProvider 결과로 대체합니다(서비스가 멈추지 않도록). */
+async function withFallback<T>(task: string, run: (p: AIProvider) => Promise<T>): Promise<WithFallback<T>> {
   const provider = await getAIProvider();
   if (provider.name === "gemini") {
     try {
-      const result = await provider.analyzeProfile(input);
+      const result = await run(provider);
       return { result, provider: "gemini", model: provider.model, fallbackReason: null };
     } catch (err) {
-      console.warn("[ai] Gemini 취향 분석 실패 → Mock 사용:", describe(err));
-      const result = await new MockGeminiProvider().analyzeProfile(input);
-      return { result, provider: "mock", model: null, fallbackReason: describe(err) };
+      const reason = describeError(err);
+      console.warn(`[ai] Gemini ${task} 실패 → Mock 사용:`, reason);
+      return { result: await run(new MockGeminiProvider()), provider: "mock", model: null, fallbackReason: reason };
     }
   }
-  const result = await provider.analyzeProfile(input);
-  return { result, provider: "mock", model: null, fallbackReason: null };
+  return { result: await run(provider), provider: "mock", model: null, fallbackReason: null };
+}
+
+export function interviewWithFallback(input: InterviewInput): Promise<WithFallback<InterviewDraft>> {
+  return withFallback("인터뷰", (p) => p.interviewTurn(input));
+}
+
+export function analyzePreferencesWithFallback(input: PreferenceInput): Promise<WithFallback<PreferenceDraft>> {
+  return withFallback("취향 분석", (p) => p.analyzePreferences(input));
+}
+
+export async function generateMerchantPromoWithFallback(input: MerchantPromoInput): Promise<WithFallback<MerchantPromoDraft>> {
+  const res = await withFallback("홍보 아이디어 생성", (p) => p.generateMerchantPromo(input));
+  return { ...res, result: sanitizePromo(res.result, input.store?.confirmedItems ?? []) };
 }
 
 export async function generateReasonsWithFallback(input: ReasonInput): Promise<WithFallback<Record<string, string>>> {
@@ -51,8 +75,8 @@ export async function generateReasonsWithFallback(input: ReasonInput): Promise<W
     const result = await provider.generateReasons(input);
     return { result, provider: "gemini", model: provider.model, fallbackReason: null };
   } catch (err) {
-    console.warn("[ai] Gemini 추천 이유 생성 실패 → 템플릿 사용:", describe(err));
-    return { result: {}, provider: "mock", model: null, fallbackReason: describe(err) };
+    console.warn("[ai] Gemini 추천 이유 생성 실패 → 템플릿 사용:", describeError(err));
+    return { result: {}, provider: "mock", model: null, fallbackReason: describeError(err) };
   }
 }
 
@@ -68,7 +92,7 @@ export async function describeStoresWithFallback(
     try {
       generated = await provider.describeStores(stores);
     } catch (err) {
-      fallbackReason = describe(err);
+      fallbackReason = describeError(err);
       console.warn("[ai] Gemini 점포 소개 생성 실패 → 템플릿 사용:", fallbackReason);
     }
   }

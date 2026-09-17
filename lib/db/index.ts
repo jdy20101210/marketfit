@@ -45,21 +45,22 @@ class ResilientRepository implements Repository {
   readSettings = () => this.run("readSettings", (r) => r.readSettings());
   writeSettings = (p: Parameters<Repository["writeSettings"]>[0]) => this.run("writeSettings", (r) => r.writeSettings(p));
   touchUser = (id: string) => this.run("touchUser", (r) => r.touchUser(id));
-  savePreference = (p: Parameters<Repository["savePreference"]>[0]) => this.run("savePreference", (r) => r.savePreference(p));
-  latestPreferences = (ids: string[]) => this.run("latestPreferences", (r) => r.latestPreferences(ids));
+  savePreference = (p: Parameters<Repository["savePreference"]>[0], o?: Parameters<Repository["savePreference"]>[1]) =>
+    this.run("savePreference", (r) => r.savePreference(p, o));
+  activePreferences = (ids: string[]) => this.run("activePreferences", (r) => r.activePreferences(ids));
+  listPreferenceHistory = (id: string, limit: number) => this.run("listPreferenceHistory", (r) => r.listPreferenceHistory(id, limit));
+  activatePreference = (userId: string, id: string) => this.run("activatePreference", (r) => r.activatePreference(userId, id));
+  updateActivePreferenceVector = (userId: string, v: Parameters<Repository["updateActivePreferenceVector"]>[1]) =>
+    this.run("updateActivePreferenceVector", (r) => r.updateActivePreferenceVector(userId, v));
+  listRecentPreferences = (since: string, limit: number) => this.run("listRecentPreferences", (r) => r.listRecentPreferences(since, limit));
   addInteraction = (p: Parameters<Repository["addInteraction"]>[0]) => this.run("addInteraction", (r) => r.addInteraction(p));
   listInteractions = (id: string) => this.run("listInteractions", (r) => r.listInteractions(id));
-  listPositiveInteractions = (n: number) => this.run("listPositiveInteractions", (r) => r.listPositiveInteractions(n));
-  countInteractionsByStore = () => this.run("countInteractionsByStore", (r) => r.countInteractionsByStore());
+  listPositiveInteractions = (n: number, since?: string) => this.run("listPositiveInteractions", (r) => r.listPositiveInteractions(n, since));
+  countInteractionsByStore = (since?: string) => this.run("countInteractionsByStore", (r) => r.countInteractionsByStore(since));
   saveRecommendations = (id: string, recs: Parameters<Repository["saveRecommendations"]>[1]) =>
     this.run("saveRecommendations", (r) => r.saveRecommendations(id, recs));
   saveMerchantInsight = (p: Parameters<Repository["saveMerchantInsight"]>[0]) => this.run("saveMerchantInsight", (r) => r.saveMerchantInsight(p));
   latestMerchantInsight = (id: string | null) => this.run("latestMerchantInsight", (r) => r.latestMerchantInsight(id));
-  upsertSocialConnection = (p: Parameters<Repository["upsertSocialConnection"]>[0]) =>
-    this.run("upsertSocialConnection", (r) => r.upsertSocialConnection(p));
-  getSocialConnection = (id: string, provider: "instagram") => this.run("getSocialConnection", (r) => r.getSocialConnection(id, provider));
-  revokeSocialByExternalId = (provider: "instagram", ext: string) =>
-    this.run("revokeSocialByExternalId", (r) => r.revokeSocialByExternalId(provider, ext));
   /**
    * 삭제는 두 저장소 모두에서 수행합니다(장애 중 대체 저장소에 기록된 데이터까지).
    * Supabase 삭제가 실패하면 성공으로 숨기지 않고 오류를 그대로 알려 다시 시도할 수 있게 합니다.
@@ -91,7 +92,7 @@ function getRepositoryHolder(): RepoHolder {
   if (globalForRepo.__marketfitRepo) return globalForRepo.__marketfitRepo;
   const env = getEnv();
   const local = new LocalRepository(getLocalDataDir());
-  const url = env.SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL;
+  const url = getSupabaseUrl();
   let holder: RepoHolder;
   if (url && env.SUPABASE_SERVICE_ROLE_KEY) {
     const resilient = new ResilientRepository(new SupabaseRepository(url, env.SUPABASE_SERVICE_ROLE_KEY), local);
@@ -103,7 +104,47 @@ function getRepositoryHolder(): RepoHolder {
   return holder;
 }
 
-export function isSupabaseConfigured(): boolean {
+export function getSupabaseUrl(): string | undefined {
   const env = getEnv();
-  return Boolean((env.SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL) && env.SUPABASE_SERVICE_ROLE_KEY);
+  return env.SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL;
+}
+
+export function isSupabaseConfigured(): boolean {
+  return Boolean(getSupabaseUrl() && getEnv().SUPABASE_SERVICE_ROLE_KEY);
+}
+
+export function getSupabaseAnonKey(): string | undefined {
+  const env = getEnv();
+  return env.SUPABASE_ANON_KEY ?? env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+}
+
+/**
+ * anon 키로 RLS가 제대로 막고 있는지 확인합니다 (관리자 점검 전용).
+ * 공개 데이터(stores)는 읽히고, 개인 데이터(user_preferences)는 막혀야 정상입니다.
+ */
+export async function checkAnonAccess(): Promise<{ checked: boolean; storesReadable: boolean; personalBlocked: boolean; detail: string }> {
+  const url = getSupabaseUrl();
+  const anon = getSupabaseAnonKey();
+  if (!url || !anon) return { checked: false, storesReadable: false, personalBlocked: false, detail: "SUPABASE_ANON_KEY가 없어 RLS 점검을 건너뜁니다." };
+  const call = async (table: string) => {
+    const res = await fetch(`${url}/rest/v1/${table}?select=*&limit=1`, {
+      headers: { apikey: anon, Authorization: `Bearer ${anon}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(8000),
+    });
+    return res.status;
+  };
+  try {
+    const [stores, personal] = await Promise.all([call("stores"), call("user_preferences")]);
+    const storesReadable = stores === 200;
+    const personalBlocked = personal !== 200;
+    return {
+      checked: true,
+      storesReadable,
+      personalBlocked,
+      detail: `anon 키 점검: 점포 조회 ${stores}${storesReadable ? " (읽기 허용, 정상)" : " (0003 마이그레이션 확인 필요)"} · 개인 데이터 조회 ${personal}${personalBlocked ? " (차단됨, 정상)" : " ⚠ 개인 데이터가 공개되어 있습니다"}`,
+    };
+  } catch (err) {
+    return { checked: false, storesReadable: false, personalBlocked: false, detail: `anon 키 점검 실패: ${err instanceof Error ? err.message : String(err)}` };
+  }
 }

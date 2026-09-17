@@ -2,19 +2,18 @@ import "server-only";
 import { randomUUID, createHash } from "node:crypto";
 import { cookies } from "next/headers";
 import { getEnv, isProduction } from "@/lib/env";
-import { decryptJson, encryptJson, safeEqual, signPayload, verifyPayload } from "./crypto";
-import type { InstagramSignals } from "@/lib/db/types";
+import { safeEqual, signPayload, verifyPayload } from "./crypto";
 
 export const COOKIE_NAMES = {
   uid: "mf_uid",
   admin: "mf_admin",
-  instagram: "mf_ig",
-  instagramState: "mf_ig_state",
 } as const;
+
+/** 이전 버전(Instagram 연동)이 남긴 쿠키 — 데이터 삭제 시 함께 지웁니다. */
+export const LEGACY_COOKIE_NAMES = ["mf_ig", "mf_ig_state"] as const;
 
 const UID_MAX_AGE = 60 * 60 * 24 * 365;
 const ADMIN_MAX_AGE = 60 * 60 * 8;
-const IG_MAX_AGE = 60 * 60 * 24 * 30;
 
 /** 배포(HTTPS) 환경에서는 Secure 쿠키. http로 사내망 테스트 시에만 COOKIE_SECURE=false로 끌 수 있습니다. */
 function secureCookies(): boolean {
@@ -96,49 +95,7 @@ export async function isAdmin(): Promise<boolean> {
   return Boolean(payload && payload.exp > Date.now() && payload.fp === passwordFingerprint(password));
 }
 
-// ---------- Instagram 연결 스냅샷 (암호화 HttpOnly 쿠키) ----------
-// access token은 여기에 넣지 않습니다. 관심 신호(비민감 요약)만 담아 DB 없이도 흐름이 이어지게 합니다.
-
-export interface InstagramCookie extends InstagramSignals {
-  v: 1;
-  externalUserId: string | null;
-  uid: string;
-}
-
-export async function readInstagramCookie(): Promise<InstagramCookie | null> {
-  const value = (await cookies()).get(COOKIE_NAMES.instagram)?.value;
-  const data = decryptJson<InstagramCookie>(value, "instagram-cookie");
-  return data && data.v === 1 ? data : null;
-}
-
-export async function writeInstagramCookie(data: Omit<InstagramCookie, "v">) {
-  const compact: InstagramCookie = {
-    ...data,
-    v: 1,
-    interests: data.interests.slice(0, 15),
-    captionsSample: data.captionsSample.slice(0, 5).map((c) => c.slice(0, 80)),
-  };
-  (await cookies()).set(COOKIE_NAMES.instagram, encryptJson(compact, "instagram-cookie"), baseCookie(IG_MAX_AGE));
-}
-
-export async function clearInstagramCookie() {
-  (await cookies()).delete(COOKIE_NAMES.instagram);
-}
-
-type OAuthState = { state: string; next: string; exp: number };
-
-export async function writeOAuthState(state: string, next: string) {
-  (await cookies()).set(
-    COOKIE_NAMES.instagramState,
-    signPayload({ state, next, exp: Date.now() + 10 * 60 * 1000 } satisfies OAuthState, "oauth-state"),
-    baseCookie(10 * 60),
-  );
-}
-
-export async function consumeOAuthState(): Promise<OAuthState | null> {
+export async function clearLegacyCookies() {
   const store = await cookies();
-  const payload = verifyPayload<OAuthState>(store.get(COOKIE_NAMES.instagramState)?.value, "oauth-state");
-  store.delete(COOKIE_NAMES.instagramState);
-  if (!payload || payload.exp < Date.now()) return null;
-  return payload;
+  for (const name of LEGACY_COOKIE_NAMES) if (store.get(name)) store.delete(name);
 }

@@ -24,17 +24,19 @@ const EnvSchema = z.object({
   NEXT_PUBLIC_KAKAO_JS_KEY: optionalString,
   KAKAO_REST_API_KEY: optionalString,
 
-  META_APP_ID: optionalString,
-  META_APP_SECRET: optionalString,
-  INSTAGRAM_REDIRECT_URI: optionalString.pipe(z.url().optional()),
-  INSTAGRAM_GRAPH_API_VERSION: optionalString.pipe(z.string().regex(/^v\d+\.\d+$/).optional()),
-
   SUPABASE_URL: optionalString.pipe(z.url().optional()),
   NEXT_PUBLIC_SUPABASE_URL: optionalString.pipe(z.url().optional()),
+  /** 공개(anon) 키: 관리자 상태 점검에서 RLS가 개인 데이터를 막는지 확인하는 데 사용 */
+  SUPABASE_ANON_KEY: optionalString,
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: optionalString,
+  /** service_role 키: 서버 전용 (NEXT_PUBLIC_ 접두사 금지) */
   SUPABASE_SERVICE_ROLE_KEY: optionalString,
 
   MARKETFIT_DATA_DIR: optionalString,
   VERCEL: optionalString,
+  VERCEL_ENV: optionalString,
+  VERCEL_URL: optionalString,
+  VERCEL_PROJECT_PRODUCTION_URL: optionalString,
   /** nginx 등 리버스 프록시 뒤에서만 true — X-Forwarded-For/X-Real-IP를 신뢰합니다(Vercel은 자동). */
   TRUST_PROXY: optionalString.pipe(z.enum(["true", "false"]).optional()),
   COOKIE_SECURE: optionalString.pipe(z.enum(["true", "false"]).optional()),
