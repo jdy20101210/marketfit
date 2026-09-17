@@ -4,29 +4,29 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Spinner } from "@/components/ui/Button";
 import { groupByProximity, type MarkerGroup } from "@/lib/map/grouping";
 import { loadKakaoMaps } from "@/lib/map/kakaoLoader";
-import type { StoreDTO } from "@/lib/api/schemas";
 import { MARKET_CENTER_APPROX, type MapStoreView, type ResolvedLocation } from "./types";
 
 type GroupItem = { id: string; lat: number; lng: number; accuracy: ResolvedLocation["accuracy"]; view: MapStoreView };
 
+/**
+ * Kakao 지도 — 추천 기준(80점, 없으면 75점)을 넘은 점포만 순위 marker로 표시합니다.
+ * 좌표가 없는 점포는 지도에 올리지 않고 목록에만 남깁니다(가짜 좌표를 만들지 않음).
+ */
 export function KakaoMap(props: {
   appKey: string;
   views: MapStoreView[];
-  allStores: StoreDTO[];
   selectedStoreId: string | null;
-  hasProfile: boolean;
-  highlightIds: Set<string>;
   onSelectGroup: (storeIds: string[]) => void;
   onBrowserGeocoded: (locations: Record<string, ResolvedLocation>) => void;
   onError: (message: string) => void;
 }) {
-  const { appKey, views, allStores, selectedStoreId, hasProfile, highlightIds, onSelectGroup, onBrowserGeocoded, onError } = props;
+  const { appKey, views, selectedStoreId, onSelectGroup, onBrowserGeocoded, onError } = props;
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<kakao.maps.Map | null>(null);
   const clustererRef = useRef<kakao.maps.MarkerClusterer | null>(null);
   const shapesRef = useRef<kakao.maps.Circle[]>([]);
   const fittedRef = useRef(false);
-  const geocodeTried = useRef(false);
+  const geocodedQueries = useRef(new Set<string>());
   const [ready, setReady] = useState(false);
 
   // 1) SDK 로드 & 지도 생성
@@ -71,15 +71,15 @@ export function KakaoMap(props: {
     };
   }, [appKey, onError]);
 
-  // 2) 서버 좌표가 없을 때 브라우저 SDK(services)로 주소 → 좌표 보완 (저장하지 않음)
+  // 2) 서버 좌표가 없는 추천 점포만 브라우저 SDK(services)로 보완 (저장하지 않음)
   useEffect(() => {
-    if (!ready || geocodeTried.current || !window.kakao) return;
-    const missing = allStores.filter((s) => s.location.lat === null && s.geocodeQuery);
+    if (!ready || !window.kakao) return;
+    const missing = views.filter((v) => !v.location && v.store.geocodeQuery && !geocodedQueries.current.has(v.store.geocodeQuery));
     if (missing.length === 0) return;
-    geocodeTried.current = true;
     const k = window.kakao;
     const geocoder = new k.maps.services.Geocoder();
-    const queries = [...new Set(missing.map((s) => s.geocodeQuery!))];
+    const queries = [...new Set(missing.map((v) => v.store.geocodeQuery!))].slice(0, 40);
+    for (const q of queries) geocodedQueries.current.add(q);
     Promise.all(
       queries.map(
         (q) =>
@@ -90,9 +90,10 @@ export function KakaoMap(props: {
     ).then((pairs) => {
       const byQuery = new Map(pairs);
       const out: Record<string, ResolvedLocation> = {};
-      for (const s of missing) {
-        const r = byQuery.get(s.geocodeQuery!);
+      for (const v of missing) {
+        const r = byQuery.get(v.store.geocodeQuery!);
         if (!r) continue;
+        const s = v.store;
         const exactAddr = r.address_type === "ROAD_ADDR" || r.address_type === "REGION_ADDR";
         const approx = s.locationBasis !== "road_address" || !exactAddr;
         out[s.id] = {
@@ -101,7 +102,7 @@ export function KakaoMap(props: {
           accuracy: approx ? "approximate" : "exact",
           note:
             s.locationBasis === "market_zone"
-              ? "중앙시장 활성화구역 대표 주소 기준 — 세부 위치 미확인 (브라우저 조회)"
+              ? `${s.raw.zone ?? "시장 구역"} — 중앙시장 대표 주소 기준 대략적 위치 (브라우저 조회)`
               : s.locationBasis === "near_road_address"
                 ? `${s.addressDetail ?? "인근"} — 건물 주소 기준 근사 위치 (브라우저 조회)`
                 : `주소 검색 결과 (${r.address_name}, 브라우저 조회)`,
@@ -110,7 +111,7 @@ export function KakaoMap(props: {
       }
       if (Object.keys(out).length) onBrowserGeocoded(out);
     });
-  }, [ready, allStores, onBrowserGeocoded]);
+  }, [ready, views, onBrowserGeocoded]);
 
   const groups = useMemo(() => {
     const items: GroupItem[] = views
@@ -131,7 +132,7 @@ export function KakaoMap(props: {
 
     const overlays = groups.map((group) => {
       const position = new k.maps.LatLng(group.lat, group.lng);
-      const el = buildPin(group, selectedStoreId, hasProfile, highlightIds);
+      const el = buildPin(group, selectedStoreId);
       el.addEventListener("click", () => onSelectGroup(group.items.map((i) => i.id)));
       if (group.accuracy === "approximate") {
         shapesRef.current.push(
@@ -148,7 +149,14 @@ export function KakaoMap(props: {
           }),
         );
       }
-      return new k.maps.CustomOverlay({ position, content: el, xAnchor: 0.5, yAnchor: 1, clickable: true, zIndex: group.items.some((i) => i.id === selectedStoreId) ? 10 : 1 });
+      return new k.maps.CustomOverlay({
+        position,
+        content: el,
+        xAnchor: 0.5,
+        yAnchor: 1,
+        clickable: true,
+        zIndex: group.items.some((i) => i.id === selectedStoreId) ? 10 : 1,
+      });
     });
     if (clusterer) clusterer.addMarkers(overlays);
     else overlays.forEach((o) => o.setMap(map));
@@ -167,7 +175,7 @@ export function KakaoMap(props: {
     return () => {
       if (!clusterer) overlays.forEach((o) => o.setMap(null));
     };
-  }, [ready, groups, selectedStoreId, hasProfile, highlightIds, onSelectGroup]);
+  }, [ready, groups, selectedStoreId, onSelectGroup]);
 
   // 4) 선택한 점포로 이동
   useEffect(() => {
@@ -191,7 +199,7 @@ export function KakaoMap(props: {
 
   return (
     <div className="relative h-full w-full">
-      <div ref={containerRef} className="h-full w-full" role="application" aria-label="대전 중앙시장 Kakao 지도" />
+      <div ref={containerRef} className="h-full w-full" role="application" aria-label="대전 중앙시장 추천 점포 Kakao 지도" />
       {!ready ? (
         <div className="absolute inset-0 grid place-items-center bg-cream/80">
           <p className="flex items-center gap-2 text-sm text-ink-600">
@@ -203,42 +211,38 @@ export function KakaoMap(props: {
   );
 }
 
-function buildPin(group: MarkerGroup<GroupItem>, selectedStoreId: string | null, hasProfile: boolean, highlightIds: Set<string>): HTMLButtonElement {
+function buildPin(group: MarkerGroup<GroupItem>, selectedStoreId: string | null): HTMLButtonElement {
   const el = document.createElement("button");
   el.type = "button";
   el.className = "mf-pin";
   const views = group.items.map((i) => i.view);
-  const recommendable = views.filter((v) => v.store.recommendable);
-  const topScore = recommendable.reduce((m, v) => Math.max(m, v.rec?.score ?? 0), 0);
-  const infoOnly = recommendable.length === 0;
-  el.dataset.level = infoOnly ? "info" : group.items.some((i) => highlightIds.has(i.id)) ? "top" : "normal";
+  const best = views.reduce((m, v) => (v.rank < m.rank ? v : m), views[0]!);
+  el.dataset.level = best.rank <= 3 ? "top" : "normal";
   el.dataset.approx = String(group.accuracy !== "exact");
   el.dataset.selected = String(group.items.some((i) => i.id === selectedStoreId));
 
   const dot = document.createElement("span");
   dot.className = "mf-pin__dot";
-  dot.textContent = infoOnly ? "i" : "🏪";
+  dot.textContent = String(best.rank);
   dot.setAttribute("aria-hidden", "true");
   el.appendChild(dot);
 
   const label = document.createElement("span");
+  label.textContent = `${best.rec.score}점`;
+  el.appendChild(label);
   if (group.items.length > 1) {
-    label.textContent = hasProfile && !infoOnly ? `최고 ${topScore}` : `${views[0]!.store.name} 외`;
     const count = document.createElement("span");
     count.className = "mf-pin__count";
     count.textContent = String(group.items.length);
-    el.append(label, count);
-  } else {
-    const v = views[0]!;
-    label.textContent = infoOnly ? "시장 안내" : hasProfile && v.rec ? `${v.rec.score}` : v.store.name.slice(0, 8);
-    el.appendChild(label);
+    el.appendChild(count);
   }
-  const names = views.map((v) => v.store.name).join(", ");
+  const names = views
+    .slice(0, 4)
+    .map((v) => `${v.rank}위 ${v.store.name}`)
+    .join(", ");
   el.setAttribute(
     "aria-label",
-    `${group.items.length > 1 ? `${group.items.length}곳 묶음: ` : ""}${names}${hasProfile && !infoOnly ? `, 최고 점수 ${topScore}점` : ""}${
-      group.accuracy !== "exact" ? ", 대략적 위치" : ""
-    }`,
+    `${group.items.length > 1 ? `${group.items.length}곳 묶음: ` : ""}${names}, 최고 ${best.rec.score}점${group.accuracy !== "exact" ? ", 대략적 위치" : ""}`,
   );
   return el;
 }

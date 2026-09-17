@@ -11,9 +11,9 @@ export interface ResolvedLocation {
 
 export interface MapStoreView {
   store: StoreDTO;
-  rec: RecommendationItem | null;
+  rec: RecommendationItem;
   location: ResolvedLocation | null;
-  rank: number | null;
+  rank: number;
 }
 
 /** 좌표 조회 전 초기 화면 중심(대전 중앙시장 일대의 근사값). 점포 좌표가 확인되면 그 범위로 이동합니다. */

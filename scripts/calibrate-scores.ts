@@ -34,6 +34,9 @@ const PROFILES: Record<string, TasteVector> = {
   "집 꾸미기": toVector({ living: 0.9, craft: 0.4, vintage: 0.5 }),
   "부모님 선물": toVector({ family: 0.9, gift: 0.85, traditional: 0.6, food: 0.5 }),
   "빈티지": toVector({ vintage: 0.95, discovery: 0.8, fashion: 0.5 }),
+  // 보조 기준(75점) 동작 확인용 — 시장에 거의 없는 취향
+  "약한 신호(캠핑 조금)": toVector({ camping: 0.35, travel: 0.25 }),
+  "신호 없음": toVector({}),
 };
 
 for (const [name, taste] of Object.entries(PROFILES)) {

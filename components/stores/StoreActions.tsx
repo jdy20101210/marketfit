@@ -14,12 +14,23 @@ type ActionType = "like" | "bookmark" | "visit" | "dismiss";
  */
 const ACTIONS: { type: ActionType; list: "liked" | "bookmarked" | "visited" | "dismissed"; label: string; icon: typeof Heart }[] = [
   { type: "like", list: "liked", label: "좋아요", icon: Heart },
-  { type: "bookmark", list: "bookmarked", label: "찜하기", icon: Bookmark },
+  { type: "bookmark", list: "bookmarked", label: "저장", icon: Bookmark },
   { type: "visit", list: "visited", label: "방문했어요", icon: Footprints },
   { type: "dismiss", list: "dismissed", label: "관심 없음", icon: EyeOff },
 ];
 
-export function StoreActions({ storeId, compact = false, include }: { storeId: string; compact?: boolean; include?: ActionType[] }) {
+export function StoreActions({
+  storeId,
+  storeName,
+  compact = false,
+  include,
+}: {
+  storeId: string;
+  /** 목록에서 여러 점포의 버튼이 함께 보일 때 스크린리더용 점포 이름 */
+  storeName?: string;
+  compact?: boolean;
+  include?: ActionType[];
+}) {
   const { state, hydrated } = useMarketFit();
   const [busy, setBusy] = useState<ActionType | null>(null);
   const actions = ACTIONS.filter((a) => !include || include.includes(a.type));
@@ -33,6 +44,7 @@ export function StoreActions({ storeId, compact = false, include }: { storeId: s
             key={a.type}
             type="button"
             aria-pressed={active}
+            aria-label={storeName ? `${storeName} ${a.label}` : undefined}
             disabled={busy !== null}
             onClick={async () => {
               setBusy(a.type);

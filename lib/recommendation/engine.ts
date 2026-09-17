@@ -46,6 +46,13 @@ export const CONTEXT_KEYS = ["travel", "family", "date", "practical", "local", "
 export const PRODUCT_KEYS: TasteKey[] = TASTE_KEYS.filter((k) => !(CONTEXT_KEYS as readonly string[]).includes(k));
 export const CONTEXT_WEIGHT = 0.5;
 export const CONTEXT_MIN = 0.2;
+/**
+ * cosine 유사도에서 빼는 차원.
+ * '새로운 발견'은 점포의 성질이 아니라 사용자의 태도(덜 알려진 곳을 좋아하는지)여서,
+ * 별도 항목(discovery_bonus, 가중치 0.10)으로만 반영합니다.
+ * cosine에 함께 넣으면 이 값이 높은 사용자에게 거의 모든 점포가 불리해집니다.
+ */
+export const COSINE_EXCLUDED_KEYS = ["discovery"] as const satisfies readonly TasteKey[];
 /** 관심 분야 묶음(facet)으로 볼 최소 점수와 최대 개수, 할인율 */
 export const FACET_MIN = 0.5;
 export const FACET_LIMIT = 4;
@@ -53,9 +60,17 @@ export const FACET_DISCOUNT = 0.95;
 export const FACET_PEER_RATIO = 0.8;
 /** 관심 분야 보유 강도: COVERAGE_BASE + (1 − COVERAGE_BASE) × 점포의 해당 차원 값 */
 export const COVERAGE_BASE = 0.75;
+/**
+ * 묶음(facet) 비교는 그 분야만 보기 때문에 방향만 비슷해도 값이 커집니다.
+ * 그래서 "점포가 그 분야를 실제로 얼마나 강하게 갖고 있는지"를 더 크게 반영합니다.
+ */
+export const FACET_COVERAGE_BASE = 0.3;
 
 const DIM_WEIGHT: Record<TasteKey, number> = Object.fromEntries(
-  TASTE_KEYS.map((k) => [k, (CONTEXT_KEYS as readonly string[]).includes(k) ? CONTEXT_WEIGHT : 1]),
+  TASTE_KEYS.map((k) => [
+    k,
+    (COSINE_EXCLUDED_KEYS as readonly string[]).includes(k) ? 0 : (CONTEXT_KEYS as readonly string[]).includes(k) ? CONTEXT_WEIGHT : 1,
+  ]),
 ) as Record<TasteKey, number>;
 
 export interface ProfileVectors {
@@ -141,15 +156,18 @@ export function preferenceSimilarity(user: TasteVector, store: TasteVector): { v
   if (facets.length === 0) return { value: weightedCosine(user, store, weights), facet: null };
   // 관심 분야를 점포가 실제로 얼마나 강하게 갖고 있는지(0.75~1.0) 반영: 성향이 옅은 점포가 모양만 비슷해 높은 점수를 받지 않게 합니다.
   const coverage = (key: TasteKey) => COVERAGE_BASE + (1 - COVERAGE_BASE) * store[key];
+  const facetCoverage = (key: TasteKey) => FACET_COVERAGE_BASE + (1 - FACET_COVERAGE_BASE) * store[key];
   let value = weightedCosine(user, store, weights) * Math.max(...facets.map(coverage));
   let facet: TasteKey | null = null;
   const strongest = user[facets[0]!];
   for (const key of facets) {
-    const focused = { ...user };
-    for (const other of PRODUCT_KEYS) if (other !== key) focused[other] = 0;
+    // 이 묶음에서는 해당 상품 분야와 사용자가 말한 상황 차원만 비교합니다.
+    // (점포가 가진 다른 분야는 양쪽에서 빼서, 여러 품목을 함께 파는 점포가 불리해지지 않게 합니다)
+    const focusedWeights = { ...weights };
+    for (const other of PRODUCT_KEYS) if (other !== key) focusedWeights[other] = 0;
     // 약한 관심 분야가 강한 관심을 앞지르지 않도록, 가장 강한 관심의 80%에 못 미치면 그 비율만큼 낮춥니다.
     const strength = Math.min(1, user[key] / strongest / FACET_PEER_RATIO);
-    const v = FACET_DISCOUNT * strength * weightedCosine(focused, store, weights) * coverage(key);
+    const v = FACET_DISCOUNT * strength * weightedCosine(user, store, focusedWeights) * facetCoverage(key);
     if (v > value + 1e-9) {
       value = v;
       facet = key;

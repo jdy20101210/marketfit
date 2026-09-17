@@ -13,8 +13,6 @@ import type { MapStoreView } from "./types";
 export function SchematicMap(props: {
   views: MapStoreView[];
   selectedStoreId: string | null;
-  hasProfile: boolean;
-  highlightIds: Set<string>;
   reason: "no-key" | "load-failed";
   onSelect: (storeId: string) => void;
 }) {
@@ -22,26 +20,33 @@ export function SchematicMap(props: {
     const map = new Map<string, { key: string; title: string; subtitle: string; kind: "zone" | "address" | "unknown"; views: MapStoreView[] }>();
     for (const v of props.views) {
       const s = v.store;
-      const key = s.locationBasis === "market_zone" ? "market-zone" : (s.geocodeQuery ?? "unknown");
+      const key = s.locationBasis === "market_zone" ? `zone:${s.raw.zone ?? "market"}` : (s.geocodeQuery ?? "unknown");
       if (!map.has(key)) {
         map.set(key, {
           key,
           kind: s.locationBasis === "market_zone" ? "zone" : s.geocodeQuery ? "address" : "unknown",
-          title: s.locationBasis === "market_zone" ? "중앙시장 활성화구역" : s.geocodeQuery ? s.geocodeQuery.replace("대전광역시 동구 ", "") : "위치 미확인",
+          title:
+            s.locationBasis === "market_zone"
+              ? (s.raw.zone ?? "중앙시장 구역")
+              : s.geocodeQuery
+                ? s.geocodeQuery.replace(/^대전(광역시)?\s*동구\s*/, "")
+                : "위치 미확인",
           subtitle:
             s.locationBasis === "market_zone"
-              ? "상인회 등재 상가·상권 (세부 위치 미확인)"
+              ? "구역명만 있는 점포 (세부 위치 미확인)"
               : s.locationBasis === "near_road_address"
                 ? "건물 주변 노점"
-                : s.geocodeQuery
-                  ? "도로명 주소"
-                  : "주소 정보 없음",
+                : s.locationBasis === "parcel_address"
+                  ? "지번 주소"
+                  : s.geocodeQuery
+                    ? "도로명 주소"
+                    : "주소 정보 없음",
           views: [],
         });
       }
       map.get(key)!.views.push(v);
     }
-    return [...map.values()].sort((a, b) => b.views.length - a.views.length);
+    return [...map.values()].sort((a, b) => Math.min(...a.views.map((v) => v.rank)) - Math.min(...b.views.map((v) => v.rank)));
   }, [props.views]);
 
   return (
@@ -59,18 +64,18 @@ export function SchematicMap(props: {
         <div className="mb-3 flex items-start gap-2 rounded-2xl bg-paper/95 px-3 py-2.5 text-xs leading-relaxed text-ink-700 shadow-card">
           <TriangleAlert className="mt-0.5 size-4 shrink-0 text-sign-600" aria-hidden />
           <p>
-            <strong>데모 안내도</strong> ·{" "}
-            {props.reason === "no-key" ? "Kakao 지도 키가 설정되지 않아" : "Kakao 지도를 불러오지 못해"} 주소별로 묶은 도식으로 보여줘요. 실제 위치·배치와
-            다를 수 있어요.
+            <strong>데모 안내도</strong> · {props.reason === "no-key" ? "Kakao 지도 키가 설정되지 않아" : "Kakao 지도를 불러오지 못해"} 주소별로 묶은 도식으로
+            보여줘요. 실제 위치·배치와 다를 수 있어요.
           </p>
         </div>
+        {zones.length === 0 ? <p className="rounded-2xl bg-paper/95 px-4 py-6 text-center text-sm text-ink-600">표시할 추천 점포가 없어요.</p> : null}
         <ul className="grid gap-3 sm:grid-cols-2">
           {zones.map((zone) => (
             <li
               key={zone.key}
               className={cn(
                 "rounded-2xl border-2 bg-paper/95 p-3 shadow-card",
-                zone.kind === "zone" ? "border-dashed border-sign-500 sm:col-span-2" : zone.kind === "unknown" ? "border-dotted border-ink-300" : "border-market-200",
+                zone.kind === "zone" ? "border-dashed border-sign-500" : zone.kind === "unknown" ? "border-dotted border-ink-300" : "border-market-200",
               )}
             >
               <p className="flex items-center gap-1.5 text-sm font-bold text-ink-900">
@@ -82,7 +87,6 @@ export function SchematicMap(props: {
               <ul className="flex flex-wrap gap-1.5">
                 {zone.views.map((v) => {
                   const selected = v.store.id === props.selectedStoreId;
-                  const top = props.highlightIds.has(v.store.id);
                   return (
                     <li key={v.store.id}>
                       <button
@@ -90,16 +94,17 @@ export function SchematicMap(props: {
                         onClick={() => props.onSelect(v.store.id)}
                         aria-pressed={selected}
                         className={cn(
-                          "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors",
+                          "tabular inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors",
                           selected
                             ? "border-sign-500 bg-sign-100 text-ink-900 ring-2 ring-sign-400"
-                            : top
+                            : v.rank <= 3
                               ? "border-market-700 bg-market-700 text-white hover:bg-market-800"
                               : "border-ink-200 bg-white text-ink-700 hover:border-ink-400",
                         )}
                       >
-                        {v.store.name}
-                        {props.hasProfile && v.rec && v.store.recommendable ? <span className="tabular opacity-80">{v.rec.score}</span> : null}
+                        <span>{v.rank}위</span>
+                        <span className="font-normal">{v.store.name}</span>
+                        <span className="opacity-80">{v.rec.score}</span>
                       </button>
                     </li>
                   );

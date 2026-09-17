@@ -1,47 +1,75 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, FileText, MapPinned, Phone, Sparkles, Tag } from "lucide-react";
+import { ArrowLeft, Bookmark, ExternalLink, Eye, FileText, Footprints, Heart, MapPinned, Phone, Sparkles, Tag } from "lucide-react";
 import { ScoreMeter, TasteBars } from "@/components/charts/TasteBars";
-import { AccuracyBadge, ScorePill } from "@/components/stores/StoreBits";
+import { AccuracyBadge, CategoryText, RankBadge, ScorePill } from "@/components/stores/StoreBits";
 import { StoreActions } from "@/components/stores/StoreActions";
 import { Badge } from "@/components/ui/Badge";
 import { Button, LinkButton, Spinner, buttonClass } from "@/components/ui/Button";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { ErrorState, Notice } from "@/components/ui/States";
-import type { StoreDTO } from "@/lib/api/schemas";
-import { recordView, useRecommendations } from "@/lib/client/recommendations";
+import type { RecommendationItem, RecommendationThreshold, StoreDTO } from "@/lib/api/schemas";
+import { errorMessage } from "@/lib/client/api";
+import { fetchRecommendations, recordView, useRecommendations } from "@/lib/client/recommendations";
 import { TASTE_META, toVector } from "@/lib/recommendation/dimensions";
 import { matchHeadline, SCORE_COMPONENT_META, SCORE_WEIGHTS, scoreLabel, type ScoreComponentKey } from "@/lib/recommendation/engine";
 import { matchSummary } from "@/lib/recommendation/reasons";
-import { ENTITY_KIND_LABEL, MARKET_REPRESENTATIVE_ADDRESS, PHONE_STATUS_LABEL } from "@/lib/stores/parse";
+import { LOCATION_BASIS_LABEL, MARKET_REPRESENTATIVE_ADDRESS, PHONE_STATUS_LABEL } from "@/lib/stores/parse";
 import { MARKET_FEATURE_KEYS, MARKET_FEATURE_META } from "@/lib/stores/types";
 
-export function StoreDetailClient({ store }: { store: StoreDTO }) {
-  const { hydrated, profile, byId, loading, error, retry } = useRecommendations();
-  const rec = byId.get(store.id) ?? null;
+/** 점포 상세 — 원본 데이터와 추정 성향을 구분해 보여줍니다. */
+export function StoreDetailClient({ store, mockNotice }: { store: StoreDTO; mockNotice: string }) {
+  const { hydrated, analysis, recommendations, byId, loading, error, retry } = useRecommendations();
+  const [extra, setExtra] = useState<{ item: RecommendationItem; threshold: RecommendationThreshold } | null>(null);
+  const [extraError, setExtraError] = useState<string | null>(null);
+  const rec = byId.get(store.id) ?? extra?.item ?? null;
+  const threshold = recommendations?.threshold ?? extra?.threshold ?? null;
 
   useEffect(() => {
     recordView(store.id);
   }, [store.id]);
 
+  // 추천 기준 미만이라 목록에 없는 점포는 이 점포만 따로 계산해 점수를 보여줍니다.
+  useEffect(() => {
+    if (!analysis || !recommendations || byId.has(store.id) || extra?.item.storeId === store.id) return;
+    let cancelled = false;
+    fetchRecommendations(analysis, [store.id])
+      .then((res) => {
+        const item = res.items.find((i) => i.storeId === store.id);
+        if (!cancelled && item) setExtra({ item, threshold: res.threshold });
+      })
+      .catch((err) => {
+        if (!cancelled) setExtraError(errorMessage(err));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [analysis, recommendations, byId, store.id, extra]);
+
   const kakaoQuery = store.locationBasis === "market_zone" || !store.geocodeQuery ? `대전중앙시장 ${store.name}` : store.geocodeQuery;
   const storeTaste = toVector(store.inferred.taste);
+  const belowThreshold = rec !== null && rec.rank === null && threshold?.applied !== null;
 
   return (
     <div className="container-page max-w-5xl pt-4 sm:pt-6">
-      <Link href={`/market-map?store=${store.id}`} className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:text-ink-900">
-        <ArrowLeft className="size-4" aria-hidden /> AI 시장 지도
+      <Link href="/market-map" className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:text-ink-900">
+        <ArrowLeft className="size-4" aria-hidden /> AI 추천 시장 지도
       </Link>
 
       <header className="mb-5 animate-rise">
         <div className="mb-2 flex flex-wrap items-center gap-1.5">
-          <Badge tone="market">{store.primaryCategory}</Badge>
-          <Badge tone="outline">{ENTITY_KIND_LABEL[store.entityKind]}</Badge>
+          <Badge tone="market">
+            <CategoryText main={store.mainCategory} sub={store.subCategory} />
+          </Badge>
+          <Badge tone="outline">{store.entityKind === "street_vendor" ? "노점" : "점포"}</Badge>
           <AccuracyBadge accuracy={store.location.accuracy} />
         </div>
-        <h1 className="text-[28px] font-extrabold leading-tight tracking-tight text-ink-900 sm:text-4xl">{store.name}</h1>
+        <div className="flex flex-wrap items-center gap-3">
+          {rec?.rank ? <RankBadge rank={rec.rank} className="size-11 text-base" /> : null}
+          <h1 className="text-[28px] font-extrabold leading-tight tracking-tight text-ink-900 sm:text-4xl">{store.name}</h1>
+        </div>
         <p className="mt-1 text-[15px] text-ink-600">{store.storeType}</p>
         <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-ink-800">
           {store.description.text}
@@ -59,45 +87,57 @@ export function StoreDetailClient({ store }: { store: StoreDTO }) {
               <h2 className="flex items-center gap-1.5 text-lg font-bold text-ink-900">
                 <Sparkles className="size-5 text-sign-600" aria-hidden /> 왜 나에게 추천됐나요?
               </h2>
-              {!hydrated || (loading && profile && !rec) ? (
+              {!hydrated || (loading && analysis && !rec) ? (
                 <p className="mt-3 flex items-center gap-2 text-sm text-ink-600">
                   <Spinner /> 추천 정보를 불러오는 중…
                 </p>
-              ) : profile && !rec && error && store.recommendable ? (
+              ) : error || extraError ? (
                 <ErrorState
                   className="mt-3"
                   title="추천 정보를 불러오지 못했어요"
-                  message={error}
+                  message={error ?? extraError ?? ""}
                   action={
                     <Button size="sm" onClick={retry}>
                       다시 시도
                     </Button>
                   }
                 />
-              ) : !store.recommendable ? (
-                <p className="mt-3 text-sm leading-relaxed text-ink-700">시장 관리·고객 문의 창구로, 개인화 추천 점수를 계산하지 않아요.</p>
-              ) : !profile || !rec ? (
+              ) : !analysis ? (
                 <div className="mt-3">
-                  <p className="text-sm text-ink-700">취향 분석을 하면 이 점포와의 적합도와 추천 이유를 보여드려요.</p>
-                  <LinkButton href="/onboarding" size="sm" className="mt-3">
+                  <p className="text-sm text-ink-700">취향 분석을 하면 이 점포와의 일치도와 추천 이유를 보여드려요.</p>
+                  <LinkButton href="/discover" size="sm" className="mt-3">
                     취향 분석 시작
                   </LinkButton>
                 </div>
+              ) : !rec ? (
+                <p className="mt-3 flex items-center gap-2 text-sm text-ink-600">
+                  <Spinner /> 이 점포의 점수를 계산하는 중…
+                </p>
               ) : (
                 <div className="mt-3">
                   <div className="flex items-end justify-between gap-3">
                     <div>
                       <p className="text-2xl font-extrabold text-market-800">{matchHeadline(rec.score)}</p>
-                      <p className="text-sm font-semibold text-market-700">{scoreLabel(rec.score)}</p>
+                      <p className="text-sm font-semibold text-market-700">
+                        {scoreLabel(rec.score)}
+                        {rec.rank ? ` · 추천 ${rec.rank}위` : ""}
+                      </p>
                     </div>
                     <ScorePill score={rec.score} className="text-lg" />
                   </div>
                   <div className="mt-3">
                     <ScoreMeter score={rec.score} />
                   </div>
+                  {belowThreshold ? (
+                    <Notice className="mt-3">
+                      이 점포는 추천 기준({threshold?.applied}점)보다 점수가 낮아 지도에는 표시되지 않아요. 점수를 올려서 보여주지 않습니다.
+                    </Notice>
+                  ) : null}
                   <p className="mt-4 text-[15px] leading-relaxed text-ink-800">{rec.reason}</p>
                   <p className="mt-2 text-sm text-ink-600">{matchSummary(rec.matchedTastes)}</p>
-                  <p className="mt-1 text-[11px] text-ink-500">{rec.reasonProvider === "gemini" ? "추천 이유: Gemini 작성 (확인된 품목 외 내용은 추정)" : "추천 이유: 점포 데이터 기반 템플릿"}</p>
+                  <p className="mt-1 text-[11px] text-ink-500">
+                    {rec.reasonProvider === "gemini" ? "추천 이유: Gemini 작성 (확인된 품목 외 내용은 추정)" : "추천 이유: 점포 데이터 기반 템플릿"}
+                  </p>
 
                   {rec.matchedTastes.length ? (
                     <div className="mt-5">
@@ -141,7 +181,8 @@ export function StoreDetailClient({ store }: { store: StoreDTO }) {
                       })}
                     </ul>
                     <p className="mt-2 text-[11px] leading-relaxed text-ink-500">
-                      raw {rec.raw.toFixed(3)} = Σ(가중치 × 값). 표시 점수는 0~100으로 보정한 값이에요. 추천 점수는 알고리즘이 계산하고 AI는 관여하지 않아요.
+                      raw {rec.raw.toFixed(3)} = Σ(가중치 × 값). 표시 점수는 고정된 변환으로 0~100으로 보정한 값이에요. 추천 점수와 순위는 알고리즘이 계산하고
+                      AI는 관여하지 않아요.
                     </p>
                   </div>
                 </div>
@@ -149,22 +190,27 @@ export function StoreDetailClient({ store }: { store: StoreDTO }) {
             </div>
           </Card>
 
-          {store.recommendable ? (
-            <Card className="p-5 sm:p-6">
-              <CardHeader title="이 점포, 어땠나요?" description="표시한 내용은 다음 추천에 반영돼요." />
-              <div className="mt-4">
-                <StoreActions storeId={store.id} />
-              </div>
-            </Card>
-          ) : null}
+          <Card className="p-5 sm:p-6">
+            <CardHeader title="이 점포, 어땠나요?" description="표시한 내용은 다음 추천 점수에 반영돼요." />
+            <div className="mt-4">
+              <StoreActions storeId={store.id} storeName={store.name} />
+            </div>
+          </Card>
 
           <Card className="p-5 sm:p-6">
             <CardHeader
-              title="이 점포의 추천 성향"
-              description={profile ? "막대: 점포 성향(유형·비고 기반 추정) · 노란 눈금: 나의 취향" : "점포 유형과 비고의 품목을 바탕으로 추정한 값이에요."}
+              title="이 점포의 추천 성향 (추정)"
+              description={analysis ? "막대: 점포 성향(분류·품목 기반 추정) · 노란 눈금: 나의 취향" : "원본 분류와 품목을 바탕으로 규칙으로 추정한 값이에요."}
             />
             <div className="mt-4">
-              <TasteBars vector={storeTaste} emphasize={3} minScore={0.2} title={`${store.name} 추천 성향`} compareWith={profile?.taste} compareLabel="나의 취향" />
+              <TasteBars
+                vector={storeTaste}
+                emphasize={3}
+                minScore={0.2}
+                title={`${store.name} 추천 성향`}
+                compareWith={analysis?.profile.categories}
+                compareLabel="나의 취향"
+              />
             </div>
             <p className="mt-3 text-xs leading-relaxed text-ink-500">{store.inferred.rationale}</p>
           </Card>
@@ -172,7 +218,7 @@ export function StoreDetailClient({ store }: { store: StoreDTO }) {
 
         <div className="space-y-4">
           <Card className="p-5 sm:p-6">
-            <CardHeader title="점포 정보" description="엑셀 원본(대전중앙시장 점포·상권 40개)의 값을 그대로 보여줘요." />
+            <CardHeader title="점포 정보 (원본)" description="대전중앙시장 공식 점포 목록의 값을 그대로 보여줘요." />
             <dl className="mt-4 space-y-4 text-sm">
               <div>
                 <dt className="flex items-center gap-1.5 font-semibold text-ink-800">
@@ -180,13 +226,16 @@ export function StoreDetailClient({ store }: { store: StoreDTO }) {
                 </dt>
                 <dd className="mt-1 text-ink-700">
                   {store.raw.addressRaw || "정보 없음"}
-                  <p className="mt-1 text-xs text-ink-500">{store.location.note}</p>
+                  <p className="mt-1 text-xs text-ink-500">
+                    {LOCATION_BASIS_LABEL[store.locationBasis]} · {store.location.note}
+                  </p>
                   {store.locationBasis === "market_zone" ? (
-                    <p className="mt-1 text-xs text-ink-500">활성화구역 공식 대표 주소: {MARKET_REPRESENTATIVE_ADDRESS}</p>
+                    <p className="mt-1 text-xs text-ink-500">구역 기준 대표 주소: {MARKET_REPRESENTATIVE_ADDRESS}</p>
                   ) : null}
+                  {store.raw.zone ? <p className="mt-1 text-xs text-ink-500">구역: {store.raw.zone}</p> : null}
                   <div className="mt-2 flex flex-wrap gap-2">
-                    <Link href={`/market-map?store=${store.id}`} className={buttonClass("secondary", "sm")}>
-                      AI 지도에서 보기
+                    <Link href={`/market-map`} className={buttonClass("secondary", "sm")}>
+                      추천 지도 열기
                     </Link>
                     <a
                       href={`https://map.kakao.com/link/search/${encodeURIComponent(kakaoQuery)}`}
@@ -209,17 +258,20 @@ export function StoreDetailClient({ store }: { store: StoreDTO }) {
                       {store.phone}
                     </a>
                   ) : (
-                    <span>{store.raw.phoneRaw || PHONE_STATUS_LABEL[store.phoneStatus]}</span>
+                    <span>
+                      {PHONE_STATUS_LABEL[store.phoneStatus]}
+                      {store.phoneStatus === "check" ? ` (원본: ${store.raw.phoneRaw})` : ""}
+                    </span>
                   )}
                 </dd>
               </div>
-              {store.productHints.length ? (
+              {store.raw.items.length ? (
                 <div>
                   <dt className="flex items-center gap-1.5 font-semibold text-ink-800">
                     <Tag className="size-4" aria-hidden /> 원본에 적힌 품목
                   </dt>
                   <dd className="mt-1.5 flex flex-wrap gap-1.5">
-                    {store.productHints.map((h) => (
+                    {store.raw.items.map((h) => (
                       <span key={h} className="rounded-full bg-cream px-2.5 py-1 text-xs font-semibold text-ink-700 ring-1 ring-ink-200">
                         {h}
                       </span>
@@ -229,21 +281,43 @@ export function StoreDetailClient({ store }: { store: StoreDTO }) {
               ) : null}
               <div>
                 <dt className="flex items-center gap-1.5 font-semibold text-ink-800">
-                  <FileText className="size-4" aria-hidden /> 확인 출처 · 비고
+                  <FileText className="size-4" aria-hidden /> 출처 · 비고
                 </dt>
-                <dd className="mt-1 text-ink-700">
+                <dd className="mt-1 break-all text-ink-700">
                   {store.raw.source || "—"}
-                  {store.note ? <span className="text-ink-500"> · {store.note}</span> : null}
+                  <p className="mt-1 text-xs text-ink-500">
+                    수집일 {store.raw.collectedAt || "—"} · 원본 번호 {store.raw.sourceIds.join(", ")} · 분류 원문 {store.raw.categoriesRaw}
+                  </p>
+                  {store.note ? <p className="mt-1 text-xs text-ink-500">{store.note}</p> : null}
                 </dd>
               </div>
             </dl>
             <Notice tone="neutral" className="mt-4 text-xs">
-              영업 여부·세부 호수·연락처는 변동될 수 있어요. 방문 전 전화 또는 현장 확인을 권장해요.
+              영업 여부·세부 호수·연락처·가격은 변동될 수 있어요. 방문 전 전화나 현장에서 확인해 주세요.
             </Notice>
           </Card>
 
           <Card className="p-5 sm:p-6">
-            <CardHeader title="중앙시장 특성" description="추천에서 보조적으로만 반영돼요 (가중치 0.10)." />
+            <CardHeader title="관심 지표" description={mockNotice} />
+            <ul className="mt-4 grid grid-cols-2 gap-3">
+              {[
+                { key: "visit", label: "방문", value: store.activity.visitCount, icon: Footprints },
+                { key: "like", label: "좋아요", value: store.activity.likeCount, icon: Heart },
+                { key: "save", label: "저장", value: store.activity.saveCount, icon: Bookmark },
+                { key: "interest", label: "관심 사용자", value: store.activity.interestUsers, icon: Eye },
+              ].map((s) => (
+                <li key={s.key} className="rounded-2xl bg-cream px-3 py-2.5">
+                  <p className="flex items-center gap-1.5 text-xs text-ink-600">
+                    <s.icon className="size-3.5" aria-hidden /> {s.label}
+                  </p>
+                  <p className="tabular mt-0.5 text-2xl font-extrabold text-ink-900">{s.value}</p>
+                </li>
+              ))}
+            </ul>
+          </Card>
+
+          <Card className="p-5 sm:p-6">
+            <CardHeader title="중앙시장 특성 (추정)" description="추천에서 보조적으로만 반영돼요 (가중치 0.10)." />
             <ul className="mt-4 space-y-3">
               {MARKET_FEATURE_KEYS.map((key) => {
                 const value = store.inferred.market[key] ?? 0;
