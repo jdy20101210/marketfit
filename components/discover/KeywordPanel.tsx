@@ -16,7 +16,7 @@ const SUGGESTIONS = ["커피", "캠핑", "선물", "빈티지", "전통시장", 
 
 /**
  * 빠른 키워드 분석: "커피, 캠핑, 선물" 또는 [커피] [캠핑]처럼 입력
- * 입력 즉시 규칙 기반 해석을 미리 보여주고, 분석은 Gemini(또는 데모 AI)가 합니다.
+ * 입력 즉시 해석을 미리 보여주고, [분석하기]를 누르면 서버의 내장 챗봇 엔진이 같은 구조의 profile을 만듭니다.
  */
 export function KeywordPanel() {
   const { state, hydrated } = useMarketFit();

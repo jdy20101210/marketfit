@@ -1,5 +1,5 @@
 /**
- * 대화 답변에서 상황 정보를 규칙으로 추출합니다 (MockGeminiProvider와 Gemini 응답 검증에 공용).
+ * 대화 답변에서 상황 정보를 규칙으로 추출합니다 (내장 챗봇 엔진의 인터뷰·분석 공용).
  * - 사용자가 말한 내용만 채웁니다. 예산 숫자는 사용자가 적은 숫자에서만 계산합니다.
  */
 import { PRODUCT_KEYS } from "@/lib/recommendation/engine";
@@ -315,7 +315,7 @@ export function interviewState(messages: ChatMessage[]) {
 
 const ACKS = ["좋아요!", "알겠어요.", "그렇군요.", "좋은 정보예요.", "네, 참고할게요."];
 
-/** 규칙 기반 다음 질문 (Mock 인터뷰어 · Gemini 응답이 부적절할 때 대체) */
+/** 다음 질문 고르기 — 아직 듣지 못한 항목을 순서대로, 최대 6개까지 */
 export function ruleInterviewTurn(messages: ChatMessage[]) {
   const state = interviewState(messages);
   const ack = ACKS[(state.answeredCount - 1 + ACKS.length) % ACKS.length]!;

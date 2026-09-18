@@ -1,5 +1,5 @@
 /**
- * 템플릿 기반 추천 이유 (Gemini 미사용/실패 시 fallback)
+ * 추천 이유 문장 — 점포 원본 데이터와 매칭 결과만으로 만듭니다
  * 원칙: 엑셀 원본의 유형·비고에 있는 품목만 단정적으로 말하고, 나머지는 추정형으로 표현합니다.
  */
 import { TASTE_META, type TasteKey } from "./dimensions";

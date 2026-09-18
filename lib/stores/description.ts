@@ -1,6 +1,6 @@
 /**
  * 점포 소개 문장 — 원본 데이터(엑셀)와 추정 성향 라벨만 사용합니다.
- * Gemini가 설정되면 관리자 화면에서 AI 소개를 생성할 수 있고, 없거나 실패하면 이 템플릿을 씁니다.
+ * 점포 소개 문장은 엑셀 원본 품목·분류·추정 성향만으로 만듭니다 (지어낸 정보 없음).
  */
 import type { StoreDescriptionInput } from "@/lib/providers/ai/types";
 import { josa } from "@/lib/recommendation/reasons";

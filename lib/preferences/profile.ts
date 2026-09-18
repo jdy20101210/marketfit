@@ -1,5 +1,5 @@
 /**
- * 규칙 기반 취향 분석기 (MockGeminiProvider · Gemini 결과 보정용)
+ * 규칙 기반 취향 분석기 (내장 챗봇 엔진의 취향 해석 본체)
  * 대화 답변·키워드·추출한 상황 정보 → UserPreferenceProfile과 같은 구조의 초안
  */
 import { clamp01, emptyVector, round3, TASTE_KEYS, TASTE_META, topTastes, type TasteKey, type TasteVector } from "@/lib/recommendation/dimensions";
