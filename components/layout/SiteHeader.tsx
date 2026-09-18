@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, Compass, Home, MapPinned, Sparkles, Store, UserRound } from "lucide-react";
+import { BarChart3, Compass, Home, MapPinned, Route, Sparkles, Store, UserRound } from "lucide-react";
 import { cn } from "@/components/ui/cn";
 import { Logo } from "./Logo";
 
 const NAV = [
   { href: "/discover", label: "취향 분석", icon: Sparkles },
   { href: "/market-map", label: "추천 지도", icon: MapPinned },
+  { href: "/plan", label: "동선 계획", icon: Route },
   { href: "/profile", label: "내 기록", icon: UserRound },
   { href: "/market-insight", label: "시장 인사이트", icon: BarChart3 },
   { href: "/merchant", label: "상인 인사이트", icon: Store },
@@ -18,6 +19,7 @@ const TABS = [
   { href: "/", label: "홈", icon: Home },
   { href: "/discover", label: "분석", icon: Sparkles },
   { href: "/market-map", label: "지도", icon: Compass },
+  { href: "/plan", label: "동선", icon: Route },
   { href: "/profile", label: "내 기록", icon: UserRound },
 ];
 
@@ -72,7 +74,7 @@ export function SiteHeader() {
         aria-label="하단 메뉴"
         className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-200/70 bg-paper/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
       >
-        <ul className="grid grid-cols-4">
+        <ul className="grid grid-cols-5">
           {TABS.map((tab) => {
             const active = isActive(pathname, tab.href);
             return (

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Bookmark, Heart, List, Map as MapIcon, MapPin, RefreshCw, Search, Sparkles } from "lucide-react";
+import { Bookmark, Heart, List, Map as MapIcon, MapPin, RefreshCw, Route, Search, Sparkles } from "lucide-react";
 import { AccuracyBadge, CategoryText, MatchedTasteChips, RankBadge, ScorePill } from "@/components/stores/StoreBits";
 import { StoreActions } from "@/components/stores/StoreActions";
 import { Button, LinkButton, Spinner } from "@/components/ui/Button";
@@ -119,6 +119,9 @@ export function MarketMapClient({
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <LinkButton href="/plan" size="sm" variant="sign" icon={<Route className="size-4" aria-hidden />}>
+            동선 계획
+          </LinkButton>
           <span className="inline-flex items-center gap-1 rounded-full bg-paper px-3 py-1 text-xs font-bold text-ink-700 ring-1 ring-ink-200">
             <MapIcon className="size-3.5" aria-hidden /> {useKakao ? "Kakao Map" : "데모 안내도"}
           </span>

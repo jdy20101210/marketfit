@@ -1,7 +1,6 @@
 import "server-only";
 import type { InteractionState, RecommendationItem, RecommendationsResponse } from "@/lib/api/schemas";
 import { getRepository } from "@/lib/db";
-import type { TasteVector } from "@/lib/recommendation/dimensions";
 import {
   exposureBoostFromCounts,
   rankStores,

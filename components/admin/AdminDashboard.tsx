@@ -3,21 +3,7 @@
 import { Fragment, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  Bot,
-  FlaskConical,
-  ChevronDown,
-  Database,
-  KeyRound,
-  LocateFixed,
-  LogOut,
-  Map as MapIcon,
-  RefreshCw,
-  Settings,
-  Sparkles,
-  TriangleAlert,
-  UploadCloud,
-} from "lucide-react";
+import { Bot, FlaskConical, ChevronDown, Database, KeyRound, LocateFixed, LogOut, Map as MapIcon, RefreshCw, Settings, TriangleAlert, UploadCloud } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button, buttonClass } from "@/components/ui/Button";
 import { Card, PageHeader } from "@/components/ui/Card";

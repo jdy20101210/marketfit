@@ -216,3 +216,40 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* 동선 계획 지도 — 방문 순서 marker */
+.mf-route-pin {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px 5px 5px;
+  border-radius: 999px;
+  font: 600 12px/1 var(--font-sans);
+  background: #fffdf8;
+  color: var(--color-ink-800);
+  border: 2px solid var(--color-market-700);
+  box-shadow: 0 6px 16px -8px rgb(35 38 33 / 0.5);
+  white-space: nowrap;
+  transform: translateY(-4px);
+}
+.mf-route-pin b {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--color-market-700);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+}
+.mf-route-pin[data-approx="true"] {
+  border-style: dashed;
+}
+.mf-route-pin--start {
+  padding: 5px 10px;
+  background: var(--color-sign-400);
+  border-color: var(--color-ink-900);
+  color: var(--color-ink-900);
+  font-weight: 800;
+}

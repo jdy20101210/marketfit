@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, Bot, Check, History, Info, MapPinned, RefreshCw, Sparkles, Tags } from "lucide-react";
+import { ArrowRight, Bot, Check, History, Info, MapPinned, RefreshCw, Route, Sparkles, Tags } from "lucide-react";
 import { TasteBars } from "@/components/charts/TasteBars";
 import { Badge } from "@/components/ui/Badge";
 import { Button, LinkButton, Spinner } from "@/components/ui/Button";
@@ -138,6 +138,9 @@ export function AnalysisResultClient() {
               {analyzing ? "다시 분석 중…" : "다시 분석하기"}
             </Button>
           </div>
+          <LinkButton href="/plan" size="md" variant="ghost" className="mt-2 w-full" icon={<Route className="size-4" aria-hidden />}>
+            추천 점포로 동선 계획하기
+          </LinkButton>
           <p className="mt-2 text-xs text-ink-500">
             다시 분석하면 v{analysis.analysisVersion + 1} 결과가 새로 만들어지고, 이전 결과도 그대로 남아요.{" "}
             <a href="/discover" className="font-semibold text-market-700 underline-offset-2 hover:underline">

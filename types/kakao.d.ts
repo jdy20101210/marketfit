@@ -66,6 +66,23 @@ declare namespace kakao.maps {
     constructor(options: CircleOptions);
     setMap(map: Map | null): void;
   }
+  interface PolylineOptions {
+    path: LatLng[];
+    strokeWeight?: number;
+    strokeColor?: string;
+    strokeOpacity?: number;
+    /** solid | shortdash | dash 등 */
+    strokeStyle?: string;
+    endArrow?: boolean;
+    map?: Map;
+  }
+  /** 동선(방문 순서)을 잇는 선 */
+  class Polyline {
+    constructor(options: PolylineOptions);
+    setMap(map: Map | null): void;
+    setPath(path: LatLng[]): void;
+    getLength(): number;
+  }
   interface MarkerClustererOptions {
     map: Map;
     averageCenter?: boolean;
