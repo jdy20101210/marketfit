@@ -18,8 +18,6 @@ export interface InterviewDraft {
   slot: InterviewSlot | null;
   done: boolean;
   suggestions: string[];
-  /** AI가 대화에서 파악한 상황 정보 (서버에서 규칙 결과와 합침) */
-  extracted: Partial<Pick<UserPreferenceProfile, "lookingFor" | "intent" | "intentLabel" | "companion" | "occasion" | "preferredStyle" | "discoveryPreference">>;
 }
 
 // ---------- 취향 분석 ----------
@@ -38,27 +36,6 @@ export interface PreferenceDraft {
   personaLabel: string;
   topCategories: { key: TasteKey; score: number; evidence: string }[];
   keywordInsights: KeywordInsight[];
-}
-
-// ---------- 추천 이유 ----------
-
-export interface ReasonStoreInput {
-  id: string;
-  name: string;
-  storeType: string;
-  entityLabel: string;
-  category: string;
-  confirmedItems: string[];
-  matchedTastes: TasteKey[];
-  locationNote: string;
-}
-
-export interface ReasonInput {
-  personaLabel: string | null;
-  summary: string | null;
-  intentLabel: string | null;
-  userTop: { key: TasteKey; score: number }[];
-  stores: ReasonStoreInput[];
 }
 
 /** 점포 소개 문장 생성 입력 — 엑셀 원본과 추정 성향 라벨만 담습니다. */
@@ -112,22 +89,10 @@ export interface MerchantPromoDraft {
 }
 
 export interface AIProvider {
-  readonly name: "gemini" | "mock";
-  readonly model: string | null;
+  readonly name: "builtin";
   interviewTurn(input: InterviewInput): Promise<InterviewDraft>;
   analyzePreferences(input: PreferenceInput): Promise<PreferenceDraft>;
-  generateReasons(input: ReasonInput): Promise<Record<string, string>>;
-  /** (선택) 점포 특성에 대한 자연어 소개 */
+  /** 점포 소개 문장 (엑셀 원본 + 추정 성향 라벨만 사용) */
   describeStores(stores: StoreDescriptionInput[]): Promise<Record<string, string>>;
   generateMerchantPromo(input: MerchantPromoInput): Promise<MerchantPromoDraft>;
-}
-
-export class AIProviderError extends Error {
-  constructor(
-    message: string,
-    readonly kind: "config" | "auth" | "quota" | "timeout" | "invalid_response" | "upstream" | "not_found",
-    readonly status?: number,
-  ) {
-    super(message);
-  }
 }

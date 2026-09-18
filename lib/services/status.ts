@@ -11,6 +11,7 @@ import {
 import { getRepository, getRepositoryHealth, isSupabaseConfigured } from "@/lib/db";
 import { getAppSecret } from "@/lib/security/crypto";
 import { getAdminMode } from "@/lib/security/session";
+import { AI_ENGINE } from "@/lib/providers/ai";
 import { getStoreCatalog, MOCK_ACTIVITY_META, SEED_META } from "@/lib/stores/catalog";
 import { MARKET_INTEREST_META } from "@/lib/mock/marketInterest";
 
@@ -41,7 +42,7 @@ function lastTest(target: string): TestResult | null {
   return globalForTests.__marketfitTests?.[target] ?? null;
 }
 
-const DISPLAYABLE: IntegrationKey[] = ["GEMINI_MODEL"];
+const DISPLAYABLE: IntegrationKey[] = [];
 
 export async function getSystemStatus(requestOrigin: string) {
   const integrations = await getIntegrations();
@@ -61,7 +62,7 @@ export async function getSystemStatus(requestOrigin: string) {
     displayValue: DISPLAYABLE.includes(key) ? (v[key] ?? null) : null,
   }));
 
-  const geminiTest = lastTest("gemini");
+  const aiTest = lastTest("ai");
   const kakaoTest = lastTest("kakao");
   const mockTest = lastTest("mock");
   const dbTest = lastTest("database");
@@ -77,14 +78,15 @@ export async function getSystemStatus(requestOrigin: string) {
       adminMode: getAdminMode(),
       settingsUpdatedAt: integrations.updatedAt,
     },
-    gemini: {
-      status: v.GEMINI_API_KEY ? (geminiTest && !geminiTest.ok ? "ERROR" : "CONNECTED") : "NOT CONFIGURED",
-      model: v.GEMINI_MODEL ?? null,
-      lastTest: geminiTest,
+    ai: {
+      /** 서비스 내장 챗봇 엔진 — 외부 AI API를 쓰지 않으므로 키 설정과 무관하게 항상 동작합니다. */
+      engine: AI_ENGINE.label,
+      detail: AI_ENGINE.detail,
+      status: aiTest && !aiTest.ok ? "ERROR" : "ACTIVE",
+      externalCalls: false,
+      lastTest: aiTest,
     },
     mock: {
-      /** Gemini가 없을 때 쓰이는 대체 provider와 프로토타입 가상 집계 데이터 상태 */
-      aiFallback: v.GEMINI_API_KEY ? "STANDBY" : "ACTIVE",
       storeSeed: `${SEED_META.sourceFile} · ${SEED_META.storeCount}개 점포 (원본 ${SEED_META.rowCount}행)`,
       activityNotice: MOCK_ACTIVITY_META.notice,
       interestNotice: MARKET_INTEREST_META.notice,

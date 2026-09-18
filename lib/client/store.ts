@@ -30,7 +30,6 @@ export interface InterviewDraftState {
 
 export interface StoredRecommendations extends RecommendationsResponse {
   forAnalysisId: string;
-  reasonProvider: "gemini" | "template";
 }
 
 export interface MarketFitState {

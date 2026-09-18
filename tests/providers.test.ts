@@ -1,168 +1,74 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { emptyVector, TASTE_KEYS } from "@/lib/recommendation/dimensions";
-import { extractSlots } from "@/lib/preferences/extract";
-import { INTERVIEW_GREETING, MAX_QUESTIONS, MIN_ANSWERS, type ChatMessage } from "@/lib/preferences/types";
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 }
 
-function geminiBody(payload: unknown) {
-  return { candidates: [{ content: { parts: [{ text: JSON.stringify(payload) }] }, finishReason: "STOP" }] };
-}
-
-const emptyContext = {
-  intent: null,
-  intent_label: null,
-  looking_for: null,
-  budget_min: null,
-  budget_max: null,
-  companion: null,
-  occasion: null,
-  preferred_style: [],
-  discovery_preference: null,
-};
-
-const validPreference = {
-  persona_label: "선물 탐험가",
-  summary: "대전에서만 볼 수 있는 2만원 이하 선물을 찾고 있어요.",
-  categories: { ...emptyVector(), gift: 0.94, local: 0.91, discovery: 0.89, practical: 0.55 },
-  focus: { ...emptyVector(), gift: 0.95, local: 0.9 },
-  context: { ...emptyContext, intent: "birthday_gift", intent_label: "생일 선물", budget_max: 20000, discovery_preference: "unique" },
-  top_categories: [
-    { key: "gift", score: 0.94, evidence: "친구 생일 선물" },
-    { key: "not_a_key", score: 0.9, evidence: "무시되어야 함" },
-  ],
-  keyword_insights: [
-    { input: "선물", keys: ["gift"], expanded_terms: ["기념품"], note: "선물 관심" },
-    { input: "입력에 없던 키워드", keys: ["coffee"], expanded_terms: [], note: "무시" },
-  ],
-};
-
-function interviewInput(messages: ChatMessage[]) {
-  return { messages, known: extractSlots(messages), answeredCount: messages.filter((m) => m.role === "user").length, askedSlots: [], maxQuestions: MAX_QUESTIONS, minAnswers: MIN_ANSWERS };
-}
-
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
-  vi.resetModules();
 });
+import { extractSlots } from "@/lib/preferences/extract";
+import { INTERVIEW_GREETING, MAX_QUESTIONS, MIN_ANSWERS, type ChatMessage } from "@/lib/preferences/types";
 
-describe("GeminiProvider · 취향 분석 (fetch mock)", () => {
-  it("구조화 JSON을 검증하고 규칙 기반 vector와 섞는다", async () => {
-    const fetchMock = vi.fn(async (_url: string | URL | Request, _init?: RequestInit) => jsonResponse(geminiBody(validPreference)));
-    vi.stubGlobal("fetch", fetchMock);
-    const { GeminiProvider } = await import("@/lib/providers/ai/GeminiProvider");
-    const provider = new GeminiProvider("test-key-1234567890abcdefgh", "gemini-flash-latest");
-    const result = await provider.analyzePreferences({
-      mode: "keywords",
-      messages: [],
-      keywords: ["선물", "빈티지"],
-      known: extractSlots([]),
-    });
+function interviewInput(messages: ChatMessage[]) {
+  const known = extractSlots(messages);
+  return {
+    messages,
+    known,
+    answeredCount: messages.filter((m) => m.role === "user").length,
+    askedSlots: messages.filter((m) => m.role === "assistant" && m.slot).map((m) => m.slot!),
+    maxQuestions: MAX_QUESTIONS,
+    minAnswers: MIN_ANSWERS,
+  };
+}
 
-    const [url, init] = fetchMock.mock.calls[0]!;
-    expect(String(url)).toBe("https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent");
-    expect((init!.headers as Record<string, string>)["x-goog-api-key"]).toBe("test-key-1234567890abcdefgh");
-    const body = JSON.parse(String(init!.body));
-    expect(body.generationConfig.responseMimeType).toBe("application/json");
-    expect(body.generationConfig.responseSchema.required).toContain("categories");
-    // API 키를 URL(로그·리퍼러에 남는 위치)에 넣지 않습니다.
-    expect(String(url)).not.toContain("test-key");
-
-    expect(result.personaLabel).toBe("선물 탐험가");
-    expect(result.profile.categories.gift).toBeGreaterThan(0.8);
-    // 사용자가 금액을 말하지 않았으므로 AI가 적어 낸 예산은 채택하지 않습니다.
-    expect(result.profile.budget).toBeNull();
-    expect(result.topCategories.map((c) => c.key)).not.toContain("not_a_key");
-    // 입력하지 않은 키워드에 대한 해석은 버립니다.
-    expect(result.keywordInsights.map((i) => i.input)).toEqual(["선물"]);
-    for (const k of TASTE_KEYS) {
-      expect(result.profile.categories[k]).toBeGreaterThanOrEqual(0);
-      expect(result.profile.categories[k]).toBeLessThanOrEqual(1);
+describe("내장 챗봇 엔진 · 취향 분석", () => {
+  it("키워드를 취향 vector와 요약으로 바꾼다 (외부 API 호출 없음)", async () => {
+    const { BuiltinChatProvider } = await import("@/lib/providers/ai/BuiltinChatProvider");
+    const provider = new BuiltinChatProvider();
+    const draft = await provider.analyzePreferences({ mode: "keywords", messages: [], keywords: ["커피", "빈티지"], known: extractSlots([]) });
+    expect(draft.profile.categories.coffee).toBeGreaterThan(0.5);
+    expect(draft.profile.categories.vintage).toBeGreaterThan(0.5);
+    expect(draft.profile.summary.length).toBeGreaterThan(0);
+    expect(draft.topCategories.length).toBeGreaterThan(0);
+    for (const value of Object.values(draft.profile.categories)) {
+      expect(value).toBeGreaterThanOrEqual(0);
+      expect(value).toBeLessThanOrEqual(1);
     }
   });
 
-  it("사용자가 말한 예산은 규칙 파싱 값을 우선한다", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => jsonResponse(geminiBody({ ...validPreference, context: { ...validPreference.context, budget_max: 500000 } }))),
-    );
-    const { GeminiProvider } = await import("@/lib/providers/ai/GeminiProvider");
-    const provider = new GeminiProvider("test-key-1234567890abcdefgh", "gemini-flash-latest");
-    const messages: ChatMessage[] = [INTERVIEW_GREETING, { role: "user", text: "친구 생일 선물, 2만원 정도로 찾고 있어요" }];
-    const result = await provider.analyzePreferences({ mode: "chat", messages, keywords: [], known: extractSlots(messages) });
-    expect(result.profile.budget?.max).toBe(20000);
+  it("대화에서 예산·목적을 읽어 같은 구조의 profile을 만든다", async () => {
+    const { BuiltinChatProvider } = await import("@/lib/providers/ai/BuiltinChatProvider");
+    const messages: ChatMessage[] = [
+      INTERVIEW_GREETING,
+      { role: "user", text: "친구 생일 선물을 찾고 있어요" },
+      { role: "assistant", text: "예산은 어느 정도 생각하고 계세요?" },
+      { role: "user", text: "2만원 정도요" },
+      { role: "assistant", text: "대전만의 상품과 실용적인 상품 중 어느 쪽이 좋으세요?" },
+      { role: "user", text: "대전에서만 볼 수 있는 독특한 상품이 좋아요" },
+    ];
+    const draft = await new BuiltinChatProvider().analyzePreferences({ mode: "chat", messages, keywords: [], known: extractSlots(messages) });
+    expect(draft.profile.budget?.max).toBe(20000);
+    expect(draft.profile.intent).toBe("birthday_gift");
+    expect(draft.profile.categories.gift).toBeGreaterThan(0.5);
   });
 
-  it("잘못된 응답(JSON 아님)은 오류로 처리한다", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => jsonResponse({ candidates: [{ content: { parts: [{ text: "죄송해요, JSON을 만들 수 없어요" }] }, finishReason: "STOP" }] })),
-    );
-    const { GeminiProvider } = await import("@/lib/providers/ai/GeminiProvider");
-    const provider = new GeminiProvider("test-key-1234567890abcdefgh", "gemini-flash-latest");
-    await expect(provider.analyzePreferences({ mode: "keywords", messages: [], keywords: ["선물"], known: extractSlots([]) })).rejects.toThrow();
-  });
-
-  it("추천 이유는 요청한 점포 id만, 위험한 표현은 빼고 돌려준다", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () =>
-        jsonResponse(
-          geminiBody({
-            reasons: [
-              { store_id: "dj-001", reason: "선물하기 좋은 품목을 다뤄요." },
-              { store_id: "dj-002", reason: "전화 042-123-4567로 문의하세요." },
-              { store_id: "dj-003", reason: "대전 최초·유일한 원조 맛집이에요." },
-              { store_id: "dj-999", reason: "요청하지 않은 점포" },
-            ],
-          }),
-        ),
-      ),
-    );
-    const { GeminiProvider } = await import("@/lib/providers/ai/GeminiProvider");
-    const provider = new GeminiProvider("test-key-1234567890abcdefgh", "gemini-flash-latest");
-    const reasons = await provider.generateReasons({
-      personaLabel: null,
-      summary: null,
-      intentLabel: null,
-      userTop: [{ key: "gift", score: 0.9 }],
-      stores: ["dj-001", "dj-002", "dj-003", "dj-004"].map((id) => ({
-        id,
-        name: id,
-        storeType: "잡화·악세서리",
-        entityLabel: "점포",
-        category: "주거·생활 > 생활용품",
-        confirmedItems: ["잡화"],
-        matchedTastes: ["gift"],
-        locationNote: "",
-      })),
-    });
-    expect(Object.keys(reasons)).toEqual(["dj-001"]);
-  });
-
-  it("키가 잘못되면 fallback으로 데모 AI 결과를 돌려준다", async () => {
-    vi.stubEnv("GEMINI_API_KEY", "invalid-key-1234567890abcdef");
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () =>
-        jsonResponse({ error: { code: 400, message: "API key not valid. Please pass a valid API key.", status: "INVALID_ARGUMENT", details: [{ reason: "API_KEY_INVALID" }] } }, 400),
-      ),
-    );
-    const { analyzePreferencesWithFallback } = await import("@/lib/providers/ai");
-    const res = await analyzePreferencesWithFallback({ mode: "keywords", messages: [], keywords: ["커피", "빈티지"], known: extractSlots([]) });
-    expect(res.provider).toBe("mock");
-    expect(res.fallbackReason).toContain("API 키");
-    expect(res.result.profile.categories.coffee).toBeGreaterThan(0.5);
+  it("같은 입력이면 항상 같은 결과가 나온다 (재현 가능)", async () => {
+    const { BuiltinChatProvider } = await import("@/lib/providers/ai/BuiltinChatProvider");
+    const provider = new BuiltinChatProvider();
+    const input = { mode: "keywords" as const, messages: [], keywords: ["캠핑", "선물"], known: extractSlots([]) };
+    const a = await provider.analyzePreferences(input);
+    const b = await provider.analyzePreferences(input);
+    expect(a.profile.categories).toEqual(b.profile.categories);
+    expect(a.personaLabel).toBe(b.personaLabel);
   });
 });
 
 describe("AI 인터뷰", () => {
-  it("MockGeminiProvider는 아직 모르는 항목을 물어보고, 충분히 들으면 끝낸다", async () => {
-    const { MockGeminiProvider } = await import("@/lib/providers/ai/MockGeminiProvider");
-    const provider = new MockGeminiProvider();
+  it("아직 모르는 항목을 물어보고, 충분히 들으면 끝낸다", async () => {
+    const { BuiltinChatProvider } = await import("@/lib/providers/ai/BuiltinChatProvider");
+    const provider = new BuiltinChatProvider();
     const first = await provider.interviewTurn(interviewInput([INTERVIEW_GREETING, { role: "user", text: "친구 생일 선물을 찾고 있어요" }]));
     expect(first.reply.length).toBeGreaterThan(0);
     expect(first.done).toBe(false);
@@ -195,19 +101,12 @@ describe("AI 인터뷰", () => {
     expect(slots.companion).toBe("friend");
   });
 
-  it("Gemini가 이미 답한 것을 또 묻거나 너무 일찍 끝내려 하면 서버 규칙이 이긴다", async () => {
-    vi.stubEnv("GEMINI_API_KEY", "test-key-1234567890abcdefgh");
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () =>
-        jsonResponse(geminiBody({ reply: "충분히 들었어요!", next_slot: null, done: true, suggestions: [], extracted: { looking_for: null, intent: null, intent_label: null, companion: null, occasion: null, preferred_style: [], discovery_preference: null } })),
-      ),
-    );
+  it("질문 수 한도 안에서 최소 답변을 채우기 전에는 끝내지 않는다", async () => {
     const { runInterviewTurn } = await import("@/lib/services/preferenceService");
     const turn = await runInterviewTurn([INTERVIEW_GREETING, { role: "user", text: "선물 찾고 있어요" }]);
-    // 답변이 1개뿐이므로 종료하지 않고 규칙 질문으로 되돌립니다.
     expect(turn.done).toBe(false);
-    expect(turn.provider).toBe("rule");
+    expect(turn.provider).toBe("builtin");
+    expect(turn.questionCount).toBeLessThanOrEqual(MAX_QUESTIONS);
   });
 });
 

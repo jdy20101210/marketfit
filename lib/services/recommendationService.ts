@@ -1,7 +1,7 @@
 import "server-only";
 import type { InteractionState, RecommendationItem, RecommendationsResponse } from "@/lib/api/schemas";
 import { getRepository } from "@/lib/db";
-import { topTastes, type TasteVector } from "@/lib/recommendation/dimensions";
+import type { TasteVector } from "@/lib/recommendation/dimensions";
 import {
   exposureBoostFromCounts,
   rankStores,
@@ -13,8 +13,6 @@ import {
 } from "@/lib/recommendation/engine";
 import { currentState, INTERACTION_WEIGHTS, type InteractionEvent } from "@/lib/recommendation/feedback";
 import { templateReason } from "@/lib/recommendation/reasons";
-import { generateReasonsWithFallback } from "@/lib/providers/ai";
-import { categoryPath } from "@/lib/stores/description";
 import { ENTITY_KIND_LABEL } from "@/lib/stores/parse";
 import { getStores } from "@/lib/stores/catalog";
 import type { Store } from "@/lib/stores/types";
@@ -62,7 +60,7 @@ export function feedbackFromState(state: InteractionState | undefined, events: I
   return out;
 }
 
-export function toItem(store: Store, scored: ScoredStore, rank: number | null, reason?: string): RecommendationItem {
+export function toItem(store: Store, scored: ScoredStore, rank: number | null): RecommendationItem {
   return {
     storeId: store.id,
     rank,
@@ -72,17 +70,15 @@ export function toItem(store: Store, scored: ScoredStore, rank: number | null, r
     matchedTastes: scored.matchedTastes,
     matchedProducts: scored.matchedProducts,
     facet: scored.facet,
-    reason:
-      reason ??
-      templateReason({
-        storeType: store.storeType,
-        entityNoun: ENTITY_KIND_LABEL[store.entityKind],
-        matchedTastes: scored.matchedTastes,
-        matchedProducts: scored.matchedProducts,
-        productHints: store.features.productHints,
-        score: scored.score,
-      }),
-    reasonProvider: reason ? "gemini" : "template",
+    reason: templateReason({
+      storeType: store.storeType,
+      entityNoun: ENTITY_KIND_LABEL[store.entityKind],
+      matchedTastes: scored.matchedTastes,
+      matchedProducts: scored.matchedProducts,
+      productHints: store.features.productHints,
+      score: scored.score,
+    }),
+    reasonProvider: "template",
     recommendable: scored.recommendable,
     dismissed: scored.dismissed,
   };
@@ -156,41 +152,4 @@ export async function computeRecommendations(
     analysisVersion: options.analysisVersion ?? null,
     generatedAt: new Date().toISOString(),
   };
-}
-
-/** 상위 점포의 추천 이유를 Gemini로 생성 (실패/미설정 시 빈 결과 → 템플릿 유지) */
-export async function generateReasons(args: {
-  personaLabel: string | null;
-  summary?: string | null;
-  intentLabel?: string | null;
-  taste: TasteVector;
-  recent: TasteVector | null;
-  storeIds: string[];
-}) {
-  const stores = await getStores();
-  const wanted = new Set(args.storeIds);
-  const targets = stores.filter((s) => wanted.has(s.id));
-  const ranked = rankStores({ taste: args.taste, recent: args.recent }, scoringInputs(targets));
-  const byId = new Map(targets.map((s) => [s.id, s]));
-  return generateReasonsWithFallback({
-    personaLabel: args.personaLabel,
-    summary: args.summary ?? null,
-    intentLabel: args.intentLabel ?? null,
-    userTop: topTastes(args.taste, 5, 0.3),
-    stores: ranked
-      .filter((r) => r.recommendable)
-      .map((r) => {
-        const s = byId.get(r.storeId)!;
-        return {
-          id: s.id,
-          name: s.name,
-          storeType: s.storeType,
-          entityLabel: ENTITY_KIND_LABEL[s.entityKind],
-          category: categoryPath(s.mainCategory, s.subCategory),
-          confirmedItems: s.features.productHints,
-          matchedTastes: r.matchedTastes.map((m) => m.key),
-          locationNote: s.addressDetail ?? s.zone ?? s.addressRaw,
-        };
-      }),
-  });
 }

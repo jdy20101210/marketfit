@@ -5,12 +5,10 @@ import { getRepository } from "@/lib/db";
 import { decryptString, encryptString } from "@/lib/security/crypto";
 
 /**
- * 외부 연동 설정.
- * 우선순위: 환경변수 > 관리자 화면 입력값(서버에 암호화 저장) > 기본값
+ * 외부 연동 설정 (현재는 Kakao 지도뿐입니다 — AI는 서비스 내장 엔진이라 키가 없습니다).
+ * 우선순위: 환경변수 > 관리자 화면 입력값(서버에 암호화 저장)
  * 비밀 값은 절대로 클라이언트로 내려보내지 않습니다.
  */
-
-export const DEFAULT_GEMINI_MODEL = "gemini-flash-latest";
 
 const lenientKey = (min: number, max: number) =>
   z
@@ -19,22 +17,6 @@ const lenientKey = (min: number, max: number) =>
     .regex(new RegExp(`^[A-Za-z0-9_\\-]{${min},${max}}$`), "키 형식이 올바르지 않습니다 (공백·특수문자 확인)");
 
 export const INTEGRATION_FIELDS = {
-  GEMINI_API_KEY: {
-    group: "gemini",
-    label: "Gemini API Key",
-    secret: true,
-    envNames: ["GEMINI_API_KEY"],
-    schema: lenientKey(20, 200),
-    help: "Google AI Studio에서 발급한 API 키 (서버에서만 사용)",
-  },
-  GEMINI_MODEL: {
-    group: "gemini",
-    label: "Gemini 모델",
-    secret: false,
-    envNames: ["GEMINI_MODEL"],
-    schema: z.string().trim().regex(/^[a-z0-9][a-z0-9.\-]{2,60}$/, "모델 코드 형식이 올바르지 않습니다"),
-    help: `비우면 ${DEFAULT_GEMINI_MODEL} (최신 Flash 별칭) 사용`,
-  },
   KAKAO_JS_KEY: {
     group: "kakao",
     label: "Kakao JavaScript 키",
@@ -107,11 +89,6 @@ export async function getIntegrations(): Promise<ResolvedIntegrations> {
       continue;
     }
     if (enc && !dec) console.warn(`[integrations] ${key} 값을 복호화하지 못했습니다(APP_SECRET 변경 여부 확인).`);
-    if (key === "GEMINI_MODEL") {
-      values[key] = DEFAULT_GEMINI_MODEL;
-      sources[key] = "default";
-      continue;
-    }
     sources[key] = null;
   }
   const value: ResolvedIntegrations = { values, sources, updatedAt: stored["integration:__updatedAt"] ?? null };
@@ -158,27 +135,22 @@ export function validateIntegrationValue(key: IntegrationKey, value: string): st
 
 // ---------- 모드 판단 ----------
 
-export async function getGeminiConfig(): Promise<{ apiKey: string; model: string } | null> {
-  const { values } = await getIntegrations();
-  if (!values.GEMINI_API_KEY) return null;
-  return { apiKey: values.GEMINI_API_KEY, model: values.GEMINI_MODEL ?? DEFAULT_GEMINI_MODEL };
-}
-
 export async function getKakaoConfig(): Promise<{ jsKey: string | null; restKey: string | null }> {
   const { values } = await getIntegrations();
   return { jsKey: values.KAKAO_JS_KEY ?? null, restKey: values.KAKAO_REST_API_KEY ?? null };
 }
 
 export interface PublicModes {
-  ai: "gemini" | "mock";
+  /** AI는 항상 서비스 내장 챗봇 엔진입니다 (외부 API 없음) */
+  ai: "builtin";
   map: "kakao" | "mock";
   geocoding: "kakao" | "mock";
 }
 
 export async function getPublicModes(): Promise<PublicModes> {
-  const [gemini, kakao] = await Promise.all([getGeminiConfig(), getKakaoConfig()]);
+  const kakao = await getKakaoConfig();
   return {
-    ai: gemini ? "gemini" : "mock",
+    ai: "builtin",
     map: kakao.jsKey ? "kakao" : "mock",
     geocoding: kakao.restKey ? "kakao" : "mock",
   };

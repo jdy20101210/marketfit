@@ -1,107 +1,52 @@
 import "server-only";
-import { getGeminiConfig } from "@/lib/config/integrations";
 import { sanitizePromo } from "@/lib/merchant/promo";
-import { GeminiProvider } from "./GeminiProvider";
-import { MockGeminiProvider } from "./MockGeminiProvider";
-import {
-  AIProviderError,
-  type AIProvider,
-  type InterviewDraft,
-  type InterviewInput,
-  type MerchantPromoDraft,
-  type MerchantPromoInput,
-  type PreferenceDraft,
-  type PreferenceInput,
-  type ReasonInput,
-  type StoreDescriptionInput,
+import { BuiltinChatProvider } from "./BuiltinChatProvider";
+import type {
+  AIProvider,
+  InterviewDraft,
+  InterviewInput,
+  MerchantPromoDraft,
+  MerchantPromoInput,
+  PreferenceDraft,
+  PreferenceInput,
+  StoreDescriptionInput,
 } from "./types";
 
-export type { AIProvider, InterviewInput, MerchantPromoInput, PreferenceInput, ReasonInput, StoreDescriptionInput } from "./types";
-export { MockGeminiProvider } from "./MockGeminiProvider";
-export { GeminiProvider, listGeminiModels } from "./GeminiProvider";
+export type { AIProvider, InterviewInput, MerchantPromoInput, PreferenceInput, StoreDescriptionInput } from "./types";
+export { BuiltinChatProvider } from "./BuiltinChatProvider";
 
-/** 우선순위: Gemini(키 설정 시) → Mock */
-export async function getAIProvider(): Promise<AIProvider> {
-  const config = await getGeminiConfig();
-  return config ? new GeminiProvider(config.apiKey, config.model) : new MockGeminiProvider();
+/**
+ * 이 서비스의 AI는 **내장 챗봇 엔진 하나**입니다.
+ * 외부 AI API(Gemini 등)를 호출하지 않으므로 API 키·요금·장애·네트워크 대기 시간이 없고,
+ * 같은 입력이면 항상 같은 결과가 나옵니다(데모·발표에서 재현 가능).
+ */
+export const AI_ENGINE = {
+  id: "builtin",
+  label: "MarketFit 챗봇 엔진",
+  detail: "서비스 안에서 도는 규칙·사전 기반 자연어 해석 (외부 AI API 호출 없음)",
+} as const;
+
+let engine: AIProvider | null = null;
+
+export function getAIProvider(): AIProvider {
+  engine ??= new BuiltinChatProvider();
+  return engine;
 }
 
-export interface WithFallback<T> {
-  result: T;
-  provider: "gemini" | "mock";
-  model: string | null;
-  fallbackReason: string | null;
+export function interviewTurn(input: InterviewInput): Promise<InterviewDraft> {
+  return getAIProvider().interviewTurn(input);
 }
 
-export function describeError(err: unknown): string {
-  if (err instanceof AIProviderError) return err.message;
-  if (err instanceof Error) return err.message;
-  return "알 수 없는 오류";
+export function analyzePreferences(input: PreferenceInput): Promise<PreferenceDraft> {
+  return getAIProvider().analyzePreferences(input);
 }
 
-/** Gemini 호출이 실패하면 MockGeminiProvider 결과로 대체합니다(서비스가 멈추지 않도록). */
-async function withFallback<T>(task: string, run: (p: AIProvider) => Promise<T>): Promise<WithFallback<T>> {
-  const provider = await getAIProvider();
-  if (provider.name === "gemini") {
-    try {
-      const result = await run(provider);
-      return { result, provider: "gemini", model: provider.model, fallbackReason: null };
-    } catch (err) {
-      const reason = describeError(err);
-      console.warn(`[ai] Gemini ${task} 실패 → Mock 사용:`, reason);
-      return { result: await run(new MockGeminiProvider()), provider: "mock", model: null, fallbackReason: reason };
-    }
-  }
-  return { result: await run(provider), provider: "mock", model: null, fallbackReason: null };
+export function describeStores(stores: StoreDescriptionInput[]): Promise<Record<string, string>> {
+  return getAIProvider().describeStores(stores);
 }
 
-export function interviewWithFallback(input: InterviewInput): Promise<WithFallback<InterviewDraft>> {
-  return withFallback("인터뷰", (p) => p.interviewTurn(input));
-}
-
-export function analyzePreferencesWithFallback(input: PreferenceInput): Promise<WithFallback<PreferenceDraft>> {
-  return withFallback("취향 분석", (p) => p.analyzePreferences(input));
-}
-
-export async function generateMerchantPromoWithFallback(input: MerchantPromoInput): Promise<WithFallback<MerchantPromoDraft>> {
-  const res = await withFallback("홍보 아이디어 생성", (p) => p.generateMerchantPromo(input));
-  return { ...res, result: sanitizePromo(res.result, input.store?.confirmedItems ?? []) };
-}
-
-export async function generateReasonsWithFallback(input: ReasonInput): Promise<WithFallback<Record<string, string>>> {
-  const provider = await getAIProvider();
-  if (provider.name !== "gemini") return { result: {}, provider: "mock", model: null, fallbackReason: null };
-  try {
-    const result = await provider.generateReasons(input);
-    return { result, provider: "gemini", model: provider.model, fallbackReason: null };
-  } catch (err) {
-    console.warn("[ai] Gemini 추천 이유 생성 실패 → 템플릿 사용:", describeError(err));
-    return { result: {}, provider: "mock", model: null, fallbackReason: describeError(err) };
-  }
-}
-
-/** 점포 소개: Gemini가 쓴 문장을 우선 쓰고, 빠진 점포·실패 시 원본 데이터 기반 템플릿으로 채웁니다. */
-export async function describeStoresWithFallback(
-  stores: StoreDescriptionInput[],
-): Promise<WithFallback<Record<string, { text: string; provider: "gemini" | "template" }>>> {
-  const template = await new MockGeminiProvider().describeStores(stores);
-  const provider = await getAIProvider();
-  let generated: Record<string, string> = {};
-  let fallbackReason: string | null = null;
-  if (provider.name === "gemini") {
-    try {
-      generated = await provider.describeStores(stores);
-    } catch (err) {
-      fallbackReason = describeError(err);
-      console.warn("[ai] Gemini 점포 소개 생성 실패 → 템플릿 사용:", fallbackReason);
-    }
-  }
-  const result = Object.fromEntries(
-    stores.map((s) => [
-      s.id,
-      generated[s.id] ? { text: generated[s.id]!, provider: "gemini" as const } : { text: template[s.id]!, provider: "template" as const },
-    ]),
-  );
-  const usedGemini = Object.keys(generated).length > 0;
-  return { result, provider: usedGemini ? "gemini" : "mock", model: usedGemini ? provider.model : null, fallbackReason };
+/** 홍보 아이디어 — 원본 품목에 없는 내용은 '아이디어'로 표시되도록 한 번 더 걸러 냅니다. */
+export async function generateMerchantPromo(input: MerchantPromoInput): Promise<MerchantPromoDraft> {
+  const draft = await getAIProvider().generateMerchantPromo(input);
+  return sanitizePromo(draft, input.store?.confirmedItems ?? []);
 }

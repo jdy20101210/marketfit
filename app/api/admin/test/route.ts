@@ -1,10 +1,9 @@
 import { z } from "zod";
-import { getGeminiConfig, getKakaoConfig } from "@/lib/config/integrations";
+import { getKakaoConfig } from "@/lib/config/integrations";
 import { checkAnonAccess, getRepository, isSupabaseConfigured } from "@/lib/db";
 import { handle, ok, readJson } from "@/lib/http";
-import { listGeminiModels } from "@/lib/providers/ai";
+import { AI_ENGINE, BuiltinChatProvider } from "@/lib/providers/ai";
 import { KakaoMapProvider } from "@/lib/providers/map/KakaoMapProvider";
-import { MockGeminiProvider } from "@/lib/providers/ai/MockGeminiProvider";
 import { requireAdmin } from "@/lib/security/adminGuard";
 import { recordTestResult, type TestResult } from "@/lib/services/status";
 import { getStoreCatalog, MOCK_ACTIVITY_META, SEED_META } from "@/lib/stores/catalog";
@@ -15,27 +14,26 @@ import { INTERVIEW_GREETING, MAX_QUESTIONS, MIN_ANSWERS, type ChatMessage } from
 
 export const maxDuration = 30;
 
-const Body = z.object({ target: z.enum(["gemini", "kakao", "mock", "database"]) });
+const Body = z.object({ target: z.enum(["ai", "kakao", "mock", "database"]) });
 
 function message(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
-async function testGemini(): Promise<TestResult> {
-  const config = await getGeminiConfig();
-  if (!config) return { ok: false, message: "Gemini API 키가 설정되지 않았습니다.", at: new Date().toISOString() };
+/** 내장 챗봇 엔진 점검 — 인터뷰 한 턴과 취향 분석을 실제로 돌려 봅니다 (네트워크 호출 없음). */
+async function testAI(): Promise<TestResult> {
+  const startedAt = Date.now();
   try {
-    const models = await listGeminiModels(config.apiKey);
-    const isAlias = config.model.endsWith("-latest");
-    const found = models.includes(config.model);
+    const provider = new BuiltinChatProvider();
+    const messages: ChatMessage[] = [INTERVIEW_GREETING, { role: "user", text: "친구 생일 선물을 찾고 있어요" }];
+    const known = extractSlots(messages);
+    const turn = await provider.interviewTurn({ messages, known, answeredCount: 1, askedSlots: [], maxQuestions: MAX_QUESTIONS, minAnswers: MIN_ANSWERS });
+    const analysis = await provider.analyzePreferences({ mode: "both", messages, keywords: ["선물", "커피"], known });
+    const top = analysis.topCategories.slice(0, 3).map((c) => `${c.key} ${Math.round(c.score * 100)}`);
     return {
-      ok: found || isAlias,
-      message: found
-        ? `API 키 확인 완료 · 모델 ${config.model} 사용 가능`
-        : isAlias
-          ? `API 키 확인 완료 · 별칭 모델 ${config.model} 사용 (최신 Flash로 자동 연결)`
-          : `API 키는 유효하지만 모델 ${config.model}을(를) 찾을 수 없습니다. 아래 목록에서 선택하세요.`,
-      details: models.slice(0, 30),
+      ok: Boolean(turn.reply) && analysis.topCategories.length > 0,
+      message: `${AI_ENGINE.label} 정상 · ${Date.now() - startedAt}ms (외부 API 호출 없음)`,
+      details: [AI_ENGINE.detail, `다음 질문 예시: ${turn.reply}`, `취향 상위: ${top.join(", ")}`, `요약: ${analysis.profile.summary}`],
       at: new Date().toISOString(),
     };
   } catch (err) {
@@ -64,23 +62,18 @@ async function testKakao(): Promise<TestResult> {
   }
 }
 
-/** Gemini 없이도 서비스가 도는지(MockGeminiProvider) + 가상 집계 데이터가 로드되는지 확인 */
+/** 프로토타입용 seed·가상 집계 데이터가 정상적으로 로드되는지 확인 */
 async function testMock(): Promise<TestResult> {
   try {
-    const provider = new MockGeminiProvider();
-    const messages: ChatMessage[] = [INTERVIEW_GREETING, { role: "user", text: "친구 생일 선물을 찾고 있어요" }];
-    const known = extractSlots(messages);
-    const turn = await provider.interviewTurn({ messages, known, answeredCount: 1, askedSlots: [], maxQuestions: MAX_QUESTIONS, minAnswers: MIN_ANSWERS });
-    const analysis = await provider.analyzePreferences({ mode: "keywords", messages: [], keywords: ["선물", "커피"], known: extractSlots([]) });
+    const catalog = await getStoreCatalog();
     const shares = recentInterestShares(7).slice(0, 3);
     return {
-      ok: Boolean(turn.reply) && analysis.topCategories.length > 0,
-      message: "Mock provider 정상 · Gemini 실패 시에도 인터뷰·분석이 동작합니다.",
+      ok: catalog.stores.length > 0,
+      message: `점포 seed ${catalog.stores.length}개 · 가상 집계 데이터 로드 완료`,
       details: [
         `점포 seed: ${SEED_META.sourceFile} · ${SEED_META.storeCount}개 (원본 ${SEED_META.rowCount}행)`,
         `가상 활동 집계: ${MOCK_ACTIVITY_META.notice}`,
         `가상 관심도 집계: 최근 ${MARKET_INTEREST_META.days}일 · 상위 ${shares.map((s) => `${s.label} ${Math.round(s.share * 100)}%`).join(", ")}`,
-        `대체 질문 예시: ${turn.reply}`,
       ],
       at: new Date().toISOString(),
     };
@@ -111,8 +104,8 @@ export const POST = handle(async (request: Request) => {
   await requireAdmin(request, { mutating: true });
   const { target } = await readJson(request, Body);
   const result =
-    target === "gemini"
-      ? await testGemini()
+    target === "ai"
+      ? await testAI()
       : target === "kakao"
         ? await testKakao()
         : target === "mock"

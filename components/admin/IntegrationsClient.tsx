@@ -14,7 +14,7 @@ import { loadKakaoMaps } from "@/lib/map/kakaoLoader";
 import type { FieldStatus, SystemStatus, TestResult } from "@/lib/services/status";
 import type { PublicConfig } from "@/lib/api/schemas";
 
-type Group = "kakao" | "gemini";
+type Group = "kakao";
 
 export function IntegrationsClient({ initialStatus, origin }: { initialStatus: SystemStatus; origin: string }) {
   const [status, setStatus] = useState(initialStatus);
@@ -83,26 +83,19 @@ export function IntegrationsClient({ initialStatus, origin }: { initialStatus: S
           extra={<KakaoBrowserTest />}
         />
 
-        <ProviderSection
-          id="gemini"
-          icon={<Bot className="size-5" aria-hidden />}
-          title="Gemini AI"
-          badge={<Badge tone={status.gemini.status === "CONNECTED" ? "market" : status.gemini.status === "ERROR" ? "brick" : "sign"}>{status.gemini.status}</Badge>}
-          guide={
-            <ol className="list-decimal space-y-1.5 pl-5">
-              <li>
-                <ExtLink href="https://aistudio.google.com/apikey">Google AI Studio</ExtLink>에서 API 키 생성
-              </li>
-              <li>아래에 입력 후 저장 → [연결 테스트]로 키와 사용 가능한 모델을 확인</li>
-              <li>모델을 비워두면 최신 Flash 별칭(gemini-flash-latest)을 사용하고, 없으면 gemini-2.5-flash로 재시도해요</li>
-            </ol>
-          }
-          copyValues={[]}
-          fields={fieldsBy("gemini")}
-          testTarget="gemini"
-          onSaved={setStatus}
-          lastTest={status.gemini.lastTest}
-        />
+        <Card className="p-5 sm:p-6">
+          <div className="flex items-center gap-2">
+            <span className="grid size-9 place-items-center rounded-xl bg-market-50 text-market-700">
+              <Bot className="size-5" aria-hidden />
+            </span>
+            <h2 className="text-lg font-extrabold text-ink-900">AI 엔진</h2>
+            <Badge tone="market">{status.ai.status}</Badge>
+          </div>
+          <p className="mt-2 text-sm leading-relaxed text-ink-700">
+            취향 해석·추천 이유·홍보 아이디어는 <strong>{status.ai.engine}</strong>이 서버 안에서 직접 만듭니다. {status.ai.detail} 설정할 키가 없고, 외부 AI 요금·장애·응답 지연의
+            영향을 받지 않아요. 동작 확인은 <Link href="/admin" className="font-semibold text-market-700 underline">관리자 홈</Link>의 [AI 엔진] 연결 테스트에서 할 수 있어요.
+          </p>
+        </Card>
 
         <Card className="p-5 sm:p-6">
           <div className="flex items-center gap-2">
@@ -180,7 +173,7 @@ function ProviderSection(props: {
   guide: ReactNode;
   copyValues: { label: string; value: string }[];
   fields: FieldStatus[];
-  testTarget: "kakao" | "gemini";
+  testTarget: "kakao";
   lastTest: TestResult | null;
   onSaved: (status: SystemStatus) => void;
   extra?: ReactNode;
@@ -196,7 +189,6 @@ function ProviderSection(props: {
   const [test, setTest] = useState<TestResult | null>(props.lastTest);
 
   const dirty = Object.values(values).some((v) => v.trim()) || clear.length > 0;
-  const modelOptions = props.testTarget === "gemini" ? (test?.details ?? []) : [];
 
   const save = async (e: FormEvent) => {
     e.preventDefault();
@@ -281,7 +273,6 @@ function ProviderSection(props: {
                     autoComplete="off"
                     spellCheck={false}
                     disabled={envLocked || markedClear}
-                    list={f.key === "GEMINI_MODEL" && modelOptions.length ? "gemini-models" : undefined}
                     placeholder={envLocked ? "환경변수 값 사용 중" : f.configured && f.source === "admin" ? "새 값 입력 시 교체 (비우면 유지)" : "값 입력"}
                     value={values[f.key] ?? ""}
                     onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
@@ -320,14 +311,6 @@ function ProviderSection(props: {
             </div>
           );
         })}
-        {modelOptions.length ? (
-          <datalist id="gemini-models">
-            {modelOptions.map((m) => (
-              <option key={m} value={m} />
-            ))}
-          </datalist>
-        ) : null}
-
         <div className="flex flex-wrap items-center gap-2">
           <Button type="submit" loading={saving} disabled={!dirty}>
             저장
@@ -343,7 +326,7 @@ function ProviderSection(props: {
             <p className="mt-0.5 break-all">{test.message}</p>
             {test.details?.length ? (
               <ul className="mt-1 list-disc space-y-0.5 pl-5 text-xs">
-                {test.details.slice(0, props.testTarget === "gemini" ? 12 : 10).map((d) => (
+                {test.details.slice(0, 10).map((d) => (
                   <li key={d} className="break-all">
                     {d}
                   </li>

@@ -40,7 +40,7 @@ function slotChips(slots: InterviewSlots | null): string[] {
  * - 답변마다 /api/interview가 다음 질문을 정합니다(이미 답한 내용은 다시 묻지 않음).
  * - 대화는 이 브라우저에만 보관되고, 분석할 때 서버로 전송됩니다.
  */
-export function ChatInterview({ aiMode }: { aiMode: "gemini" | "mock" }) {
+export function ChatInterview() {
   const { state, hydrated } = useMarketFit();
   const interview = state.interview;
   const messages = interview.messages;
@@ -153,11 +153,7 @@ export function ChatInterview({ aiMode }: { aiMode: "gemini" | "mock" }) {
           질문 {Math.min(interview.questionCount, MAX_QUESTIONS)}/
           {MAX_QUESTIONS} · 답변 {answers}개
         </span>
-        <span>
-          {aiMode === "gemini"
-            ? "Gemini가 필요한 질문만 골라서 물어봐요"
-            : "데모 AI(규칙 기반)가 질문해요"}
-        </span>
+        <span>필요한 질문만 골라서 물어봐요</span>
       </div>
 
       <ol
@@ -208,9 +204,7 @@ export function ChatInterview({ aiMode }: { aiMode: "gemini" | "mock" }) {
         {sending ? (
           <li className="flex items-center gap-2 text-sm text-ink-500">
             <Spinner className="text-market-600" />{" "}
-            {aiMode === "gemini"
-              ? "Gemini가 다음 질문을 고르는 중…"
-              : "다음 질문을 준비하는 중…"}
+            다음 질문을 고르는 중…
           </li>
         ) : null}
       </ol>

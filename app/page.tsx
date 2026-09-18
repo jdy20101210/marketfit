@@ -3,7 +3,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { ArrowRight, Bot, Layers, MapPinned, MessageSquare, Sparkles, Tags } from "lucide-react";
 import { LinkButton } from "@/components/ui/Button";
-import { ModeBadge } from "@/components/ui/Badge";
+import { Badge, ModeBadge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { getPublicModes } from "@/lib/config/integrations";
 import { getStoreCatalog, SEED_META } from "@/lib/stores/catalog";
@@ -11,7 +11,7 @@ import { RECOMMEND_FALLBACK_SCORE, RECOMMEND_MIN_SCORE } from "@/lib/recommendat
 import { displayCategory } from "@/lib/stores/parse";
 import { MAIN_CATEGORIES } from "@/lib/stores/types";
 
-function steps(modes: Awaited<ReturnType<typeof getPublicModes>>, storeCount: number) {
+function steps(storeCount: number) {
   return [
     {
       icon: MessageSquare,
@@ -21,10 +21,7 @@ function steps(modes: Awaited<ReturnType<typeof getPublicModes>>, storeCount: nu
     {
       icon: Bot,
       title: "AI 취향 분석",
-      body:
-        modes.ai === "gemini"
-          ? "Gemini가 자연어를 읽어 19가지 취향 차원의 vector와 상황 정보를 만들어요"
-          : "데모 AI(규칙 기반)가 19가지 취향 차원의 vector를 만들어요 · Gemini 연결 시 자동 전환",
+      body: "서비스 안의 챗봇 엔진이 문장을 읽어 19가지 취향 차원의 vector와 상황 정보를 만들어요 (외부 AI API 없음)",
     },
     { icon: Layers, title: "점포와 매칭", body: `${storeCount}개 점포·상권의 성향과 cosine 유사도로 0~100점을 계산해요 (AI가 아닌 알고리즘)` },
     {
@@ -86,7 +83,9 @@ export default async function HomePage() {
             </div>
 
             <div className="mt-5 flex flex-wrap items-center gap-2" aria-label="현재 연동 상태">
-              <ModeBadge real={modes.ai === "gemini"} realLabel="Gemini AI 분석" mockLabel="데모 AI 분석" />
+              <Badge tone="market" icon={<Bot className="size-3.5" aria-hidden />}>
+                서비스 내장 AI 분석
+              </Badge>
               <ModeBadge real={modes.map === "kakao"} realLabel="Kakao 지도" mockLabel="데모 안내도" />
             </div>
           </div>
@@ -102,7 +101,7 @@ export default async function HomePage() {
             이렇게 추천해요
           </h2>
           <ol className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {steps(modes, catalog.stores.length).map((step, i) => (
+            {steps(catalog.stores.length).map((step, i) => (
               <li key={step.title}>
                 <Card className="h-full p-4 sm:p-5">
                   <div className="flex flex-wrap items-center gap-2">

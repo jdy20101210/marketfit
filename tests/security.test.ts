@@ -50,24 +50,23 @@ describe("연동 설정 저장", () => {
     vi.stubEnv("KAKAO_REST_API_KEY", "envkey0123456789abcdef");
     const { saveIntegrations, getIntegrations, validateIntegrationValue } = await import("@/lib/config/integrations");
     const { getRepository } = await import("@/lib/db");
-    expect(validateIntegrationValue("GEMINI_API_KEY", "짧음")).not.toBeNull();
+    expect(validateIntegrationValue("KAKAO_JS_KEY", "짧음")).not.toBeNull();
     expect(validateIntegrationValue("KAKAO_JS_KEY", "0123456789abcdef")).toBeNull();
 
-    const result = await saveIntegrations({ GEMINI_API_KEY: "AIzaTestKey0123456789abcdef", KAKAO_REST_API_KEY: "adminkey0123456789abcd" });
-    expect(result.saved).toContain("GEMINI_API_KEY");
+    const result = await saveIntegrations({ KAKAO_JS_KEY: "jskey0123456789abcdef", KAKAO_REST_API_KEY: "adminkey0123456789abcd" });
+    expect(result.saved).toContain("KAKAO_JS_KEY");
     expect(result.skippedEnv).toContain("KAKAO_REST_API_KEY");
 
     const stored = await getRepository().readSettings();
-    expect(JSON.stringify(stored)).not.toContain("AIzaTestKey0123456789abcdef");
+    expect(JSON.stringify(stored)).not.toContain("jskey0123456789abcdef");
 
     const resolved = await getIntegrations();
-    expect(resolved.values.GEMINI_API_KEY).toBe("AIzaTestKey0123456789abcdef");
-    expect(resolved.sources.GEMINI_API_KEY).toBe("admin");
+    expect(resolved.values.KAKAO_JS_KEY).toBe("jskey0123456789abcdef");
+    expect(resolved.sources.KAKAO_JS_KEY).toBe("admin");
     expect(resolved.sources.KAKAO_REST_API_KEY).toBe("env");
-    expect(resolved.values.GEMINI_MODEL).toBe("gemini-flash-latest");
 
-    await saveIntegrations({ GEMINI_API_KEY: null });
-    expect((await getIntegrations()).values.GEMINI_API_KEY).toBeUndefined();
+    await saveIntegrations({ KAKAO_JS_KEY: null });
+    expect((await getIntegrations()).values.KAKAO_JS_KEY).toBeUndefined();
     vi.unstubAllEnvs();
   });
 });

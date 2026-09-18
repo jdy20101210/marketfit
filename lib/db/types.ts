@@ -42,7 +42,7 @@ export interface PreferenceRecord {
   context: PreferenceContextRecord;
   personaLabel: string | null;
   summary: string | null;
-  aiProvider: "gemini" | "mock";
+  aiProvider: "builtin";
   aiModel: string | null;
   /** 현재 추천에 쓰는 결과인지 (사용자당 1건) */
   isActive: boolean;
@@ -58,7 +58,7 @@ export interface RecommendationRecord {
   rank: number;
   components: Record<string, number>;
   reason: string | null;
-  reasonProvider: "gemini" | "template" | null;
+  reasonProvider: "template" | null;
   analysisVersion: number | null;
   createdAt: string;
 }

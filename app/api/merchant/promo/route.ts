@@ -1,6 +1,6 @@
 import { fail, handle, ok, readJson } from "@/lib/http";
 import { MerchantPromoRequestSchema } from "@/lib/api/schemas";
-import { generateMerchantPromoWithFallback } from "@/lib/providers/ai";
+import { AI_ENGINE, generateMerchantPromo } from "@/lib/providers/ai";
 import { getMerchantInsights } from "@/lib/services/merchantInsights";
 import { getStoreById } from "@/lib/stores/catalog";
 import { categoryPath } from "@/lib/stores/description";
@@ -18,7 +18,7 @@ export const POST = handle(async (request: Request) => {
   if (storeId && !store) return fail(404, "not_found", "점포를 찾을 수 없습니다.");
 
   const insights = await getMerchantInsights(store?.id ?? null);
-  const { result, provider, model, fallbackReason } = await generateMerchantPromoWithFallback({
+  const promo = await generateMerchantPromo({
     store: store
       ? {
           id: store.id,
@@ -37,5 +37,5 @@ export const POST = handle(async (request: Request) => {
       : null,
   });
 
-  return ok({ promo: result, provider, model, fallbackReason, isMock: insights.isMock, generatedAt: new Date().toISOString() });
+  return ok({ promo, engine: AI_ENGINE.label, isMock: insights.isMock, generatedAt: new Date().toISOString() });
 });

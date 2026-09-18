@@ -21,9 +21,8 @@ export interface MerchantStoreOption {
 
 interface PromoResponse {
   promo: MerchantPromoDraft;
-  provider: "gemini" | "mock";
-  model: string | null;
-  fallbackReason: string | null;
+  /** 아이디어를 만든 엔진 이름 (서비스 내장 챗봇 엔진) */
+  engine: string;
   isMock: boolean;
   generatedAt: string;
 }
@@ -296,9 +295,8 @@ export function MerchantClient({ stores, initial }: { stores: MerchantStoreOptio
         {promo ? (
           <div className="mt-4 space-y-4">
             <div className="flex flex-wrap items-center gap-1.5">
-              <Badge tone={promo.provider === "gemini" ? "market" : "sign"}>{promo.provider === "gemini" ? `Gemini${promo.model ? ` · ${promo.model}` : ""}` : "데모 AI(템플릿)"}</Badge>
+              <Badge tone="market">{promo.engine}</Badge>
               <Badge tone="outline">{formatKstDateTime(promo.generatedAt)}</Badge>
-              {promo.fallbackReason ? <Badge tone="brick">AI 실패 → 템플릿 사용</Badge> : null}
             </div>
 
             <section>

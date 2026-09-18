@@ -92,16 +92,13 @@ export function AnalysisResultClient() {
           <div className="flex flex-wrap items-center gap-1.5">
             <Badge tone="market">분석 v{analysis.analysisVersion}</Badge>
             <Badge tone="outline">{INPUT_MODE_LABEL[analysis.inputMode]}</Badge>
-            <Badge tone={analysis.provider === "gemini" ? "market" : "sign"} icon={<Bot className="size-3" aria-hidden />}>
-              {analysis.provider === "gemini" ? `Gemini${analysis.model ? ` · ${analysis.model}` : ""}` : "데모 AI(규칙 기반)"}
+            <Badge tone="market" icon={<Bot className="size-3" aria-hidden />}>
+              서비스 내장 AI 엔진
             </Badge>
             <span className="text-xs text-ink-500">{formatKstDateTime(analysis.createdAt)}</span>
           </div>
           <p className="mt-3 text-2xl font-extrabold tracking-tight text-ink-900 sm:text-3xl">{analysis.personaLabel}</p>
           <p className="mt-2 text-[15px] leading-relaxed text-ink-700">{analysis.profile.summary}</p>
-          {analysis.fallbackReason ? (
-            <p className="mt-2 text-xs text-sign-800">Gemini 호출이 실패해 데모 AI 결과를 사용했어요: {analysis.fallbackReason}</p>
-          ) : null}
 
           {chips.length ? (
             <ul className="mt-4 flex flex-wrap gap-1.5" aria-label="분석한 상황 정보">

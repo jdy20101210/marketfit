@@ -95,15 +95,6 @@ export const RecommendationRequestSchema = z.object({
   analysisVersion: z.number().int().min(0).max(100000).nullable().optional(),
 });
 
-export const ReasonsRequestSchema = z.object({
-  personaLabel: z.string().max(40).nullable(),
-  summary: z.string().max(300).nullable().optional(),
-  intentLabel: z.string().max(40).nullable().optional(),
-  taste: TasteVectorSchema,
-  recent: TasteVectorSchema.nullable(),
-  storeIds: z.array(storeId).min(1).max(12),
-});
-
 export const InteractionRequestSchema = z.object({
   storeId,
   type: z.enum(["view", "like", "bookmark", "dismiss", "visit"]),
@@ -164,8 +155,8 @@ export interface StoreDTO {
   recommendable: boolean;
   /** 프로토타입 가상 집계 (고정값) */
   activity: { visitCount: number; likeCount: number; saveCount: number; interestUsers: number };
-  /** 점포 소개 (저장된 AI/템플릿 소개가 없으면 원본 데이터 기반 템플릿) */
-  description: { text: string; provider: "gemini" | "template"; updatedAt: string | null };
+  /** 점포 소개 (원본 데이터 기반 템플릿 문장) */
+  description: { text: string; provider: "template"; updatedAt: string | null };
   location: {
     lat: number | null;
     lng: number | null;
@@ -185,7 +176,8 @@ export interface RecommendationItem {
   matchedProducts: string[];
   facet: TasteKey | null;
   reason: string;
-  reasonProvider: "gemini" | "template";
+  /** 추천 이유는 점포 원본 데이터와 매칭 결과로 만든 문장입니다 (외부 AI 미사용) */
+  reasonProvider: "template";
   recommendable: boolean;
   dismissed: boolean;
 }
@@ -213,7 +205,7 @@ export interface RecommendationsResponse {
 
 export interface PublicConfig {
   modes: {
-    ai: "gemini" | "mock";
+    ai: "builtin";
     map: "kakao" | "mock";
     geocoding: "kakao" | "mock";
     storage: "supabase" | "local-file" | "memory";

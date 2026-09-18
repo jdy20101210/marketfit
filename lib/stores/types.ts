@@ -105,11 +105,11 @@ export interface StoreLocation {
   geocodedAt: string | null;
 }
 
-/** 저장된 점포 소개 (관리자 화면에서 생성) */
+/** 저장된 점포 소개 (원본 데이터 기반 템플릿) */
 export interface StoreDescription {
   storeId: string;
   text: string;
-  provider: "gemini" | "template";
+  provider: "template";
   model: string | null;
   updatedAt: string;
 }

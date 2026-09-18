@@ -18,9 +18,6 @@ const EnvSchema = z.object({
   APP_SECRET: optionalString.pipe(z.string().min(32, "APP_SECRET은 32자 이상이어야 합니다").optional()),
   ADMIN_PASSWORD: optionalString.pipe(z.string().min(8, "ADMIN_PASSWORD는 8자 이상이어야 합니다").optional()),
 
-  GEMINI_API_KEY: optionalString,
-  GEMINI_MODEL: optionalString,
-
   NEXT_PUBLIC_KAKAO_JS_KEY: optionalString,
   KAKAO_REST_API_KEY: optionalString,
 

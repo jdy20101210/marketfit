@@ -23,7 +23,7 @@ const TABS = [
  * 취향 입력 화면 — AI 인터뷰와 빠른 키워드 두 가지 방식 (둘 다 쓰면 하나로 통합해 분석)
  * 분석 버튼은 analyzing 상태에서만 비활성화되고, 끝나면 언제든 다시 분석할 수 있습니다.
  */
-export function DiscoverClient({ initialTab, aiMode }: { initialTab: "chat" | "keywords" | null; aiMode: "gemini" | "mock" }) {
+export function DiscoverClient({ initialTab }: { initialTab: "chat" | "keywords" | null }) {
   const router = useRouter();
   const { state, hydrated } = useMarketFit();
   const run = useAnalysisRun();
@@ -83,7 +83,7 @@ export function DiscoverClient({ initialTab, aiMode }: { initialTab: "chat" | "k
       </div>
 
       <Card className="p-4 sm:p-6">
-        {tab === "chat" ? <ChatInterview aiMode={aiMode} /> : <KeywordPanel />}
+        {tab === "chat" ? <ChatInterview /> : <KeywordPanel />}
       </Card>
 
       {tab === "chat" && hasKeywords ? (
@@ -121,7 +121,7 @@ export function DiscoverClient({ initialTab, aiMode }: { initialTab: "chat" | "k
               {analyzing ? (
                 <span className="inline-flex items-center gap-1.5">
                   <Spinner className="text-market-600" />
-                  {run.step === "match" ? "433개 점포와 매칭 중…" : aiMode === "gemini" ? "Gemini가 취향을 분석하는 중…" : "데모 AI가 취향을 분석하는 중…"}
+                  {run.step === "match" ? "433개 점포와 매칭 중…" : "AI가 취향을 분석하는 중…"}
                 </span>
               ) : !hydrated ? (
                 "준비 중…"
@@ -130,7 +130,7 @@ export function DiscoverClient({ initialTab, aiMode }: { initialTab: "chat" | "k
               ) : (
                 <>
                   {mode === "both" ? "대화 + 키워드" : mode === "chat" ? "대화 내용" : "키워드"}로 분석해요 ·{" "}
-                  {aiMode === "gemini" ? <Badge tone="market">Gemini</Badge> : <Badge tone="sign">데모 AI</Badge>}
+                  <Badge tone="market">서비스 내장 AI</Badge>
                 </>
               )}
             </p>

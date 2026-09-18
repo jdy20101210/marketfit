@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { InteractionState, RecommendationItem, RecommendationsResponse } from "@/lib/api/schemas";
+import type { InteractionState, RecommendationsResponse } from "@/lib/api/schemas";
 import type { PreferenceAnalysis } from "@/lib/preferences/types";
 import type { TasteVector } from "@/lib/recommendation/dimensions";
 import { api, errorMessage } from "./api";
@@ -30,7 +30,7 @@ export function fetchRecommendations(analysis: PreferenceAnalysis, include?: str
   });
 }
 
-/** 활성 분석 결과·행동 상태로 추천을 다시 계산합니다 (Gemini 이유는 기존 값을 유지). */
+/** 활성 분석 결과·행동 상태로 추천을 다시 계산합니다. */
 export function refreshRecommendations(): Promise<void> {
   if (inflight) return inflight;
   const state = getState();
@@ -45,24 +45,12 @@ export function refreshRecommendations(): Promise<void> {
 }
 
 export function storeRecommendations(analysisId: string, res: RecommendationsResponse) {
-  setState((s) => {
-    const previous = s.recommendations?.forAnalysisId === analysisId ? new Map(s.recommendations.items.map((i) => [i.storeId, i])) : new Map();
-    const items = res.items.map((item) => {
-      const prev = previous.get(item.storeId) as RecommendationItem | undefined;
-      return prev?.reasonProvider === "gemini" ? { ...item, reason: prev.reason, reasonProvider: "gemini" as const } : item;
-    });
-    return {
-      ...s,
-      // 서버에 기록된 행동(다른 탭·저장소 초기화 이전 기록 포함)을 브라우저 목록에 합칩니다.
-      interactions: mergeLists(s.interactions, res.interactions),
-      recommendations: {
-        ...res,
-        items,
-        forAnalysisId: analysisId,
-        reasonProvider: items.some((i) => i.reasonProvider === "gemini") ? "gemini" : "template",
-      },
-    };
-  });
+  setState((s) => ({
+    ...s,
+    // 서버에 기록된 행동(다른 탭·저장소 초기화 이전 기록 포함)을 브라우저 목록에 합칩니다.
+    interactions: mergeLists(s.interactions, res.interactions),
+    recommendations: { ...res, forAnalysisId: analysisId },
+  }));
 }
 
 /** 활성 분석 결과와 그에 맞는 추천을 반환하고, 추천이 없으면 자동으로 계산합니다. */

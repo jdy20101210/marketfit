@@ -1,7 +1,6 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import type { RecommendationsResponse } from "@/lib/api/schemas";
 import type { ChatMessage, InputMode, PreferenceAnalysis } from "@/lib/preferences/types";
 import { api, errorMessage } from "./api";
 import { fetchRecommendations, storeRecommendations } from "./recommendations";
@@ -14,7 +13,7 @@ import { getState, latestVersion, MAX_HISTORY, setState } from "./store";
  * - 새 분석이 성공해야 활성 프로필이 바뀝니다(실패하면 이전 결과를 그대로 유지).
  */
 export type AnalysisStatus = "idle" | "analyzing" | "success" | "error";
-export type AnalysisStep = "profile" | "match" | "reasons" | null;
+export type AnalysisStep = "profile" | "match" | null;
 
 export interface AnalysisRunState {
   status: AnalysisStatus;
@@ -22,12 +21,10 @@ export interface AnalysisRunState {
   error: string | null;
   /** 마지막으로 성공한 분석 id (결과 화면 안내용) */
   lastAnalysisId: string | null;
-  /** Gemini 추천 이유 작성 상태 (분석 성공과 별개로 백그라운드 진행) */
-  reasons: "idle" | "running" | "done" | "skipped" | "failed";
   startedAt: number | null;
 }
 
-let run: AnalysisRunState = { status: "idle", step: null, error: null, lastAnalysisId: null, reasons: "idle", startedAt: null };
+let run: AnalysisRunState = { status: "idle", step: null, error: null, lastAnalysisId: null, startedAt: null };
 const listeners = new Set<() => void>();
 
 function update(patch: Partial<AnalysisRunState>) {
@@ -40,7 +37,7 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener);
 }
 
-const serverSnapshot: AnalysisRunState = { status: "idle", step: null, error: null, lastAnalysisId: null, reasons: "idle", startedAt: null };
+const serverSnapshot: AnalysisRunState = { status: "idle", step: null, error: null, lastAnalysisId: null, startedAt: null };
 
 export function useAnalysisRun(): AnalysisRunState {
   return useSyncExternalStore(
@@ -82,43 +79,13 @@ function completeTurns(messages: ChatMessage[]): ChatMessage[] {
   return out;
 }
 
-async function attachReasons(analysis: PreferenceAnalysis, recs: RecommendationsResponse) {
-  const top = recs.items.filter((i) => i.rank !== null).slice(0, 8);
-  if (analysis.provider !== "gemini" || top.length === 0) {
-    update({ reasons: "skipped" });
-    return;
-  }
-  update({ reasons: "running" });
-  try {
-    const res = await api.post<{ reasons: Record<string, string>; provider: string; fallbackReason: string | null }>("/api/recommendations/reasons", {
-      personaLabel: analysis.personaLabel,
-      summary: analysis.profile.summary,
-      intentLabel: analysis.profile.intentLabel,
-      taste: analysis.profile.categories,
-      recent: analysis.focus,
-      storeIds: top.map((i) => i.storeId),
-    });
-    const count = Object.keys(res.reasons).length;
-    if (count > 0) {
-      setState((s) => {
-        if (s.recommendations?.forAnalysisId !== analysis.id) return s;
-        const items = s.recommendations.items.map((i) => (res.reasons[i.storeId] ? { ...i, reason: res.reasons[i.storeId]!, reasonProvider: "gemini" as const } : i));
-        return { ...s, recommendations: { ...s.recommendations, items, reasonProvider: "gemini" } };
-      });
-    }
-    update({ reasons: count > 0 ? "done" : "failed" });
-  } catch {
-    update({ reasons: "failed" });
-  }
-}
-
 /**
- * 분석 실행: /api/analyze → /api/recommendations → (Gemini) 추천 이유
+ * 분석 실행: /api/analyze → /api/recommendations
  * 이미 분석 중이면 무시합니다. 성공하면 새 버전을 기록에 추가하고 활성 프로필로 지정합니다.
  */
 export async function runAnalysis(input: AnalysisInput): Promise<PreferenceAnalysis | null> {
   if (run.status === "analyzing") return null;
-  update({ status: "analyzing", step: "profile", error: null, reasons: "idle", startedAt: Date.now() });
+  update({ status: "analyzing", step: "profile", error: null, startedAt: Date.now() });
   try {
     const analysis = await api.post<PreferenceAnalysis>("/api/analyze", {
       mode: input.mode,
@@ -132,16 +99,13 @@ export async function runAnalysis(input: AnalysisInput): Promise<PreferenceAnaly
       activeAnalysisId: analysis.id,
     }));
     update({ step: "match" });
-    let recs: RecommendationsResponse | null = null;
     try {
-      recs = await fetchRecommendations(analysis);
-      storeRecommendations(analysis.id, recs);
+      storeRecommendations(analysis.id, await fetchRecommendations(analysis));
     } catch (err) {
       // 분석은 성공했으므로 결과는 유지하고, 추천은 화면에서 다시 계산합니다.
       console.warn("추천 계산 실패:", errorMessage(err));
     }
     update({ status: "success", step: null, lastAnalysisId: analysis.id });
-    if (recs) void attachReasons(analysis, recs);
     return analysis;
   } catch (err) {
     update({ status: "error", step: null, error: errorMessage(err) });

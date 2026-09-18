@@ -66,7 +66,7 @@ function migrate(parsed: Record<string, unknown>): LocalData {
         context: { intent: null, intentLabel: null, budget: null, companion: null, occasion: null, preferredStyle: [], discoveryPreference: null },
         personaLabel: (p.personaLabel as string | null) ?? null,
         summary: (p.summary as string | null) ?? null,
-        aiProvider: p.aiProvider === "gemini" ? "gemini" : "mock",
+        aiProvider: "builtin",
         aiModel: null,
         isActive: false,
         createdAt: String(p.createdAt ?? new Date(0).toISOString()),

@@ -113,9 +113,8 @@ export interface PreferenceAnalysis {
   topCategories: { key: TasteKey; score: number; evidence: string }[];
   keywordInsights: KeywordInsight[];
   inputs: { keywords: string[]; answers: number };
-  provider: "gemini" | "mock";
-  model: string | null;
-  fallbackReason: string | null;
+  /** 취향 해석 엔진 — 서비스 내장 챗봇 엔진 하나만 사용합니다 (외부 AI API 없음) */
+  provider: "builtin";
   storage: "supabase" | "local-file" | "memory" | "browser-only";
   createdAt: string;
 }
@@ -143,10 +142,8 @@ export interface InterviewTurn {
   suggestions: string[];
   slots: InterviewSlots;
   questionCount: number;
-  /** rule: 질문 수 한도·종료 요청으로 규칙이 대화를 마무리한 경우 */
-  provider: "gemini" | "mock" | "rule";
-  model: string | null;
-  fallbackReason: string | null;
+  /** builtin: 내장 엔진이 고른 질문 / rule: 질문 수 한도·종료 요청으로 대화를 마무리한 경우 */
+  provider: "builtin" | "rule";
 }
 
 export const MAX_QUESTIONS = 6;

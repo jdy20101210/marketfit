@@ -31,7 +31,7 @@ import type { SystemStatus, TestResult } from "@/lib/services/status";
 import { ENTITY_KIND_LABEL } from "@/lib/stores/parse";
 import { MARKET_FEATURE_KEYS, MARKET_FEATURE_META } from "@/lib/stores/types";
 
-type TestTarget = "gemini" | "kakao" | "mock" | "database";
+type TestTarget = "ai" | "kakao" | "mock" | "database";
 
 export function AdminDashboard({ status, stores, devOpen }: { status: SystemStatus; stores: StoreDTO[]; devOpen: boolean }) {
   const router = useRouter();
@@ -111,20 +111,20 @@ export function AdminDashboard({ status, stores, devOpen }: { status: SystemStat
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <StatusCard
             icon={<Bot className="size-5" aria-hidden />}
-            title="Gemini"
-            state={status.gemini.status}
-            good={status.gemini.status === "CONNECTED"}
-            lines={[`모델: ${status.gemini.model ?? "-"}`, status.gemini.status === "NOT CONFIGURED" ? "→ MockGeminiProvider로 분석" : "실패 시 Mock으로 자동 대체"]}
-            test={tests.gemini ?? status.gemini.lastTest}
-            testing={testing === "gemini"}
-            onTest={() => runTest("gemini")}
+            title="AI 엔진"
+            state={status.ai.status}
+            good={status.ai.status === "ACTIVE"}
+            lines={[status.ai.engine, "외부 AI API 호출 없음 · 키 설정 불필요"]}
+            test={tests.ai ?? status.ai.lastTest}
+            testing={testing === "ai"}
+            onTest={() => runTest("ai")}
           />
           <StatusCard
             icon={<FlaskConical className="size-5" aria-hidden />}
             title="Mock 데이터"
-            state={status.mock.aiFallback}
-            good={status.mock.aiFallback === "STANDBY"}
-            lines={[`점포 seed: ${status.mock.storeSeed}`, status.mock.aiFallback === "ACTIVE" ? "Gemini 미설정 → 데모 AI가 분석" : "Gemini 실패 시에만 사용"]}
+            state="LOADED"
+            good
+            lines={[`점포 seed: ${status.mock.storeSeed}`, "방문·좋아요·저장 집계는 프로토타입용 고정 가상값"]}
             test={tests.mock ?? status.mock.lastTest}
             testing={testing === "mock"}
             onTest={() => runTest("mock")}
@@ -199,22 +199,6 @@ export function AdminDashboard({ status, stores, devOpen }: { status: SystemStat
               }
             >
               Supabase에 40개 점포 seed
-            </Button>
-            <Button
-              variant="secondary"
-              loading={action === "descriptions"}
-              icon={<Sparkles className="size-4" aria-hidden />}
-              onClick={() =>
-                runAction("descriptions", async () => {
-                  const r = await api.post<{ provider: string; model: string | null; total: number; gemini: number; template: number; fallbackReason: string | null }>(
-                    "/api/admin/descriptions",
-                  );
-                  if (r.gemini > 0) return `Gemini(${r.model})로 점포 소개 ${r.gemini}곳 작성 · 템플릿 ${r.template}곳 · 상세 화면에 반영했어요.`;
-                  return `원본 데이터 기반 템플릿 소개 ${r.total}곳을 저장했어요${r.fallbackReason ? ` (Gemini 오류: ${r.fallbackReason})` : " (Gemini 키를 연결하면 AI 소개를 만들 수 있어요)"}.`;
-                })
-              }
-            >
-              점포 소개 생성 (Gemini)
             </Button>
           </div>
           {!status.database.supabaseConfigured ? (
@@ -398,7 +382,7 @@ function StoreTable({ stores }: { stores: StoreDTO[] }) {
                             ))}
                             <p className="mt-2 text-xs text-ink-500">원본 태그: {s.tags.join(", ")}</p>
                             <p className="mt-1 text-xs text-ink-500">
-                              점포 소개({s.description.provider === "gemini" ? "Gemini" : "템플릿"}): {s.description.text}
+                              점포 소개: {s.description.text}
                             </p>
                             <p className="mt-1 text-xs text-ink-500">좌표 근거: {s.location.note}</p>
                           </div>

@@ -97,7 +97,7 @@ export function SelectedStorePanel({
         <p className="mt-2 text-sm leading-relaxed text-ink-800">{rec.reason}</p>
         <div className="mt-2 flex items-center justify-between gap-2">
           <MatchedTasteChips rec={rec} />
-          <span className="shrink-0 text-[11px] text-ink-500">{rec.reasonProvider === "gemini" ? "Gemini 작성" : "점포 데이터 기반"}</span>
+          <span className="shrink-0 text-[11px] text-ink-500">점포 데이터 기반</span>
         </div>
       </div>
 

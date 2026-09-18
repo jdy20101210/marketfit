@@ -74,7 +74,7 @@ export function StoreDetailClient({ store, mockNotice }: { store: StoreDTO; mock
         <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-ink-800">
           {store.description.text}
           <span className="ml-1.5 inline-flex translate-y-[-1px] items-center rounded-full bg-paper px-2 py-0.5 align-middle text-[11px] font-semibold text-ink-500 ring-1 ring-ink-200">
-            {store.description.provider === "gemini" ? "AI 소개 · 원본 데이터 기반" : "원본 데이터 기반 소개"}
+            원본 데이터 기반 소개
           </span>
         </p>
       </header>
@@ -136,7 +136,7 @@ export function StoreDetailClient({ store, mockNotice }: { store: StoreDTO; mock
                   <p className="mt-4 text-[15px] leading-relaxed text-ink-800">{rec.reason}</p>
                   <p className="mt-2 text-sm text-ink-600">{matchSummary(rec.matchedTastes)}</p>
                   <p className="mt-1 text-[11px] text-ink-500">
-                    {rec.reasonProvider === "gemini" ? "추천 이유: Gemini 작성 (확인된 품목 외 내용은 추정)" : "추천 이유: 점포 데이터 기반 템플릿"}
+                    추천 이유: 점포 원본 데이터 + 매칭 결과로 작성
                   </p>
 
                   {rec.matchedTastes.length ? (

@@ -50,7 +50,7 @@ function mapPreference(r: Row): PreferenceRecord {
     context: { ...EMPTY_CONTEXT, ...((r.context as Partial<PreferenceContextRecord> | null) ?? {}) },
     personaLabel: (r.persona_label as string | null) ?? null,
     summary: (r.summary as string | null) ?? null,
-    aiProvider: r.ai_provider === "gemini" ? "gemini" : "mock",
+    aiProvider: "builtin",
     aiModel: (r.ai_model as string | null) ?? null,
     isActive: Boolean(r.is_active),
     createdAt: String(r.created_at),
@@ -384,7 +384,7 @@ export class SupabaseRepository implements Repository {
       .map((r) => ({
         storeId: String(r.store_id),
         text: String(r.description),
-        provider: r.description_provider === "gemini" ? "gemini" : "template",
+        provider: "template",
         model: (r.description_model as string | null) ?? null,
         updatedAt: String(r.description_updated_at ?? r.updated_at ?? ""),
       }));
