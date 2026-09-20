@@ -33,8 +33,13 @@ export const SCORE_WEIGHTS = {
    * 품목 직접 일치 가산점. 다른 항목의 비중을 빼지 않고 위에 더하는 값이라,
    * 품목이 맞지 않는 점포의 점수는 그대로 두고 실제로 그 물건을 파는 점포만 올라갑니다.
    * (표시 점수는 상한에서 잘리므로 총합이 1을 넘어도 100점을 넘지 않습니다.)
+   *
+   * 사용자가 "남성복", "잡화"처럼 품목을 분명히 말했다면 그 물건을 실제로 파는 곳이
+   * 취향 추정보다 우선해야 합니다. 특히 사전에 없는 품목어는 취향 vector가 비어
+   * 기본값이 적용되는데, 가산점이 작으면 엉뚱한 업종이 1위가 됩니다.
+   * 품목을 말하지 않으면 이 값은 0이라 기존 추천에는 영향이 없습니다.
    */
-  item_match: 0.18,
+  item_match: 0.2,
 } as const;
 
 export type ScoreComponentKey = keyof typeof SCORE_WEIGHTS;
@@ -246,8 +251,19 @@ export function scoreStore(
   const feedback = Math.max(-1, Math.min(1, options.feedback ?? 0));
   const item = itemMatchScore(profile.itemTerms ?? [], store.itemTerms);
 
+  /**
+   * 사용자가 품목을 직접 말했고 그 물건을 실제로 파는 점포라면,
+   * 취향 vector 추정보다 그 사실이 더 확실한 근거입니다.
+   *
+   * 특히 "포목"·"잡화"처럼 취향 사전에 없는 품목어는 vector가 비어 기본 성향이 적용되는데,
+   * 그대로 두면 그 물건을 파는 점포가 엉뚱한 업종에 밀립니다.
+   * 그래서 점수 계산에 쓰는 취향 적합도를 품목 일치도까지 끌어올립니다.
+   * (품목을 말하지 않으면 item.score가 0이라 기존 추천과 동일합니다.)
+   */
+  const effectivePreference = Math.max(preferenceFit, item.score);
+
   const components: ScoreComponents = {
-    preference_fit: round3(preferenceFit),
+    preference_fit: round3(effectivePreference),
     recent_interest_fit: round3(recentFit),
     market_experience_fit: round3(marketFit),
     discovery_bonus: round3(discovery),
@@ -255,7 +271,7 @@ export function scoreStore(
     item_match: round3(item.score),
   };
   const raw =
-    SCORE_WEIGHTS.preference_fit * preferenceFit +
+    SCORE_WEIGHTS.preference_fit * effectivePreference +
     SCORE_WEIGHTS.recent_interest_fit * recentFit +
     SCORE_WEIGHTS.market_experience_fit * marketFit +
     SCORE_WEIGHTS.discovery_bonus * discovery +

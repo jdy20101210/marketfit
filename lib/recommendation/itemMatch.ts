@@ -11,6 +11,8 @@
  * - 취향 vector 점수를 대체하지 않고, 별도 항목(item_match)으로만 더합니다.
  */
 
+import { isNegatedAt } from "./keywords";
+
 /** 비교용 정규화: 소문자 + 공백·가운뎃점 제거 */
 export function normalizeTerm(text: string): string {
   return text.toLowerCase().replace(/[\s·•‧/,]+/g, "");
@@ -87,7 +89,7 @@ function split(values: string[]): string[] {
     // "귀금속·시계"처럼 묶인 표기는 조각으로도 비교합니다.
     for (const piece of value.split(/[·•‧/,\s]+/)) {
       const t = normalizeTerm(piece);
-      if (t.length >= MIN_TERM) out.add(t);
+      if (t.length >= MIN_TERM || SHORT_ITEMS.has(t)) out.add(t);
     }
     const whole = normalizeTerm(value);
     if (whole.length >= MIN_TERM) out.add(whole);
@@ -100,15 +102,54 @@ export function storeItemTerms(store: { items: string[]; storeType: string; subC
   return { items: split([...store.items, store.storeType]), category: split([store.subCategory]) };
 }
 
-/** 사용자 쪽 비교 대상: 입력 키워드와 "무엇을 찾는지" 문장에서 뽑은 품목 후보 */
+/** 품목이 될 수 없는 말 — 동사·조사 덩어리와 대화에 흔히 섞이는 낱말 */
+const STOPWORDS = new Set([
+  "그리고", "그런데", "하지만", "근데", "그냥", "정도", "좀", "요즘", "오늘", "내일", "주말", "지금", "여기", "거기",
+  "보려고", "사려고", "살려고", "찾으려고", "가려고", "마시려고", "먹으려고", "구경하려고", "볼래", "살래", "먹을래",
+  "보고", "사고", "찾고", "가고", "먹고", "마시고", "싶어", "싶어요", "싶은데", "해요", "예요", "이에요", "거예", "거고",
+  "필요", "생각", "관심", "없고", "없어", "없는", "싫고", "싫어", "별로", "말고", "빼고", "제외", "대신", "아니",
+  "가게", "점포", "시장", "중앙시장", "곳", "데", "것", "거", "주세", "보여주세", "추천", "부탁", "사고싶어",
+]);
+
+/** 부정 표현의 앞머리 — 이걸로 시작하는 토큰은 품목이 아닙니다 */
+const NEG_STEMS = ["별로", "싫", "없", "말고", "빼고", "제외", "관심", "필요", "아니"];
+
+/** 한 글자지만 실제 품목인 말 (원본 데이터에 등장하는 것만) */
+const SHORT_ITEMS = new Set(["빵", "떡", "김", "금", "은", "차", "옷", "꽃", "쌀", "술", "회", "묵", "엿", "실", "천", "솜", "털", "약", "젓"]);
+
+/**
+ * 어미·조사 떼어 내기.
+ * 단, 떼고 나서 한 글자만 남으면 원래 단어가 품목일 가능성이 큽니다
+ * ("내의"→"내", "한과"→"한" 처럼 실제 품목명이 잘리는 것을 막습니다).
+ */
+function stripEnding(token: string): string {
+  const stripped = token
+    .replace(/(으로|에서|에게|한테|까지|부터|이나|나|이랑|랑|하고|과|와|을|를|이|가|은|는|도|만|의|에|요)$/u, "")
+    .trim();
+  return stripped.length >= MIN_TERM ? stripped : token;
+}
+
+/**
+ * 사용자 쪽 비교 대상: 입력 키워드와 "무엇을 찾는지" 문장에서 뽑은 품목 후보.
+ * 부정된 자리의 단어("여성복 싫고", "이불은 필요 없고")는 제외합니다.
+ * isNegated를 직접 확인하므로, 사전에 없는 단어도 부정이 적용됩니다.
+ */
 export function userItemTerms(sources: (string | null | undefined)[]): string[] {
   const out = new Set<string>();
   for (const source of sources) {
     if (!source) continue;
-    for (const piece of source.split(/[\s,，、;·•/]+/)) {
-      // 조사·어미를 붙여 쓴 입력("운동화를", "시계가")도 앞부분이 품목이면 비교되도록 남깁니다.
-      const t = normalizeTerm(piece).replace(/(을|를|이|가|은|는|랑|이랑|하고|좀|요)$/u, "");
-      if (t.length >= MIN_TERM && t.length <= 12) out.add(t);
+    // 토큰 위치를 알아야 부정 여부를 판단할 수 있어 정규식으로 위치와 함께 훑습니다.
+    for (const m of source.matchAll(/[가-힣A-Za-z0-9]+/g)) {
+      const raw = m[0];
+      const start = m.index ?? 0;
+      if (isNegatedAt(source, start, start + raw.length)) continue;
+      const token = normalizeTerm(stripEnding(raw));
+      if (!token || token.length > 12) continue;
+      if (STOPWORDS.has(token)) continue;
+      // "별로예요" 같은 부정 표현 조각이 품목처럼 남지 않도록
+      if (NEG_STEMS.some((stem) => token.startsWith(stem))) continue;
+      if (token.length < MIN_TERM && !SHORT_ITEMS.has(token)) continue;
+      out.add(token);
     }
   }
   return [...out];
@@ -124,6 +165,8 @@ export interface ItemMatch {
 function hit(term: string, terms: string[]): number {
   if (terms.length === 0) return 0;
   if (terms.includes(term)) return 1;
+  // 한 글자 품목("천","김")은 부분 일치를 허용하면 '천연'·'김치'까지 걸리므로 정확히 같을 때만 인정합니다.
+  if (term.length < MIN_TERM) return 0;
   if (terms.some((s) => s.includes(term) || term.includes(s))) return 0.8;
   const parents = HYPERNYMS[term] ?? [];
   if (parents.some((p) => terms.some((s) => s.includes(normalizeTerm(p))))) return 0.45;

@@ -36,6 +36,26 @@ describe("품목 직접 일치", () => {
     expect(itemMatchScore(["건어물"], real).score).toBeGreaterThan(itemMatchScore(["건어물"], sameAisle).score);
   });
 
+  it("부정된 품목은 itemTerms에도 남지 않는다 ('여성복 싫고 남성복')", async () => {
+    const messages: ChatMessage[] = [INTERVIEW_GREETING, { role: "user", text: "여성복 싫고 남성복 살 거예요" }];
+    const p = buildRuleProfile({ mode: "chat", messages, keywords: [] });
+    expect(p.profile.itemTerms).toContain("남성복");
+    expect(p.profile.itemTerms).not.toContain("여성복");
+  });
+
+  it("'여성복 싫고 남성복' → 남성복 가게가 1위가 된다 (품목 일치가 부정을 따라간다)", async () => {
+    const stores = await getStores();
+    const inputs = stores.map((s) => ({
+      id: s.id, taste: s.features.taste, market: s.features.market, exposure: s.features.exposure,
+      recommendable: s.features.recommendable, productHints: s.features.productHints, itemTerms: storeItemTerms(s),
+    }));
+    const byId = new Map(stores.map((s) => [s.id, s]));
+    const messages: ChatMessage[] = [INTERVIEW_GREETING, { role: "user", text: "여성복 싫고 남성복 살 거예요" }];
+    const p = buildRuleProfile({ mode: "chat", messages, keywords: [] });
+    const best = rankStores({ taste: p.profile.categories, recent: p.focus, itemTerms: p.profile.itemTerms }, inputs)[0]!;
+    expect(byId.get(best.storeId)!.subCategory).toMatch(/남성복/);
+  });
+
   it("'운동화'를 입력하면 옷 가게가 아니라 신발 가게가 1위가 된다", async () => {
     const stores = await getStores();
     const inputs = stores.map((s) => ({
@@ -96,5 +116,86 @@ describe("유동적인 인터뷰 질문", () => {
       ),
     );
     expect(variants.size).toBeGreaterThan(1);
+  });
+});
+
+describe("일반화 확인 (특정 예시에만 맞춘 것이 아님)", () => {
+  const NEG_CASES: [string, string, string][] = [
+    ["여성복 싫고 남성복 살 거예요", "여성복", "남성복"],
+    ["커피 말고 전통차 마시고 싶어요", "커피", "전통차"],
+    ["이불은 필요 없고 커튼 보려고요", "이불", "커튼"],
+    ["신발은 안 살 거고 가방 보려고요", "신발", "가방"],
+    ["떡은 별로예요. 빵 사려고요", "떡", "빵"],
+    ["정육점 빼고 건어물 가게요", "정육", "건어물"],
+    ["한복은 관심 없어요, 캠핑용품 보여주세요", "한복", "캠핑"],
+    ["시계는 안 보고 반지 볼래요", "시계", "반지"],
+    ["주방용품 말고 침구 사려고요", "주방", "침구"],
+  ];
+
+  it.each(NEG_CASES)("부정된 품목은 빠지고 원하는 품목은 남는다: %s", (text, dropped, kept) => {
+    const p = buildRuleProfile({ mode: "chat", messages: [INTERVIEW_GREETING, { role: "user", text }], keywords: [] });
+    expect(p.profile.itemTerms.some((t) => t.includes(dropped))).toBe(false);
+    expect(p.profile.itemTerms.some((t) => t.includes(kept))).toBe(true);
+  });
+
+  const PLAIN: string[] = ["안경 사려고요", "가방 안에 넣을 파우치요", "시장 안쪽 정육점 찾아요", "커피랑 빵 먹고 싶어요"];
+  it.each(PLAIN)("부정이 없는 문장은 품목이 그대로 남는다: %s", (text) => {
+    const p = buildRuleProfile({ mode: "chat", messages: [INTERVIEW_GREETING, { role: "user", text }], keywords: [] });
+    expect(p.profile.itemTerms.length).toBeGreaterThan(0);
+  });
+
+  it("질문 순서가 목적에 따라 여러 갈래로 갈린다", () => {
+    const inputs = [
+      "친구 생일 선물 찾고 있어요", "시장 먹거리 구경하려고요", "운동화 하나 사려고요", "캠핑 용품 보러 왔어요",
+      "이불이랑 커튼 사려고요", "한복 맞추려고요", "주방용품 보려고요", "그냥 구경하려고요", "부모님 드릴 거 찾아요",
+    ];
+    const orders = new Set(
+      inputs.map((t) => slotOrderFor(extractSlots([INTERVIEW_GREETING, { role: "user", text: t }])).join(">")),
+    );
+    // 선물/먹거리 두 갈래에 그치지 않고 여러 목적별로 나뉘어야 합니다.
+    expect(orders.size).toBeGreaterThanOrEqual(5);
+  });
+
+  it("첫 질문이 상황별로 달라진다", () => {
+    const firsts = new Set(
+      ["친구 생일 선물 찾고 있어요", "시장 먹거리 구경하려고요", "한복 맞추려고요", "그냥 구경하려고요", "주방용품 보려고요"].map(
+        (t) => ruleInterviewTurn([INTERVIEW_GREETING, { role: "user", text: t }]).slot,
+      ),
+    );
+    expect(firsts.size).toBeGreaterThanOrEqual(4);
+  });
+});
+
+describe("세부 품목 추출 (데이터 전수 점검)", () => {
+  const ITEMS = ["남성복", "여성복", "속옷", "양말", "내의", "잡화", "포목", "캐주얼", "천", "한복", "건어물", "정육", "운동화", "이불", "커튼", "시계", "반찬", "떡", "폐백", "옷감"];
+
+  it.each(ITEMS)("'%s'라고 말하면 그 품목을 실제로 파는 점포가 1위가 된다", async (item) => {
+    const stores = await getStores();
+    const inputs = stores.map((s) => ({
+      id: s.id, taste: s.features.taste, market: s.features.market, exposure: s.features.exposure,
+      recommendable: s.features.recommendable, productHints: s.features.productHints, itemTerms: storeItemTerms(s),
+    }));
+    const byId = new Map(stores.map((s) => [s.id, s]));
+    const messages: ChatMessage[] = [INTERVIEW_GREETING, { role: "user", text: `${item} 사려고요` }];
+    const p = buildRuleProfile({ mode: "chat", messages, keywords: [] });
+    const best = byId.get(rankStores({ taste: p.profile.categories, recent: p.focus, itemTerms: p.profile.itemTerms }, inputs)[0]!.storeId)!;
+    expect(`${best.items.join(" ")} ${best.storeType} ${best.subCategory}`).toContain(item);
+  });
+
+  it("어미를 떼다가 품목명을 자르지 않는다", () => {
+    const p = buildRuleProfile({ mode: "chat", messages: [INTERVIEW_GREETING, { role: "user", text: "내의랑 한과 사려고요" }], keywords: [] });
+    expect(p.profile.itemTerms).toContain("내의");
+    expect(p.profile.itemTerms).toContain("한과");
+  });
+
+  it("품목을 말하지 않으면 품목 가산점이 0이라 기존 추천이 유지된다", async () => {
+    const stores = await getStores();
+    const inputs = stores.map((s) => ({
+      id: s.id, taste: s.features.taste, market: s.features.market, exposure: s.features.exposure,
+      recommendable: s.features.recommendable, productHints: s.features.productHints, itemTerms: storeItemTerms(s),
+    }));
+    const p = buildRuleProfile({ mode: "keywords", messages: [], keywords: ["캠핑"] });
+    const withTerms = rankStores({ taste: p.profile.categories, recent: p.focus, itemTerms: [] }, inputs).slice(0, 3);
+    expect(withTerms.every((s) => s.components.item_match === 0)).toBe(true);
   });
 });

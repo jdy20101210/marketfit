@@ -248,6 +248,8 @@ export function buildRuleProfile(input: RuleProfileInput): RuleProfile {
     preferredStyle: slots.preferredStyle,
     discoveryPreference: slots.discoveryPreference,
     // 품목 직접 일치용 — 입력 키워드와 "무엇을 찾는지" 답변에서 뽑습니다.
+    // userItemTerms가 토큰 위치마다 부정 여부를 직접 확인하므로 원문을 그대로 넘깁니다
+    // ("여성복 싫고 남성복" → 남성복만 남음).
     itemTerms: userItemTerms([...keywords, slots.lookingFor]),
   };
   const summary = empty

@@ -155,7 +155,17 @@ export function matchKeyword(input: string): KeywordMatch {
  * - 앞에 오는 부정: "안 매운", "못 쓰는"
  * 문장부호를 넘어가면 다른 이야기로 보고 부정을 적용하지 않습니다.
  */
-const NEG_AFTER = /^[^,.!?\n]{0,12}?(관심\s*(이|은|는)?\s*없|안\s*좋아|좋아하지\s*않|싫|별로|빼고|제외|말고|아닌|아니)/;
+/**
+ * 뒤따라오는 부정 표현.
+ * 한국어는 부정 대상이 앞에 오는 경우가 많아("이불은 필요 없고"), 단어 뒤 16자 안에서 찾습니다.
+ * - 없음류: 관심 없다 / 필요 없다 / 생각 없다 / 그냥 "없고"
+ * - 안+동사: 안 사 / 안 봐 / 안 좋아 / 안 입어 / 안 먹어 …
+ * - 제외류: 말고 / 빼고 / 제외 / 대신
+ * - 그 외: 싫다 / 별로 / 관심 밖 / 아니
+ */
+const NEG_AFTER =
+  /^[^,.!?\n]{0,16}?((관심|필요|생각)\s*(이|은|는)?\s*없|없고|없어|없습니|안\s*[가-힣]{1,3}\s*(고|서|어|아|을|는|는데|래|래요|을래|거|겠|게)|안\s*(사|봐|봅|좋아|입|신|먹|써|쓰|필요|원해)|좋아하지\s*않|하지\s*않|말고|빼고|제외|대신|싫|별로|아닌|아니)/;
+/** 앞에 오는 부정("안 매운", "못 쓰는") */
 const NEG_BEFORE = /(안|못)\s*$/;
 /** 부정어 자체를 취향 신호로 쓰지 않기 위한 최소 앞뒤 창 */
 const NEG_WINDOW = 4;
@@ -173,7 +183,12 @@ export function positiveDictionaryWords(text: string): { word: string; rule: num
 
 /** 부정 표현이 하나라도 있는지 (상황 정보 추출 쪽에서 씁니다) */
 export function hasNegation(text: string): boolean {
-  return /(관심\s*(이|은|는)?\s*없|안\s*좋아|좋아하지\s*않|싫|별로|빼고|제외|말고|아니)/.test(text);
+  return /((관심|필요|생각)\s*(이|은|는)?\s*없|없고|없어|안\s*[가-힣]|좋아하지\s*않|하지\s*않|말고|빼고|제외|대신|싫|별로|아니)/.test(text);
+}
+
+/** 이 위치의 단어가 부정되었는지 — 품목 추출 등 다른 모듈에서도 같은 기준을 쓰도록 공개합니다. */
+export function isNegatedAt(text: string, start: number, end: number): boolean {
+  return isNegated(text, start, end);
 }
 
 /**

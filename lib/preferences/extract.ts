@@ -303,8 +303,14 @@ export function shortLookingFor(text: string | null): string {
 }
 
 const hasLookingFor = (s: InterviewSlots) => Boolean(shortLookingFor(s.lookingFor));
-const isGift = (s: InterviewSlots) => /gift|souvenir/.test(s.intent ?? "");
-const isFood = (s: InterviewSlots) => /food|meal|snack/.test(s.intent ?? "") || /먹|맛|음식|간식|커피/.test(s.lookingFor ?? "");
+// 목적을 아직 분류하지 못했을 때를 대비해 답변 문장에서도 단서를 찾습니다.
+const isGift = (s: InterviewSlots) =>
+  /gift|souvenir|birthday|anniversary|holiday|housewarming/.test(s.intent ?? "") ||
+  /선물|드릴|드리려|드리고|줄\s*거|사드|기념일|생일|답례|보답/.test(s.lookingFor ?? "");
+const isFood = (s: InterviewSlots) =>
+  /food|meal|snack|coffee|grocery/.test(s.intent ?? "") || /먹|맛|음식|간식|커피|차\s|디저트|분식/.test(s.lookingFor ?? "");
+/** 함께 둘러보는 상황 — 동행·분위기가 예산보다 먼저 */
+const isOuting = (s: InterviewSlots) => /데이트|나들이|구경|놀러|산책|여행|가족\s*모임/.test(s.lookingFor ?? "");
 
 export const QUESTION_BANK: Record<InterviewSlot, QuestionVariant[]> = {
   looking_for: [
@@ -368,14 +374,51 @@ export const RULE_QUESTIONS: Record<InterviewSlot, { text: string; suggestions: 
 ) as Record<InterviewSlot, { text: string; suggestions: string[] }>;
 
 /**
+ * 목적별 질문 순서.
+ * 그 상황에서 추천 품질을 가장 크게 가르는 항목을 앞에 둡니다.
+ * (예: 선물은 '누구에게'가, 먹거리는 '입맛'이, 혼수·한복은 '누구와 함께'가 예산보다 중요)
+ */
+const ORDER_BY_INTENT: Record<string, InterviewSlot[]> = {
+  // 선물류 — 받는 사람이 먼저
+  gift: ["looking_for", "companion", "budget", "style", "discovery", "taste"],
+  // 먹거리·커피 — 가격대 차이가 작아 입맛이 먼저
+  food: ["looking_for", "taste", "style", "companion", "discovery", "budget"],
+  // 옷·신발·잡화 — 예산과 스타일이 핵심
+  fashion: ["looking_for", "budget", "style", "companion", "discovery", "taste"],
+  // 살림·주방 — 실용/특별 취향이 예산보다 먼저
+  living: ["looking_for", "style", "budget", "taste", "discovery", "companion"],
+  // 한복·혼수·전통 — 누구와 함께 쓰는지가 먼저
+  traditional: ["looking_for", "companion", "style", "budget", "discovery", "taste"],
+  // 캠핑·야외 — 어디에 쓰는지(취향)가 먼저
+  outdoor: ["looking_for", "taste", "budget", "style", "discovery", "companion"],
+  // 빈티지·구경 — 발견 취향이 먼저
+  browse: ["looking_for", "discovery", "taste", "style", "budget", "companion"],
+};
+
+/** 감지한 목적을 질문 순서 묶음으로 매핑합니다. */
+function orderKeyFor(slots: InterviewSlots): keyof typeof ORDER_BY_INTENT | null {
+  const intent = slots.intent ?? "";
+  if (/gift|souvenir|birthday|anniversary|holiday|housewarming/.test(intent)) return "gift";
+  if (/market_food|coffee|grocery/.test(intent)) return "food";
+  if (/fashion/.test(intent)) return "fashion";
+  if (/home_living|kitchen_goods|craft_supplies|daily/.test(intent)) return "living";
+  if (/traditional_goods|wedding_goods/.test(intent)) return "traditional";
+  if (/outdoor_gear/.test(intent)) return "outdoor";
+  if (/market_tour|vintage_finds/.test(intent)) return "browse";
+  // 목적 분류가 비어 있으면 답변 문장에 드러난 단서로 판단합니다.
+  if (isGift(slots)) return "gift";
+  if (isFood(slots)) return "food";
+  if (isOuting(slots)) return "browse";
+  return null;
+}
+
+/**
  * 다음에 물을 항목 — 앞선 답변에 따라 순서가 달라집니다.
- * - 선물: 누구에게 줄지가 예산·스타일보다 중요해서 먼저 묻습니다.
- * - 먹거리: 예산보다 평소 입맛을 먼저 묻습니다(시장 먹거리는 가격대 차이가 작아서).
- * - 그 외: 찾는 것 → 예산 → 스타일 순서를 유지합니다.
+ * 감지한 목적이 없으면 찾는 것 → 예산 → 스타일 기본 순서를 씁니다.
  */
 export function slotOrderFor(slots: InterviewSlots): InterviewSlot[] {
-  if (isGift(slots)) return ["looking_for", "companion", "budget", "style", "discovery", "taste"];
-  if (isFood(slots)) return ["looking_for", "taste", "style", "companion", "discovery", "budget"];
+  const key = orderKeyFor(slots);
+  if (key) return ORDER_BY_INTENT[key]!;
   return [...CORE_SLOTS, "taste", "discovery", "companion"];
 }
 
