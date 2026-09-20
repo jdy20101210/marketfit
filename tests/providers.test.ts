@@ -141,7 +141,7 @@ describe("상인 AI 홍보 도우미", () => {
   it("템플릿 초안도 같은 규칙을 지킨다", async () => {
     const { templatePromo } = await import("@/lib/merchant/promo");
     const draft = templatePromo({
-      store: { id: "dj-001", name: "테스트상회", category: "식품·요리 > 건어물·반찬", entityLabel: "점포", confirmedItems: ["건어물", "반찬"], locationNote: "" },
+      store: { id: "dj-001", name: "테스트상회", category: "식품·요리 > 건어물·반찬", entityLabel: "점포", confirmedItems: ["건어물", "반찬"], locationNote: "", tasteKeys: ["food", "practical"] },
       period: "최근 7일",
       interestTop: [
         { key: "gift", label: "선물", share: 27 },

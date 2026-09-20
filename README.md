@@ -152,6 +152,21 @@ score_raw = 0.60·preference_fit + 0.15·recent_interest_fit + 0.10·market_expe
 - **discovery_bonus** — `(1 − 노출도) × smoothstep(preference_fit) × (0.5 + 0.5 × 사용자의 발견 선호)` — 덜 알려진 점포라도 취향이 맞을 때만 가산
 - **interaction_feedback** — 좋아요 +0.5, 저장 +0.7, 방문 +1, 관심 없음 −1, 조회 +0.05(최대 +0.15)
 
+### 품목 직접 일치 (item match)
+
+19개 취향 차원만으로는 "운동화"와 "원피스"가 같은 패션 성향으로 묶여, 신발 가게 대신 옷 가게가 추천되는 문제가 있었습니다.
+그래서 사용자가 입력한 **품목 단어를 엑셀 원본의 품목·업종 문자열과 그대로 대조**하는 항목을 더했습니다.
+
+| 일치 방식 | 점수 | 예 |
+| --- | --- | --- |
+| 원본 품목·업종과 같음 | 1.0 | "시계" ↔ 품목 `귀금속·시계` |
+| 한쪽이 다른 쪽을 포함 | 0.8 | "운동화" ↔ 업종 `운동화·구두·샌들` |
+| 상위 품목 | 0.45 | "운동화" ↔ 업종 `신발` |
+| 소분류만 같음 | 위 값 × 0.6 | `건어물•반찬` 분류의 부침개 가게 |
+
+- 다른 항목의 비중을 빼지 않고 **위에 더하는 가산점(0.18)**이라, 품목이 맞지 않는 점포의 점수는 그대로입니다(80점 기준 유지).
+- 코드: `lib/recommendation/itemMatch.ts`
+
 ### 추천 기준: 80점 (없으면 75점)
 
 - 지도와 추천 목록에는 **80점 이상 점포만** 점수 내림차순 순위로 표시합니다.
@@ -209,7 +224,7 @@ score_raw = 0.60·preference_fit + 0.15·recent_interest_fit + 0.10·market_expe
 
 | 영역 | 구현된 실제 연동 | 키가 없거나 실패하면 |
 | --- | --- | --- |
-| **AI 엔진** | `BuiltinChatProvider` — 서버 안에서 도는 한국어 키워드 사전(긴 단어 우선)·문장 규칙 해석기. 인터뷰 다음 질문 선택, 취향 profile 생성, 키워드 의미 확장, 추천 이유, 점포 소개, 상인 홍보 아이디어를 담당합니다. **외부 네트워크 호출이 없어** 키·요금·장애·응답 지연이 없고, 같은 입력이면 항상 같은 결과가 나옵니다 | 해당 없음 (항상 동작) |
+| **AI 엔진** | `BuiltinChatProvider` — 서버 안에서 도는 한국어 키워드 사전(긴 단어 우선)·문장 규칙 해석기. 부정 표현은 단어 단위로 판정해 "캠핑은 별로고 커피가 좋아요"에서 커피만 남깁니다. 인터뷰 다음 질문 선택, 취향 profile 생성, 키워드 의미 확장, 추천 이유, 점포 소개, 상인 홍보 아이디어를 담당합니다. **외부 네트워크 호출이 없어** 키·요금·장애·응답 지연이 없고, 같은 입력이면 항상 같은 결과가 나옵니다 | 해당 없음 (항상 동작) |
 | **인터뷰 안전장치** | 질문 수(최대 6)·최소 답변 수(3)·같은 항목 반복 질문 금지·같은 문장 반복 금지를 **서버가 최종 결정**합니다 | — |
 | **Kakao 지도** | JavaScript SDK 동적 로드, 순위 라벨 marker, 같은 위치 묶음, 클러스터러, 대략적 위치 점선 원, 카테고리 필터, 모바일 목록/지도 전환 | 데모 안내도(실제 위치 아님을 표시) |
 | **Kakao Local** | 서버에서 주소 → 좌표(`/v2/local/search/address`). 건물번호까지 일치하면 `exact`, 그 외 `approximate`, 못 찾으면 `unknown`. 고유 질의 151건만 호출 | 좌표 없음 → 목록에 “위치 미확인”. JS 키만 있으면 브라우저 SDK로 보완(저장 안 함) |
@@ -290,7 +305,7 @@ lib/
   providers/
     ai/                   BuiltinChatProvider (서비스 내장 챗봇 엔진), 타입
     map/                  KakaoMapProvider(Local API), MockMapProvider, geocodeStores
-  recommendation/         추천 알고리즘 (engine, keywords, feedback, reasons, dimensions)
+  recommendation/         추천 알고리즘 (engine, keywords, itemMatch, feedback, reasons, dimensions)
   route/plan.ts           동선 계획 (점포 선택 → 2-opt 순서 최적화 → 시간표)
   merchant/promo.ts       홍보 아이디어 템플릿 + AI 응답 검증
   mock/                   결정적 가상 집계 생성기·리더
@@ -303,7 +318,7 @@ data/stores/              seed JSON, feature JSON, 좌표 JSON, 엑셀 원본
 data/mock/                고정 가상 집계 (점포 활동, 시장 관심도)
 supabase/migrations/      DB 스키마 SQL (0001 기본, 0002 점포 소개, 0003 v2, 0004 내장 AI 엔진)
 scripts/                  convert-excel, build-features, seed, geocode, calibrate-scores
-tests/                    vitest (84개)
+tests/                    vitest (95개)
 ```
 
 ---

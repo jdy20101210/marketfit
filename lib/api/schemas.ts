@@ -88,6 +88,8 @@ export const RecommendationRequestSchema = z.object({
   profile: z.object({
     taste: TasteVectorSchema,
     recent: TasteVectorSchema.nullable(),
+    /** 품목 직접 일치에 쓰는 사용자 입력 단어 */
+    itemTerms: z.array(z.string().max(20)).max(12).optional(),
   }),
   interactions: InteractionStateSchema.optional(),
   /** 추천 기준 미만이어도 상세 점수가 필요한 점포 (상세 화면) */
@@ -174,6 +176,8 @@ export interface RecommendationItem {
   components: ScoreComponents;
   matchedTastes: { key: TasteKey; user: number; store: number; contribution: number }[];
   matchedProducts: string[];
+  /** 원본 품목과 그대로 일치한 내 검색어 */
+  matchedItems: string[];
   facet: TasteKey | null;
   reason: string;
   /** 추천 이유는 점포 원본 데이터와 매칭 결과로 만든 문장입니다 (외부 AI 미사용) */

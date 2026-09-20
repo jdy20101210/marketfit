@@ -94,10 +94,10 @@ function dictionary(): DictionaryEntry[] {
  * 예) '닭강정'은 한과류 '강정'으로, '떡볶이'는 '떡'으로 중복 해석되지 않습니다.
  * @param keepSpaces 대화 문장처럼 긴 글은 띄어쓰기를 유지해 단어 경계를 넘는 오탐을 줄입니다.
  */
-export function findDictionaryWords(text: string, options: { keepSpaces?: boolean } = {}): { word: string; rule: number }[] {
+export function findDictionaryWords(text: string, options: { keepSpaces?: boolean } = {}): { word: string; rule: number; start: number; end: number }[] {
   const source = options.keepSpaces ? text.toLowerCase() : normalize(text);
   const used = new Uint8Array(source.length);
-  const hits: { word: string; rule: number }[] = [];
+  const hits: { word: string; rule: number; start: number; end: number }[] = [];
   for (const entry of dictionary()) {
     const needle = options.keepSpaces ? entry.word.toLowerCase() : entry.norm;
     let from = 0;
@@ -107,7 +107,7 @@ export function findDictionaryWords(text: string, options: { keepSpaces?: boolea
       const end = at + needle.length;
       if (!used.subarray(at, end).some((v) => v === 1)) {
         used.fill(1, at, end);
-        hits.push({ word: entry.word, rule: entry.rule });
+        hits.push({ word: entry.word, rule: entry.rule, start: at, end });
       }
       from = at + 1;
     }
@@ -130,7 +130,9 @@ function weightsForRules(rules: Iterable<number>): TasteVector {
 export function matchKeyword(input: string): KeywordMatch {
   const matchedWords = new Set<string>();
   const rules = new Set<number>();
-  for (const hit of findDictionaryWords(input)) {
+  // 키워드 칸에도 "캠핑 빼고", "전통 말고 커피"처럼 부정을 적어 넣는 경우가 있어 같은 기준을 적용합니다.
+  const hits = hasNegation(input) ? positiveDictionaryWords(input) : findDictionaryWords(input);
+  for (const hit of hits) {
     matchedWords.add(hit.word);
     rules.add(hit.rule);
   }
@@ -144,23 +146,55 @@ export function matchKeyword(input: string): KeywordMatch {
   return { input, matchedWords: [...matchedWords], weights, mapped };
 }
 
-/** 부정 표현이 있는 구절(“캠핑은 관심 없어요”)은 취향 신호로 쓰지 않습니다. */
-const NEGATION = /(관심\s*(이|은|는)?\s*없|안\s*좋아|싫|말고|빼고|제외|별로)/;
+/**
+ * 부정 표현 처리 (단어 단위)
+ *
+ * 절 전체를 버리면 "캠핑은 별로고 커피가 좋아요"에서 커피까지 사라집니다.
+ * 그래서 사전 단어 하나하나에 대해 그 단어에 걸린 부정인지 따로 봅니다.
+ * - 뒤에 오는 부정: "캠핑은 별로", "전통적인 건 안 좋아해요", "캠핑 빼고", "전통 말고"
+ * - 앞에 오는 부정: "안 매운", "못 쓰는"
+ * 문장부호를 넘어가면 다른 이야기로 보고 부정을 적용하지 않습니다.
+ */
+const NEG_AFTER = /^[^,.!?\n]{0,12}?(관심\s*(이|은|는)?\s*없|안\s*좋아|좋아하지\s*않|싫|별로|빼고|제외|말고|아닌|아니)/;
+const NEG_BEFORE = /(안|못)\s*$/;
+/** 부정어 자체를 취향 신호로 쓰지 않기 위한 최소 앞뒤 창 */
+const NEG_WINDOW = 4;
 
-/** 대화 문장에서 사전 단어를 찾습니다(부정 구절 제외). */
+/** 이 위치의 단어가 부정되었는지 */
+function isNegated(text: string, start: number, end: number): boolean {
+  if (NEG_AFTER.test(text.slice(end, end + 16))) return true;
+  return NEG_BEFORE.test(text.slice(Math.max(0, start - NEG_WINDOW), start));
+}
+
+/** 문장에서 부정되지 않은 사전 단어만 남깁니다. */
+export function positiveDictionaryWords(text: string): { word: string; rule: number }[] {
+  return findDictionaryWords(text, { keepSpaces: true }).filter((h) => !isNegated(text, h.start, h.end));
+}
+
+/** 부정 표현이 하나라도 있는지 (상황 정보 추출 쪽에서 씁니다) */
+export function hasNegation(text: string): boolean {
+  return /(관심\s*(이|은|는)?\s*없|안\s*좋아|좋아하지\s*않|싫|별로|빼고|제외|말고|아니)/.test(text);
+}
+
+/**
+ * 부정된 사전 단어를 공백으로 지운 문장을 돌려줍니다.
+ * (상황 정보 추출처럼 "문장"이 필요한 곳에서 같은 부정 기준을 쓰기 위한 함수)
+ */
+export function maskNegatedWords(text: string): string {
+  const spans = findDictionaryWords(text, { keepSpaces: true }).filter((h) => isNegated(text, h.start, h.end));
+  if (spans.length === 0) return text;
+  const chars = [...text];
+  for (const span of spans) for (let i = span.start; i < span.end; i++) chars[i] = " ";
+  return chars.join("");
+}
+
+/** 대화 문장에서 사전 단어를 찾습니다(부정된 단어 제외). */
 export function matchSentence(text: string): KeywordMatch {
-  const clauses = text
-    .split(/[,.!?\n·]|그리고|하지만|그런데|근데/)
-    .map((c) => c.trim())
-    .filter(Boolean);
   const matchedWords = new Set<string>();
   const rules = new Set<number>();
-  for (const clause of clauses) {
-    if (NEGATION.test(clause)) continue;
-    for (const hit of findDictionaryWords(clause)) {
-      matchedWords.add(hit.word);
-      rules.add(hit.rule);
-    }
+  for (const hit of positiveDictionaryWords(text)) {
+    matchedWords.add(hit.word);
+    rules.add(hit.rule);
   }
   return { input: text, matchedWords: [...matchedWords], weights: weightsForRules(rules), mapped: matchedWords.size > 0 };
 }

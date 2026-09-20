@@ -64,6 +64,8 @@ export interface MerchantPromoInput {
     entityLabel: string;
     confirmedItems: string[];
     locationNote: string;
+    /** 이 점포가 실제로 가진 취향 성향 (홍보 아이디어를 이 범위 안에서만 만들기 위해) */
+    tasteKeys: TasteKey[];
   } | null;
   period: string;
   interestTop: { key: TasteKey; label: string; share: number }[];

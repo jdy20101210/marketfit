@@ -12,6 +12,7 @@ import {
 } from "@/lib/recommendation/engine";
 import { currentState, INTERACTION_WEIGHTS, type InteractionEvent } from "@/lib/recommendation/feedback";
 import { templateReason } from "@/lib/recommendation/reasons";
+import { storeItemTerms } from "@/lib/recommendation/itemMatch";
 import { ENTITY_KIND_LABEL } from "@/lib/stores/parse";
 import { getStores } from "@/lib/stores/catalog";
 import type { Store } from "@/lib/stores/types";
@@ -68,8 +69,10 @@ export function toItem(store: Store, scored: ScoredStore, rank: number | null): 
     components: scored.components,
     matchedTastes: scored.matchedTastes,
     matchedProducts: scored.matchedProducts,
+    matchedItems: scored.matchedItems,
     facet: scored.facet,
     reason: templateReason({
+      matchedItems: scored.matchedItems,
       storeType: store.storeType,
       entityNoun: ENTITY_KIND_LABEL[store.entityKind],
       matchedTastes: scored.matchedTastes,
@@ -91,6 +94,7 @@ function scoringInputs(stores: Store[]) {
     exposure: s.features.exposure,
     recommendable: s.features.recommendable,
     productHints: s.features.productHints,
+    itemTerms: storeItemTerms(s),
   }));
 }
 

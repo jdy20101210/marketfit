@@ -29,10 +29,13 @@ const storeInputs = (features.features as unknown as StoreFeatures[]).map((f) =>
 }));
 
 describe("가중치와 점수 범위", () => {
-  it("가중치 합은 1이고 취향 적합도가 가장 크다", () => {
-    const sum = Object.values(SCORE_WEIGHTS).reduce((a, b) => a + b, 0);
+  it("기본 가중치 합은 1이고 취향 적합도가 가장 크다", () => {
+    // item_match는 다른 항목의 비중을 빼지 않고 위에 더하는 가산점이라 합계에서 제외합니다.
+    const { item_match, ...base } = SCORE_WEIGHTS;
+    const sum = Object.values(base).reduce((a, b) => a + b, 0);
     expect(sum).toBeCloseTo(1, 10);
-    expect(SCORE_WEIGHTS.preference_fit).toBe(Math.max(...Object.values(SCORE_WEIGHTS)));
+    expect(SCORE_WEIGHTS.preference_fit).toBe(Math.max(...Object.values(base)));
+    expect(item_match).toBeGreaterThan(0);
   });
 
   it("cosine similarity는 0~1이며 같은 벡터는 1", () => {
@@ -215,7 +218,8 @@ describe("키워드 → 취향", () => {
 
   it("대화 문장에서 부정 구절은 반영하지 않는다", () => {
     const m = matchSentence("친구 생일 선물을 찾는데, 캠핑은 관심 없어요.");
-    expect(m.matchedWords).toContain("생일선물");
+    // 사전 표기가 "생일선물"/"생일 선물" 두 가지라 띄어쓰기를 지우고 비교합니다.
+    expect(m.matchedWords.map((w) => w.replace(/\s/g, ""))).toContain("생일선물");
     expect(m.weights.gift).toBe(1);
     expect(m.matchedWords).not.toContain("캠핑");
     expect(m.weights.camping).toBe(0);

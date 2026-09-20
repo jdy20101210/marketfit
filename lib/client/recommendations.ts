@@ -23,7 +23,7 @@ function mergeLists(local: InteractionState, server: InteractionState): Interact
 
 export function fetchRecommendations(analysis: PreferenceAnalysis, include?: string[]) {
   return api.post<RecommendationsResponse>("/api/recommendations", {
-    profile: { taste: analysis.profile.categories, recent: analysis.focus },
+    profile: { taste: analysis.profile.categories, recent: analysis.focus, itemTerms: analysis.profile.itemTerms ?? [] },
     interactions: getState().interactions,
     analysisVersion: analysis.analysisVersion,
     ...(include?.length ? { include } : {}),

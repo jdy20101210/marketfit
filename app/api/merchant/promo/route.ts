@@ -27,11 +27,14 @@ export const POST = handle(async (request: Request) => {
           entityLabel: ENTITY_KIND_LABEL[store.entityKind],
           confirmedItems: store.items,
           locationNote: store.location.note,
+          tasteKeys: insights.storeTasteKeys,
         }
       : null,
     period: insights.period,
-    interestTop: insights.interest.slice(0, 3).map((i) => ({ key: i.key, label: i.label, share: i.share })),
-    lowConversion: insights.lowConversion,
+    // 점포를 고른 경우에는 시장 전체 순위가 아니라 '이 점포와 관련 있는' 관심 분포만 넘깁니다.
+    // (귀금속 점포 홍보에 먹거리 아이디어가 끼어드는 문제를 막기 위해)
+    interestTop: (store ? insights.storeInterest : insights.interest).slice(0, 3).map((i) => ({ key: i.key, label: i.label, share: i.share })),
+    lowConversion: store ? insights.lowConversion.filter((g) => insights.storeTasteKeys.includes(g.key)) : insights.lowConversion,
     metrics: insights.metrics
       ? { interestUsers: insights.metrics.interestUsers, visits: insights.metrics.visits, likes: insights.metrics.likes, saves: insights.metrics.saves }
       : null,

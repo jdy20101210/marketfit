@@ -21,6 +21,7 @@
  */
 import { clamp01, round3, TASTE_KEYS, type TasteKey, type TasteVector } from "./dimensions";
 import { matchKeyword } from "./keywords";
+import { itemMatchScore, type StoreItemTerms } from "./itemMatch";
 
 export const SCORE_WEIGHTS = {
   preference_fit: 0.6,
@@ -28,6 +29,12 @@ export const SCORE_WEIGHTS = {
   market_experience_fit: 0.1,
   discovery_bonus: 0.1,
   interaction_feedback: 0.05,
+  /**
+   * 품목 직접 일치 가산점. 다른 항목의 비중을 빼지 않고 위에 더하는 값이라,
+   * 품목이 맞지 않는 점포의 점수는 그대로 두고 실제로 그 물건을 파는 점포만 올라갑니다.
+   * (표시 점수는 상한에서 잘리므로 총합이 1을 넘어도 100점을 넘지 않습니다.)
+   */
+  item_match: 0.18,
 } as const;
 
 export type ScoreComponentKey = keyof typeof SCORE_WEIGHTS;
@@ -39,6 +46,7 @@ export const SCORE_COMPONENT_META: Record<ScoreComponentKey, { label: string; hi
   market_experience_fit: { label: "시장 경험", hint: "중앙시장 고유 특성 × 로컬·전통·여행 관심" },
   discovery_bonus: { label: "새로운 발견", hint: "덜 알려졌지만 취향에 맞는 점포 가산점" },
   interaction_feedback: { label: "나의 반응", hint: "좋아요·저장·방문(+), 관심 없음(−)" },
+  item_match: { label: "품목 일치", hint: "내가 찾는 품목이 점포 원본 품목에 실제로 있는지" },
 };
 
 /** 상황·스타일 차원 (가중 cosine에서 0.5배, 사용자 값이 0.2 미만이면 제외) — 나머지는 상품 분야 차원 */
@@ -77,6 +85,8 @@ export interface ProfileVectors {
   taste: TasteVector;
   /** 지금 찾는 것(목적) vector. 없으면 taste를 사용 */
   recent: TasteVector | null;
+  /** 사용자가 입력한 품목 단어 (예: ["운동화"]). 점포 원본 품목과 그대로 대조합니다. */
+  itemTerms?: string[];
 }
 
 export interface StoreScoringInput {
@@ -86,6 +96,8 @@ export interface StoreScoringInput {
   exposure: number;
   recommendable: boolean;
   productHints: string[];
+  /** 원본 품목·업종·소분류에서 뽑은 비교용 단어 */
+  itemTerms?: StoreItemTerms;
 }
 
 export interface MatchedTaste {
@@ -102,6 +114,8 @@ export interface ScoredStore {
   components: ScoreComponents;
   matchedTastes: MatchedTaste[];
   matchedProducts: string[];
+  /** 사용자가 찾는 품목 중 이 점포 원본 품목과 실제로 일치한 단어 */
+  matchedItems: string[];
   /** 가장 잘 맞은 관심 분야 묶음 (전체 취향 기준이면 null) */
   facet: TasteKey | null;
   recommendable: boolean;
@@ -230,6 +244,7 @@ export function scoreStore(
   const discovery = clamp01((1 - exposure) * smoothstep(preferenceFit, 0.35, 0.7) * discoveryAppetite);
 
   const feedback = Math.max(-1, Math.min(1, options.feedback ?? 0));
+  const item = itemMatchScore(profile.itemTerms ?? [], store.itemTerms);
 
   const components: ScoreComponents = {
     preference_fit: round3(preferenceFit),
@@ -237,13 +252,15 @@ export function scoreStore(
     market_experience_fit: round3(marketFit),
     discovery_bonus: round3(discovery),
     interaction_feedback: round3(feedback),
+    item_match: round3(item.score),
   };
   const raw =
     SCORE_WEIGHTS.preference_fit * preferenceFit +
     SCORE_WEIGHTS.recent_interest_fit * recentFit +
     SCORE_WEIGHTS.market_experience_fit * marketFit +
     SCORE_WEIGHTS.discovery_bonus * discovery +
-    SCORE_WEIGHTS.interaction_feedback * feedback;
+    SCORE_WEIGHTS.interaction_feedback * feedback +
+    SCORE_WEIGHTS.item_match * item.score;
 
   const matchedTastes: MatchedTaste[] = TASTE_KEYS.map((key) => ({
     key,
@@ -268,6 +285,7 @@ export function scoreStore(
     components,
     matchedTastes,
     matchedProducts,
+    matchedItems: item.matched,
     facet: pref.facet,
     recommendable: store.recommendable,
     dismissed: Boolean(options.dismissed),

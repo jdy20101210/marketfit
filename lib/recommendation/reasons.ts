@@ -35,6 +35,8 @@ export interface TemplateReasonInput {
   matchedTastes: MatchedTaste[];
   matchedProducts: string[];
   productHints: string[];
+  /** 원본 품목과 그대로 일치한 검색어 (있으면 이유 맨 앞에 씁니다) */
+  matchedItems?: string[];
   /** 표시 점수(0~100). 점수가 낮으면 '잘 맞아요'처럼 단정하지 않습니다. */
   score?: number;
 }
@@ -66,6 +68,13 @@ export function templateReason(input: TemplateReasonInput): string {
         : score >= 55
           ? `${tastes.join("·")} 취향과 ${who}의 성격이 어느 정도 맞아요.`
           : `${tastes.join("·")} 취향과 일부 겹쳐 가볍게 둘러보기 좋은 ${josa(who, "이에요", "예요")}.`;
+
+  // 찾는 품목이 원본 품목에 그대로 있으면 그 사실을 먼저 말합니다 (가장 확실한 추천 근거).
+  const exact = (input.matchedItems ?? []).slice(0, 2);
+  if (exact.length > 0) {
+    // josa()는 '단어 + 조사'를 함께 돌려주므로 단어를 다시 붙이지 않습니다.
+    return `찾으시는 ${josa(exact.join("·"), "을", "를")} 원본 품목에 적어 둔 ${josa(who, "이에요", "예요")}. ${lead}`;
+  }
 
   const items = (input.matchedProducts.length ? input.matchedProducts : input.productHints).slice(0, 3);
   if (items.length > 0 && input.matchedProducts.length > 0) {

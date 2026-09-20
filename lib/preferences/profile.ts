@@ -4,6 +4,7 @@
  */
 import { clamp01, emptyVector, round3, TASTE_KEYS, TASTE_META, topTastes, type TasteKey, type TasteVector } from "@/lib/recommendation/dimensions";
 import { PRODUCT_KEYS } from "@/lib/recommendation/engine";
+import { userItemTerms } from "@/lib/recommendation/itemMatch";
 import { combineWeights, matchKeyword, matchSentence } from "@/lib/recommendation/keywords";
 import { josa } from "@/lib/recommendation/reasons";
 import { extractSlots } from "./extract";
@@ -246,6 +247,8 @@ export function buildRuleProfile(input: RuleProfileInput): RuleProfile {
     occasion: slots.occasion,
     preferredStyle: slots.preferredStyle,
     discoveryPreference: slots.discoveryPreference,
+    // 품목 직접 일치용 — 입력 키워드와 "무엇을 찾는지" 답변에서 뽑습니다.
+    itemTerms: userItemTerms([...keywords, slots.lookingFor]),
   };
   const summary = empty
     ? "입력한 내용에서 뚜렷한 취향을 찾지 못해, 중앙시장을 폭넓게 둘러보는 기본 취향으로 추천해요. 좋아하는 것을 조금 더 알려주시면 더 정확해져요."

@@ -56,6 +56,10 @@ export interface MerchantInsights {
   /** 관심 대비 방문이 낮은 분야 */
   lowConversion: { key: TasteKey; label: string; interestShare: number; visitShare: number }[];
   metrics: StoreMetrics | null;
+  /** 점포 화면 전용 — 시장 관심도를 이 점포의 성향으로 재가중한 값 (홍보 아이디어의 근거) */
+  storeInterest: InterestRow[];
+  /** 이 점포가 실제로 가진 취향 성향 (상위 4개) */
+  storeTasteKeys: TasteKey[];
   /** 시장 전체 화면용 — 점포별 관심/방문 차이 상위 */
   storeGaps: { storeId: string; name: string; category: string; interestUsers: number; visits: number; ratio: number }[];
   generatedAt: string;
@@ -89,6 +93,24 @@ function visitShares(stores: Store[], counts: Record<string, Partial<Record<Inte
   }
   if (total > 0) for (const [k, v] of acc) acc.set(k, v / total);
   return acc;
+}
+
+/**
+ * 시장 전체 관심 분포를 '이 점포와 관련 있는 정도'로 다시 가중합니다.
+ * 귀금속 점포에 먹거리 관심이 1순위로 뜨는 문제를 막고, 홍보 아이디어가
+ * 그 점포가 실제로 파는 것 안에서만 나오게 하기 위한 값입니다.
+ */
+function storeRelevantInterest(store: Store, interest: InterestRow[]): InterestRow[] {
+  const taste = store.features.taste;
+  const rows = interest
+    .map((row) => ({ row, weight: row.share * taste[row.key] }))
+    .filter((r) => r.weight > 0 && taste[r.row.key] >= 0.25);
+  if (rows.length === 0) return [];
+  const total = rows.reduce((s, r) => s + r.weight, 0) || 1;
+  return rows
+    .sort((a, b) => b.weight - a.weight)
+    .slice(0, 4)
+    .map(({ row, weight }) => ({ ...row, share: Math.round((weight / total) * 1000) / 10 }));
 }
 
 function metricsFor(store: Store, real: Partial<Record<InteractionType, number>>): StoreMetrics {
@@ -176,6 +198,8 @@ export async function getMerchantInsights(storeId: string | null): Promise<Merch
     rising,
     lowConversion,
     metrics: store ? metricsFor(store, counts[store.id] ?? {}) : null,
+    storeInterest: store ? storeRelevantInterest(store, interest) : [],
+    storeTasteKeys: store ? topTastes(store.features.taste, 4, 0.3).map((t) => t.key) : [],
     storeGaps,
     generatedAt: new Date().toISOString(),
   };

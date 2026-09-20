@@ -90,6 +90,8 @@ export interface UserPreferenceProfile {
   occasion: Occasion | null;
   preferredStyle: PreferredStyle[];
   discoveryPreference: DiscoveryPreference | null;
+  /** 사용자가 직접 말한 품목 단어 (예: ["운동화"]) — 점포 원본 품목과 그대로 대조합니다. */
+  itemTerms: string[];
   summary: string;
 }
 

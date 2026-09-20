@@ -3,7 +3,7 @@
  * - 사용자가 말한 내용만 채웁니다. 예산 숫자는 사용자가 적은 숫자에서만 계산합니다.
  */
 import { PRODUCT_KEYS } from "@/lib/recommendation/engine";
-import { findDictionaryWords, KEYWORD_RULES, matchSentence } from "@/lib/recommendation/keywords";
+import { findDictionaryWords, KEYWORD_RULES, matchSentence, maskNegatedWords } from "@/lib/recommendation/keywords";
 import {
   CORE_SLOTS,
   MAX_QUESTIONS,
@@ -183,12 +183,13 @@ function firstMatch<T>(patterns: [T, RegExp][], text: string): T | null {
   return null;
 }
 
-/** '캠핑은 관심 없어요'처럼 부정한 구절은 빼고 분석합니다. */
+/**
+ * '캠핑은 관심 없어요'처럼 부정한 단어는 빼고 분석합니다.
+ * matchSentence(취향 vector 추출)와 같은 기준(maskNegatedWords)을 써서, 같은 문장이
+ * 상황 정보(예: 전통/실용 선호)와 취향 vector에서 서로 다르게 해석되지 않도록 합니다.
+ */
 function positiveText(text: string): string {
-  return text
-    .split(/[,.!?\n]|그리고|하지만|그런데|근데/)
-    .filter((c) => !/(관심\s*(이|은|는)?\s*없|싫|말고|빼고|제외|별로)/.test(c))
-    .join(" ");
+  return maskNegatedWords(text);
 }
 
 /** 대화 전체에서 상황 정보를 추출합니다 (질문 slot을 힌트로 사용). */
@@ -275,30 +276,116 @@ export function isSlotFilled(slots: InterviewSlots, slot: InterviewSlot): boolea
   }
 }
 
-export const RULE_QUESTIONS: Record<InterviewSlot, { text: string; suggestions: string[] }> = {
-  looking_for: { text: "지금 중앙시장에서 무엇을 찾고 계세요?", suggestions: ["친구 생일 선물", "시장 먹거리 구경", "캠핑 용품", "집 꾸미기 소품"] },
-  budget: { text: "예산은 어느 정도 생각하고 계세요?", suggestions: ["1만원 이하", "2만원 정도", "5만원 정도", "상관없어요"] },
-  style: {
-    text: "흔하지 않은 대전만의 상품과 실용적인 상품 중 어느 쪽을 더 선호하시나요?",
-    suggestions: ["대전만의 독특한 상품", "실용적인 상품", "둘 다 좋아요"],
-  },
-  companion: { text: "누구와 함께 가시나요? 혹은 누구를 위한 건가요?", suggestions: ["나를 위해", "친구", "가족", "연인"] },
-  taste: { text: "평소 좋아하는 것이나 취미가 있다면 알려주세요.", suggestions: ["커피", "캠핑", "빈티지", "전통 먹거리"] },
-  discovery: {
-    text: "처음 가 보는 숨은 가게도 괜찮으세요, 아니면 잘 알려진 가게가 좋으세요?",
-    suggestions: ["숨은 가게 좋아요", "잘 알려진 곳이 좋아요", "상관없어요"],
-  },
+/**
+ * 질문 문장 은행 — 항목마다 여러 표현을 두고, 앞선 답변에 따라 골라 씁니다.
+ * 같은 대화 안에서는 같은 문장이 나오도록(새로고침해도 흔들리지 않도록)
+ * 대화 내용으로 만든 고정 값을 인덱스로 씁니다.
+ */
+type QuestionVariant = {
+  /** {찾는것}에 앞서 사용자가 말한 내용을 넣습니다 */
+  text: string;
+  suggestions: string[];
+  /** 이 표현을 쓸 조건 (없으면 언제나 사용 가능) */
+  when?: (slots: InterviewSlots) => boolean;
 };
 
-/** 다음에 물을 항목: 핵심 항목(찾는 것·예산·스타일) → 질문이 3개가 안 되면 동행·취향·발견 선호 */
+/**
+ * 답변 문장을 질문에 끼워 넣을 짧은 명사구로 다듬습니다.
+ * "친구 생일 선물 찾고 있어요" → "친구 생일 선물"
+ */
+const LOOKING_TAIL =
+  /\s*(을|를|이|가|은|는)?\s*(찾고\s*있어요|찾고\s*있습니다|찾으려고요|찾고\s*싶어요|찾아요|사려고요|사고\s*싶어요|살까\s*해요|보려고요|보고\s*있어요|구경하려고요|구경하고\s*싶어요|알아보고\s*있어요|필요해요|하나\s*사려고요|사려구요)\s*[.!]?\s*$/;
+
+export function shortLookingFor(text: string | null): string {
+  if (!text) return "";
+  const trimmed = text.trim().replace(LOOKING_TAIL, "").replace(/\s*(을|를|이|가|은|는)\s*$/, "").trim();
+  return trimmed.length >= 2 && trimmed.length <= 16 ? trimmed : "";
+}
+
+const hasLookingFor = (s: InterviewSlots) => Boolean(shortLookingFor(s.lookingFor));
+const isGift = (s: InterviewSlots) => /gift|souvenir/.test(s.intent ?? "");
+const isFood = (s: InterviewSlots) => /food|meal|snack/.test(s.intent ?? "") || /먹|맛|음식|간식|커피/.test(s.lookingFor ?? "");
+
+export const QUESTION_BANK: Record<InterviewSlot, QuestionVariant[]> = {
+  looking_for: [
+    { text: "지금 중앙시장에서 무엇을 찾고 계세요?", suggestions: ["친구 생일 선물", "시장 먹거리 구경", "캠핑 용품", "집 꾸미기 소품"] },
+    { text: "오늘 중앙시장에서 어떤 걸 보고 싶으세요?", suggestions: ["선물 고르기", "먹거리 구경", "생활용품", "구경만 할래요"] },
+    { text: "어떤 물건이나 장소를 찾고 계신지 편하게 말씀해 주세요.", suggestions: ["옷·신발", "먹거리", "주방·살림", "아직 정하지 않았어요"] },
+  ],
+  budget: [
+    { text: "{찾는것}, 예산은 어느 정도 생각하고 계세요?", suggestions: ["1만원 이하", "2만원 정도", "5만원 정도", "상관없어요"], when: hasLookingFor },
+    { text: "선물 예산은 어느 정도로 잡고 계세요?", suggestions: ["1만원 이하", "2만원 정도", "5만원 정도", "상관없어요"], when: isGift },
+    { text: "예산은 어느 정도 생각하고 계세요?", suggestions: ["1만원 이하", "2만원 정도", "5만원 정도", "상관없어요"] },
+    { text: "가격대는 어느 정도가 편하실까요?", suggestions: ["저렴한 걸로", "2만원 정도", "좋은 거면 더 써도 돼요", "상관없어요"] },
+  ],
+  style: [
+    { text: "받는 분이 좋아할 만한 건 대전만의 특별한 상품일까요, 실용적인 상품일까요?", suggestions: ["대전만의 독특한 상품", "실용적인 상품", "둘 다 좋아요"], when: isGift },
+    { text: "맛으로 유명한 곳과 직접 만드는 곳 중 어느 쪽이 더 끌리세요?", suggestions: ["유명한 곳", "직접 만드는 곳", "둘 다 좋아요"], when: isFood },
+    { text: "흔하지 않은 대전만의 상품과 실용적인 상품 중 어느 쪽을 더 선호하시나요?", suggestions: ["대전만의 독특한 상품", "실용적인 상품", "둘 다 좋아요"] },
+    { text: "고를 때 특별함과 실용성 중 무엇을 더 보세요?", suggestions: ["특별한 게 좋아요", "실용적인 게 좋아요", "둘 다 좋아요"] },
+  ],
+  companion: [
+    { text: "누구에게 줄 선물인가요?", suggestions: ["친구", "가족", "연인", "나를 위해"], when: isGift },
+    { text: "누구와 함께 가시나요? 혹은 누구를 위한 건가요?", suggestions: ["나를 위해", "친구", "가족", "연인"] },
+    { text: "혼자 가시나요, 아니면 같이 가는 분이 있으세요?", suggestions: ["혼자", "친구랑", "가족이랑", "연인이랑"] },
+  ],
+  taste: [
+    { text: "평소 즐겨 드시는 음식이나 좋아하는 맛이 있으세요?", suggestions: ["분식", "전통 먹거리", "달달한 간식", "커피"], when: isFood },
+    { text: "평소 좋아하는 것이나 취미가 있다면 알려주세요.", suggestions: ["커피", "캠핑", "빈티지", "전통 먹거리"] },
+    { text: "요즘 관심 있는 것이 있다면 한두 가지만 알려주세요.", suggestions: ["커피", "캠핑", "빈티지", "집 꾸미기"] },
+  ],
+  discovery: [
+    { text: "처음 가 보는 숨은 가게도 괜찮으세요, 아니면 잘 알려진 가게가 좋으세요?", suggestions: ["숨은 가게 좋아요", "잘 알려진 곳이 좋아요", "상관없어요"] },
+    { text: "잘 알려진 곳 위주로 볼까요, 새로운 곳도 섞어 볼까요?", suggestions: ["새로운 곳도 좋아요", "알려진 곳이 좋아요", "상관없어요"] },
+  ],
+};
+
+/** 대화 내용으로 만드는 고정 값 — 같은 대화면 항상 같은 표현이 나옵니다. */
+function conversationSeed(messages: ChatMessage[]): number {
+  const text = messages.map((m) => m.text).join("|");
+  let h = 0;
+  for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) % 100_000;
+  return h;
+}
+
+/** 항목별 질문 고르기 — 조건에 맞는 표현 중에서 대화 고정 값으로 하나를 선택합니다. */
+export function questionFor(slot: InterviewSlot, slots: InterviewSlots, seed: number): { text: string; suggestions: string[] } {
+  const all = QUESTION_BANK[slot];
+  const fitted = all.filter((v) => v.when?.(slots));
+  const general = all.filter((v) => !v.when);
+  const pool = fitted.length ? fitted : general;
+  const chosen = pool[seed % pool.length] ?? general[0]!;
+  const looking = shortLookingFor(slots.lookingFor);
+  return { text: chosen.text.replace("{찾는것}", looking || "찾으시는 것"), suggestions: chosen.suggestions };
+}
+
+/** 이전 버전 호환용 기본 문장 (테스트·문서에서 참조) */
+export const RULE_QUESTIONS: Record<InterviewSlot, { text: string; suggestions: string[] }> = Object.fromEntries(
+  (Object.keys(QUESTION_BANK) as InterviewSlot[]).map((slot) => {
+    const general = QUESTION_BANK[slot].find((v) => !v.when)!;
+    return [slot, { text: general.text.replace("{찾는것}", "찾으시는 것"), suggestions: general.suggestions }];
+  }),
+) as Record<InterviewSlot, { text: string; suggestions: string[] }>;
+
+/**
+ * 다음에 물을 항목 — 앞선 답변에 따라 순서가 달라집니다.
+ * - 선물: 누구에게 줄지가 예산·스타일보다 중요해서 먼저 묻습니다.
+ * - 먹거리: 예산보다 평소 입맛을 먼저 묻습니다(시장 먹거리는 가격대 차이가 작아서).
+ * - 그 외: 찾는 것 → 예산 → 스타일 순서를 유지합니다.
+ */
+export function slotOrderFor(slots: InterviewSlots): InterviewSlot[] {
+  if (isGift(slots)) return ["looking_for", "companion", "budget", "style", "discovery", "taste"];
+  if (isFood(slots)) return ["looking_for", "taste", "style", "companion", "discovery", "budget"];
+  return [...CORE_SLOTS, "taste", "discovery", "companion"];
+}
+
 export function nextRuleSlot(slots: InterviewSlots, answeredCount: number, askedSlots: InterviewSlot[]): InterviewSlot | null {
-  const pending = (list: InterviewSlot[]) => list.filter((s) => !isSlotFilled(slots, s) && !askedSlots.includes(s));
-  const core = pending(CORE_SLOTS);
-  if (core.length) return core[0]!;
-  if (answeredCount >= MIN_ANSWERS) return null;
-  const gifty = /gift|souvenir/.test(slots.intent ?? "");
-  const optional = pending(gifty ? ["companion", "discovery", "taste"] : ["taste", "discovery", "companion"]);
-  return optional[0] ?? null;
+  const order = slotOrderFor(slots);
+  const pending = order.filter((s) => !isSlotFilled(slots, s) && !askedSlots.includes(s));
+  if (pending.length === 0) return null;
+  // 최소 답변 수를 채우기 전에는 계속 묻고, 채운 뒤에는 핵심 항목만 남았을 때 묻습니다.
+  if (answeredCount >= MIN_ANSWERS) return pending.find((s) => CORE_SLOTS.includes(s)) ?? null;
+  return pending[0]!;
 }
 
 export function interviewState(messages: ChatMessage[]) {
@@ -313,21 +400,36 @@ export function interviewState(messages: ChatMessage[]) {
   return { slots, answeredCount: answers.length, askedCount: asked.length, askedSlots, next, done, finishRequested };
 }
 
-const ACKS = ["좋아요!", "알겠어요.", "그렇군요.", "좋은 정보예요.", "네, 참고할게요."];
+/** 맞장구 — 직전 답변의 성격에 맞춰 고릅니다(무조건 "좋아요!"만 나오지 않도록). */
+const ACK_GENERAL = ["좋아요!", "알겠어요.", "그렇군요.", "네, 참고할게요.", "잘 알겠습니다."];
+const ACK_BY_SLOT: Partial<Record<InterviewSlot, string[]>> = {
+  looking_for: ["좋아요, 찾아볼게요!", "네, 그쪽으로 살펴볼게요."],
+  budget: ["예산 참고할게요.", "그 가격대로 맞춰 볼게요."],
+  style: ["취향 알겠어요.", "그런 스타일로 찾아볼게요."],
+  companion: ["누구와 함께인지 알겠어요.", "네, 참고할게요."],
+  taste: ["좋은 정보예요.", "취향 잘 알겠어요."],
+  discovery: ["알겠어요.", "네, 반영할게요."],
+};
+
+function ackFor(lastSlot: InterviewSlot | null, seed: number): string {
+  const pool = (lastSlot && ACK_BY_SLOT[lastSlot]) || ACK_GENERAL;
+  return pool[seed % pool.length]!;
+}
 
 /** 다음 질문 고르기 — 아직 듣지 못한 항목을 순서대로, 최대 6개까지 */
 export function ruleInterviewTurn(messages: ChatMessage[]) {
   const state = interviewState(messages);
-  const ack = ACKS[(state.answeredCount - 1 + ACKS.length) % ACKS.length]!;
+  const seed = conversationSeed(messages);
+  // 직전에 물었던 항목에 맞춰 맞장구를 고릅니다.
+  const lastAsked = [...messages].reverse().find((m) => m.role === "assistant" && m.slot)?.slot ?? null;
+  const ack = ackFor(lastAsked, seed);
   if (state.done || !state.next) {
-    return {
-      ...state,
-      reply: `${ack} 말씀해 주신 내용으로 취향을 분석할 준비가 됐어요. 아래 [대화 내용으로 분석하기]를 눌러 주세요.`,
-      slot: null,
-      done: true,
-      suggestions: [] as string[],
-    };
+    const looking = shortLookingFor(state.slots.lookingFor);
+    const closing = looking
+      ? `${ack} 말씀해 주신 '${looking}' 기준으로 분석할 준비가 됐어요. 아래 [대화 내용으로 분석하기]를 눌러 주세요.`
+      : `${ack} 말씀해 주신 내용으로 취향을 분석할 준비가 됐어요. 아래 [대화 내용으로 분석하기]를 눌러 주세요.`;
+    return { ...state, reply: closing, slot: null, done: true, suggestions: [] as string[] };
   }
-  const q = RULE_QUESTIONS[state.next];
+  const q = questionFor(state.next, state.slots, seed);
   return { ...state, reply: `${ack} ${q.text}`, slot: state.next, done: false, suggestions: q.suggestions };
 }
