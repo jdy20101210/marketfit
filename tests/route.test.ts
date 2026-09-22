@@ -65,16 +65,28 @@ describe("점포 고르기", () => {
     expect(picked.map((p) => p.rank)).toEqual([1, 2, 3]);
   });
 
-  it("같은 소분류가 몰리지 않게 고른다", () => {
+  it("점수가 더 높은 점포를 건너뛰고 낮은 점포를 넣지 않는다 (같은 분류여도)", () => {
+    // 남성복을 찾는데 남성복 한 곳만 넣고 나머지를 다른 업종으로 채우던 문제의 회귀 테스트
     const sameCategory = [
-      candidate(1, { subCategory: "건어물" }),
-      candidate(2, { subCategory: "건어물" }),
-      candidate(3, { subCategory: "건어물" }),
-      candidate(4, { subCategory: "정육점" }),
-      candidate(5, { subCategory: "떡집" }),
+      candidate(1, { subCategory: "남성복" }),
+      candidate(2, { subCategory: "남성복" }),
+      candidate(3, { subCategory: "남성복" }),
+      candidate(4, { subCategory: "헤어" }),
+      candidate(5, { subCategory: "잡화" }),
     ] as LocatedCandidate[];
     const picked = selectStops(sameCategory, 3);
-    expect(new Set(picked.map((p) => p.subCategory)).size).toBe(3);
+    expect(picked.map((p) => p.rank).sort()).toEqual([1, 2, 3]);
+  });
+
+  it("점수가 같을 때만 소분류가 겹치지 않게 고른다", () => {
+    const tied = [
+      candidate(1, { subCategory: "카페", score: 99 }),
+      candidate(2, { subCategory: "카페", score: 99 }),
+      candidate(3, { subCategory: "음료", score: 99 }),
+      candidate(4, { subCategory: "떡집", score: 80 }),
+    ] as LocatedCandidate[];
+    const picked = selectStops(tied, 2);
+    expect(new Set(picked.map((p) => p.subCategory))).toEqual(new Set(["카페", "음료"]));
   });
 
   it("고정한 점포는 순위가 낮아도 반드시 들어간다", () => {
@@ -82,10 +94,26 @@ describe("점포 고르기", () => {
     expect(picked.map((p) => p.storeId)).toContain("dj-6");
   });
 
-  it("variant를 바꾸면 다른 조합이 나온다", () => {
-    const a = selectStops(pool, 3, [], 0).map((p) => p.storeId);
-    const b = selectStops(pool, 3, [], 1).map((p) => p.storeId);
-    expect(a).not.toEqual(b);
+  it("다른 조합은 확실히 높은 점포를 유지하고, 마지막 자리만 비슷한 점수끼리 바꾼다", () => {
+    const camping = [
+      candidate(1, { score: 99, subCategory: "아웃도어" }),
+      candidate(2, { score: 93, subCategory: "아웃도어" }),
+      candidate(3, { score: 90, subCategory: "주방" }),
+      candidate(4, { score: 90, subCategory: "주방" }),
+      candidate(5, { score: 88, subCategory: "유니폼" }),
+      candidate(6, { score: 88, subCategory: "생활" }),
+      candidate(7, { score: 70, subCategory: "식당" }),
+    ] as LocatedCandidate[];
+    const combos = new Set<string>();
+    for (let v = 1; v <= 6; v++) {
+      const picked = selectStops(camping, 4, [], v);
+      const ranks = picked.map((p) => p.rank);
+      expect(ranks).toContain(1); // 99점은 항상 유지
+      expect(ranks).toContain(2); // 93점도 유지
+      expect(picked.every((p) => p.score >= 87)).toBe(true); // 마지막 자리도 90점에서 3점 이내만
+      combos.add(ranks.slice().sort().join());
+    }
+    expect(combos.size).toBeGreaterThan(1); // 실제로 다른 조합이 나온다
   });
 });
 
@@ -139,7 +167,8 @@ describe("동선 계획", () => {
     const plan = planRoute(candidates, { stopCount: 3, minutes: 120, startTime: "10:00" });
     expect(plan.unlocatedExcluded).toBe(1);
     expect(plan.stops.map((s) => s.storeId)).not.toContain("dj-2");
-    expect(plan.notes.some((n) => n.includes("제외"))).toBe(true);
+    // 순위가 높은 점포가 빠지면 이름으로, 아니면 개수로 알려 줍니다.
+    expect(plan.notes.some((n) => /제외|빠졌/.test(n))).toBe(true);
   });
 
   it("좌표가 하나도 없으면 빈 계획과 안내를 돌려준다", () => {
@@ -169,5 +198,31 @@ describe("동선 계획", () => {
     expect(text).toContain("점포1");
     expect(text).toContain("추천 1위");
     expect(text.split("\n").length).toBeGreaterThan(plan.stops.length);
+  });
+});
+
+describe("동선 연관도", () => {
+  it("동선 점포는 지도 추천 상위와 같다 (좌표가 모두 있을 때)", () => {
+    const cands = [
+      candidate(1, { score: 99, subCategory: "남성복" }),
+      candidate(2, { score: 99, subCategory: "남성복" }),
+      candidate(3, { score: 99, subCategory: "남성복" }),
+      candidate(4, { score: 99, subCategory: "남성복" }),
+      candidate(5, { score: 95, subCategory: "여성복" }),
+      candidate(6, { score: 87, subCategory: "헤어" }),
+    ];
+    const plan = planRoute(cands, { stopCount: 4, minutes: 120, startTime: "10:00" });
+    expect(plan.stops.map((s) => s.rank).sort()).toEqual([1, 2, 3, 4]);
+  });
+
+  it("위치를 몰라 빠진 상위 점포는 이름과 순위로 알려 준다", () => {
+    const cands = [
+      candidate(1, { name: "원흥상회", lat: null, lng: null, accuracy: "unknown" }),
+      candidate(2),
+      candidate(3),
+      candidate(4),
+    ];
+    const plan = planRoute(cands, { stopCount: 3, minutes: 120, startTime: "10:00" });
+    expect(plan.notes.some((n) => n.includes("1위 원흥상회는"))).toBe(true);
   });
 });

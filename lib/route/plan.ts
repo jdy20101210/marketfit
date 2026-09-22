@@ -7,6 +7,7 @@
  * - 거리는 좌표 사이 직선거리에 골목 우회 계수를 곱한 **추정치**입니다 (실제 도보 경로와 다를 수 있음).
  */
 import { distanceMeters } from "@/lib/map/grouping";
+import { josa } from "@/lib/recommendation/reasons";
 import type { LocationAccuracy } from "@/lib/stores/types";
 
 /** 도보 속도 (m/분) — 시장 안 보행 약 4km/h */
@@ -144,34 +145,74 @@ export function walkMinutes(meters: number): number {
 // ---------- 점포 고르기 ----------
 
 /**
- * 추천 상위권에서 방문할 점포를 고릅니다.
- * - 고정(mustInclude) 점포가 먼저
- * - 같은 소분류가 몰리지 않도록 분류당 1곳 → 2곳 순으로 채우고, 모자라면 순위대로 더 넣습니다.
- * - variant를 올리면 같은 조건에서 그다음 후보 조합을 뽑습니다.
+ * '다른 조합으로'를 누를 때 서로 바꿔 넣을 수 있는 점수 폭.
+ * 이 폭 안의 점포끼리만 바꾸므로 조합을 바꿔도 연관도가 크게 떨어지지 않습니다.
+ */
+export const VARIANT_SCORE_BAND = 3;
+
+/** 같은 조건이면 늘 같은 결과가 나오도록 점포 id와 조합 번호로 만든 고정 순서값 */
+function variantOrder(id: string, variant: number): number {
+  let h = 2166136261 ^ variant;
+  for (let i = 0; i < id.length; i++) {
+    h ^= id.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0) / 4294967296;
+}
+
+/**
+ * 추천 상위권에서 방문할 점포를 고릅니다 — **연관도(추천 점수) 우선**.
+ *
+ * - 저장·좋아요로 고정한 점포가 먼저 들어갑니다.
+ * - 나머지는 지도·목록과 같은 점수 순서로 채웁니다. 점수가 더 높은 점포를 건너뛰고
+ *   낮은 점포를 넣지 않습니다(남성복을 찾는데 남성복을 한 곳만 넣고 네일샵으로 채우는 일이 없도록).
+ * - 소분류 다양성은 **점수가 같을 때만** 따집니다(동점이면 아직 안 고른 분류부터).
+ * - variant(다른 조합)는 확실히 더 연관된 점포는 유지하고, 마지막 자리들만
+ *   비슷한 점수(VARIANT_SCORE_BAND 이내)의 점포로 바꿔 넣습니다.
  */
 export function selectStops(candidates: LocatedCandidate[], count: number, mustInclude: string[] = [], variant = 0): LocatedCandidate[] {
   const wanted = Math.max(1, Math.min(count, candidates.length));
-  const byRank = [...candidates].sort((a, b) => a.rank - b.rank);
+  const byScore = [...candidates].sort((a, b) => b.score - a.score || a.rank - b.rank);
   const pinnedIds = new Set(mustInclude);
-  const picked: LocatedCandidate[] = byRank.filter((c) => pinnedIds.has(c.storeId)).slice(0, wanted);
-  const pool = byRank.filter((c) => !picked.some((p) => p.storeId === c.storeId));
+  const picked: LocatedCandidate[] = byScore.filter((c) => pinnedIds.has(c.storeId)).slice(0, wanted);
+  const pickedIds = new Set(picked.map((p) => p.storeId));
+  let remaining = byScore.filter((c) => !pickedIds.has(c.storeId));
+  const need = wanted - picked.length;
+  if (need <= 0 || remaining.length === 0) return picked;
 
-  // variant: 고정되지 않은 후보 목록을 회전시켜 다른 조합을 만듭니다.
-  const shift = pool.length ? (variant * Math.max(1, wanted)) % pool.length : 0;
-  const rotated = shift > 0 ? [...pool.slice(shift), ...pool.slice(0, shift)] : pool;
+  // 점수 묶음(tier): 기본은 같은 점수끼리 한 묶음입니다.
+  // 다른 조합이면 '마지막으로 뽑히는 점수(cutoff)'보다 높은 점포는 그대로 두고,
+  // cutoff 이하 VARIANT_SCORE_BAND 안의 점포끼리만 자리를 바꿉니다.
+  const cutoff = remaining[Math.min(need, remaining.length) - 1]!.score;
+  const inBand = (c: LocatedCandidate) => variant > 0 && c.score <= cutoff && c.score >= cutoff - VARIANT_SCORE_BAND;
+  const tierKey = (c: LocatedCandidate) => {
+    if (variant === 0) return c.score;
+    if (c.score > cutoff) return 1000 + c.score; // 확실히 더 연관된 점포 — 항상 먼저
+    if (inBand(c)) return 500; // 마지막 자리 후보 — 한 묶음으로 보고 조합마다 순서를 바꿈
+    return c.score;
+  };
+  const tieOrder = (a: LocatedCandidate, b: LocatedCandidate) =>
+    variant > 0 && inBand(a) && inBand(b) ? variantOrder(a.storeId, variant) - variantOrder(b.storeId, variant) : a.rank - b.rank;
 
   const perCategory = new Map<string, number>();
   for (const p of picked) perCategory.set(p.subCategory, (perCategory.get(p.subCategory) ?? 0) + 1);
 
-  for (const cap of [1, 2, Number.POSITIVE_INFINITY]) {
-    for (const c of rotated) {
-      if (picked.length >= wanted) break;
-      if (picked.some((p) => p.storeId === c.storeId)) continue;
-      if ((perCategory.get(c.subCategory) ?? 0) >= cap) continue;
-      picked.push(c);
-      perCategory.set(c.subCategory, (perCategory.get(c.subCategory) ?? 0) + 1);
+  while (picked.length < wanted && remaining.length) {
+    const topKey = Math.max(...remaining.map(tierKey));
+    const tier = remaining.filter((c) => tierKey(c) === topKey).sort(tieOrder);
+    // 같은 묶음 안에서는 아직 적게 고른 소분류부터 (그다음은 순위/조합 순서)
+    let best = tier[0]!;
+    let bestCount = perCategory.get(best.subCategory) ?? 0;
+    for (const c of tier) {
+      const n = perCategory.get(c.subCategory) ?? 0;
+      if (n < bestCount) {
+        best = c;
+        bestCount = n;
+      }
     }
-    if (picked.length >= wanted) break;
+    picked.push(best);
+    perCategory.set(best.subCategory, bestCount + 1);
+    remaining = remaining.filter((c) => c.storeId !== best.storeId);
   }
   return picked;
 }
@@ -328,6 +369,7 @@ export function planRoute(candidates: RouteCandidate[], options: RoutePlanOption
   if (target < requested) notes.push(`좌표가 확인된 추천 점포가 ${located.length}곳이라 ${located.length}곳으로 계획했어요.`);
 
   let chosen = selectStops(located, target, mustInclude, options.variant ?? 0);
+  const chosenIds = chosen.map((c) => c.storeId);
   let schedule = buildSchedule(chosen, { minutes, startTime: options.startTime, start, mustInclude });
   let dropped = 0;
 
@@ -345,7 +387,25 @@ export function planRoute(candidates: RouteCandidate[], options: RoutePlanOption
   if (totalMinutes > minutes) notes.push(`가장 짧게 잡아도 약 ${formatDuration(totalMinutes)}이 필요해요. 시간을 늘리거나 점포 수를 줄여 보세요.`);
   else if (minutes - totalMinutes >= 15) notes.push(`계획보다 약 ${formatDuration(minutes - totalMinutes)} 여유가 있어요. 점포를 더 넣거나 천천히 둘러봐도 좋아요.`);
   if (schedule.stops.some((s) => s.accuracy !== "exact")) notes.push("일부 점포는 건물·구역 기준의 대략적 위치예요. 도착해서 간판을 확인해 주세요.");
-  if (unlocatedExcluded > 0) notes.push(`좌표가 확인되지 않은 추천 점포 ${unlocatedExcluded}곳은 동선에서 제외했어요.`);
+  if (unlocatedExcluded > 0) {
+    // 동선에 들어간 점포보다 순위가 높은데 위치를 몰라 빠진 점포는 이름을 알려 줍니다(연관도가 떨어진 이유를 숨기지 않도록).
+    const worstPicked = Math.max(...schedule.stops.map((st) => st.rank));
+    const skippedTop = candidates
+      .filter((c) => !isLocated(c) && c.rank < worstPicked)
+      .sort((a, b) => a.rank - b.rank);
+    if (skippedTop.length > 0) {
+      const names = skippedTop.slice(0, 2).map((c) => `${c.rank}위 ${c.name}`).join(", ");
+      const subject = skippedTop.length > 2 ? `${names} 등 ${skippedTop.length}곳` : names;
+      notes.push(`추천 ${josa(subject, "은", "는")} 위치가 확인되지 않아 동선에서 빠졌어요. 추천 지도에서 따로 확인해 주세요.`);
+    } else {
+      notes.push(`좌표가 확인되지 않은 추천 점포 ${unlocatedExcluded}곳은 동선에서 제외했어요.`);
+    }
+  }
+  if ((options.variant ?? 0) > 0) {
+    const base = selectStops(located, target, mustInclude, 0).map((c) => c.storeId).sort().join();
+    const now = chosenIds.slice().sort().join();
+    if (base === now) notes.push("비슷한 연관도의 다른 점포가 없어 같은 조합이에요. 점포 수를 바꿔 보세요.");
+  }
 
   return {
     stops: schedule.stops,
