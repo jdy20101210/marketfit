@@ -9,6 +9,8 @@ import { combineWeights, matchKeyword, matchSentence } from "@/lib/recommendatio
 import { josa } from "@/lib/recommendation/reasons";
 import { extractSlots } from "./extract";
 import {
+  APPAREL_LABEL,
+  APPAREL_ITEM_TERMS,
   budgetLabel,
   STYLE_LABEL,
   type Budget,
@@ -151,7 +153,10 @@ export function keywordInsight(input: string): KeywordInsight {
 function summaryFor(profile: Omit<UserPreferenceProfile, "summary">, mode: InputMode, keywords: string[], v: TasteVector): string {
   const style = profile.preferredStyle.filter((s) => s !== "premium").map((s) => STYLE_LABEL[s]);
   const budget = budgetLabel(profile.budget);
-  const target = profile.intentLabel ?? (profile.lookingFor ? "상품" : null);
+  const baseTarget = profile.intentLabel ?? (profile.lookingFor ? "상품" : null);
+  // "패션 쇼핑" → "남성 옷 쇼핑"처럼 누가 입을 옷인지 요약에 드러냅니다.
+  // "패션 쇼핑" 대신 "남성 옷"처럼 누가 입을 옷인지 그대로 요약에 씁니다.
+  const target = profile.apparelFor ? APPAREL_LABEL[profile.apparelFor] : baseTarget;
   if (mode !== "keywords" && target) {
     const parts = [style.slice(0, 2).join(" "), budget].filter(Boolean).join(" ");
     const lead = parts ? `${parts} ${target}` : target;
@@ -247,10 +252,17 @@ export function buildRuleProfile(input: RuleProfileInput): RuleProfile {
     occasion: slots.occasion,
     preferredStyle: slots.preferredStyle,
     discoveryPreference: slots.discoveryPreference,
+    apparelFor: slots.wantsApparel ? slots.apparelFor : null,
     // 품목 직접 일치용 — 입력 키워드와 "무엇을 찾는지" 답변에서 뽑습니다.
     // userItemTerms가 토큰 위치마다 부정 여부를 직접 확인하므로 원문을 그대로 넘깁니다
     // ("여성복 싫고 남성복" → 남성복만 남음).
-    itemTerms: userItemTerms([...keywords, slots.lookingFor]),
+    // 옷을 찾으면서 누가 입을지 답했다면 원본 소분류(남성복·여성복)도 품목으로 더합니다.
+    itemTerms: [
+      ...new Set([
+        ...userItemTerms([...keywords, slots.lookingFor]),
+        ...(slots.wantsApparel && slots.apparelFor ? APPAREL_ITEM_TERMS[slots.apparelFor] : []),
+      ]),
+    ],
   };
   const summary = empty
     ? "입력한 내용에서 뚜렷한 취향을 찾지 못해, 중앙시장을 폭넓게 둘러보는 기본 취향으로 추천해요. 좋아하는 것을 조금 더 알려주시면 더 정확해져요."

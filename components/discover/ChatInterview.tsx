@@ -8,6 +8,7 @@ import { cn } from "@/components/ui/cn";
 import { api, errorMessage } from "@/lib/client/api";
 import { freshInterview, setState, useMarketFit } from "@/lib/client/store";
 import {
+  APPAREL_LABEL,
   budgetLabel,
   COMPANION_LABEL,
   DISCOVERY_LABEL,
@@ -25,6 +26,7 @@ function slotChips(slots: InterviewSlots | null): string[] {
   if (!slots) return [];
   return [
     slots.intentLabel ?? slots.lookingFor,
+    slots.wantsApparel && slots.apparelFor ? APPAREL_LABEL[slots.apparelFor] : null,
     budgetLabel(slots.budget) ?? (slots.budgetOpen ? "예산 상관없음" : null),
     ...slots.preferredStyle.map((s) => STYLE_LABEL[s]),
     slots.companion ? COMPANION_LABEL[slots.companion] : null,

@@ -123,10 +123,15 @@ const SHORT_ITEMS = new Set(["빵", "떡", "김", "금", "은", "차", "옷", "�
  * ("내의"→"내", "한과"→"한" 처럼 실제 품목명이 잘리는 것을 막습니다).
  */
 function stripEnding(token: string): string {
-  const stripped = token
-    .replace(/(으로|에서|에게|한테|까지|부터|이나|나|이랑|랑|하고|과|와|을|를|이|가|은|는|도|만|의|에|요)$/u, "")
-    .trim();
-  return stripped.length >= MIN_TERM ? stripped : token;
+  const ENDING = /(으로|에서|에게|한테|까지|부터|이나|나|이랑|랑|하고|과|와|을|를|이|가|은|는|도|만|의|에|요)$/u;
+  let out = token.trim();
+  // "남성복이요"처럼 조사가 겹쳐 붙는 경우가 있어 더 떼어낼 게 없을 때까지 반복합니다.
+  for (let i = 0; i < 3; i++) {
+    const next = out.replace(ENDING, "").trim();
+    if (next === out || next.length < MIN_TERM) break;
+    out = next;
+  }
+  return out.length >= MIN_TERM ? out : token;
 }
 
 /**

@@ -199,3 +199,63 @@ describe("세부 품목 추출 (데이터 전수 점검)", () => {
     expect(withTerms.every((s) => s.components.item_match === 0)).toBe(true);
   });
 });
+
+describe("옷: 남성/여성 질문", () => {
+  const first = (text: string) => ruleInterviewTurn([INTERVIEW_GREETING, { role: "user", text }]);
+
+  it.each(["옷 사려고요", "바지 하나 사려고요", "겨울 코트 찾아요", "셔츠 사려고요", "원피스 보려고요", "의류 보려고요", "엄마랑 옷 보러 왔어요"])(
+    "옷을 찾는데 성별을 말하지 않으면 바로 물어본다: %s",
+    (text) => expect(first(text).slot).toBe("apparel_for"),
+  );
+
+  it.each([
+    ["남자 옷 사려고요", "men"],
+    ["여성 옷 보려고요", "women"],
+    ["남성복 볼래요", "men"],
+    ["여성복 싫고 남성복이요", "men"],
+    ["엄마 드릴 옷 찾아요", "women"],
+    ["남편 생일 선물로 셔츠요", "men"],
+    ["여자친구 선물로 원피스요", "women"],
+  ] as const)("성별을 이미 말했으면 다시 묻지 않는다: %s", (text, expected) => {
+    expect(first(text).slot).not.toBe("apparel_for");
+    expect(extractSlots([INTERVIEW_GREETING, { role: "user", text }]).apparelFor).toBe(expected);
+  });
+
+  it.each(["운동화 사려고요", "시계 보려고요", "옷감 사려고요", "옷걸이 필요해요", "옷은 말고 가방 보려고요", "한복 맞추려고요"])(
+    "옷이 아니면 묻지 않는다: %s",
+    (text) => expect(first(text).slot).not.toBe("apparel_for"),
+  );
+
+  it.each([
+    ["남성 옷", "men", "남성복"],
+    ["여자꺼요", "women", "여성복"],
+    ["아빠 거요", "men", "남성복"],
+    ["딸 거예요", "women", "여성복"],
+  ] as const)("답변(%s)을 해석해 해당 옷 가게가 1위가 된다", async (answer, expected, sub) => {
+    const stores = await getStores();
+    const inputs = stores.map((s) => ({
+      id: s.id, taste: s.features.taste, market: s.features.market, exposure: s.features.exposure,
+      recommendable: s.features.recommendable, productHints: s.features.productHints, itemTerms: storeItemTerms(s),
+    }));
+    const byId = new Map(stores.map((s) => [s.id, s]));
+    const messages: ChatMessage[] = [INTERVIEW_GREETING, { role: "user", text: "옷 사려고요" }];
+    const q = ruleInterviewTurn(messages);
+    messages.push({ role: "assistant", text: q.reply, slot: q.slot }, { role: "user", text: answer });
+    const p = buildRuleProfile({ mode: "chat", messages, keywords: [] });
+    expect(p.profile.apparelFor).toBe(expected);
+    const best = rankStores({ taste: p.profile.categories, recent: p.focus, itemTerms: p.profile.itemTerms }, inputs)[0]!;
+    expect(byId.get(best.storeId)!.subCategory).toBe(sub);
+    // 한 번 답했으면 같은 질문을 다시 하지 않습니다.
+    expect(ruleInterviewTurn(messages).slot).not.toBe("apparel_for");
+  });
+
+  it("'둘 다'·'모르겠어요'는 남녀 옷을 모두 품목으로 넣는다", () => {
+    for (const answer of ["둘 다 볼래요", "잘 모르겠어요"]) {
+      const messages: ChatMessage[] = [INTERVIEW_GREETING, { role: "user", text: "옷 사려고요" }];
+      const q = ruleInterviewTurn(messages);
+      messages.push({ role: "assistant", text: q.reply, slot: q.slot }, { role: "user", text: answer });
+      const p = buildRuleProfile({ mode: "chat", messages, keywords: [] });
+      expect(p.profile.itemTerms).toEqual(expect.arrayContaining(["남성복", "여성복"]));
+    }
+  });
+});

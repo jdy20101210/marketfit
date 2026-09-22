@@ -12,6 +12,7 @@ import { activateAnalysis, currentInput, runAnalysis, useAnalysisRun } from "@/l
 import { useRecommendations } from "@/lib/client/recommendations";
 import { activeAnalysis, useMarketFit } from "@/lib/client/store";
 import {
+  APPAREL_LABEL,
   budgetLabel,
   COMPANION_LABEL,
   DISCOVERY_LABEL,
@@ -27,6 +28,7 @@ function contextChips(analysis: PreferenceAnalysis): { label: string; value: str
   const p = analysis.profile;
   const chips: { label: string; value: string }[] = [];
   if (p.intentLabel) chips.push({ label: "목적", value: p.intentLabel });
+  if (p.apparelFor) chips.push({ label: "대상", value: APPAREL_LABEL[p.apparelFor] });
   const budget = budgetLabel(p.budget);
   if (budget) chips.push({ label: "예산", value: budget });
   if (p.companion) chips.push({ label: "함께·대상", value: COMPANION_LABEL[p.companion] });

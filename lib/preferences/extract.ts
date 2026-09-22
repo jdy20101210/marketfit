@@ -3,12 +3,13 @@
  * - 사용자가 말한 내용만 채웁니다. 예산 숫자는 사용자가 적은 숫자에서만 계산합니다.
  */
 import { PRODUCT_KEYS } from "@/lib/recommendation/engine";
-import { findDictionaryWords, KEYWORD_RULES, matchSentence, maskNegatedWords } from "@/lib/recommendation/keywords";
+import { findDictionaryWords, isNegatedAt, KEYWORD_RULES, matchSentence, maskNegatedWords } from "@/lib/recommendation/keywords";
 import {
   CORE_SLOTS,
   MAX_QUESTIONS,
   MIN_ANSWERS,
   type Budget,
+  type ApparelFor,
   type ChatMessage,
   type Companion,
   type InterviewSlot,
@@ -173,9 +174,44 @@ function emptySlots(): InterviewSlots {
     companion: null,
     occasion: null,
     discoveryPreference: null,
+    wantsApparel: false,
+    apparelFor: null,
     tasteWords: [],
     answered: [],
   };
+}
+
+// ---------- 옷: 누가 입을 옷인지 ----------
+
+/** 옷(의류)을 가리키는 말. 옷감(원단)·옷걸이·옷장은 옷이 아니라서 뺍니다. */
+const APPAREL_WORDS = /옷(?!감|걸이|장)|의류|남성복|여성복|바지|치마|스커트|셔츠|블라우스|원피스|자켓|재킷|점퍼|잠바|외투|코트|패딩|정장|니트|가디건|카디건|조끼|캐주얼|작업복|등산복|운동복|트레이닝|맨투맨|후드티/g;
+/** 성별을 직접 말한 경우 — 어디서 말하든 그대로 씁니다. */
+const MEN_DIRECT = /남성|남자(?!\s*친구)|신사/g;
+const WOMEN_DIRECT = /여성|여자(?!\s*친구)|숙녀|아가씨/g;
+/**
+ * 사람을 가리키는 말 — "엄마랑 옷 보러 왔어요"처럼 동행일 수도 있어서,
+ * 선물 맥락이거나 '누가 입을 옷인지' 질문에 대한 답일 때만 성별로 봅니다.
+ */
+const MEN_RELATION = /남편|아빠|아버지|아버님|아들|할아버지|오빠|남자\s*친구|남친|시아버지|장인/g;
+const WOMEN_RELATION = /아내|와이프|엄마|어머니|어머님|딸(?!기)|할머니|언니|누나|여자\s*친구|여친|시어머니|장모/g;
+/** '누가 입을 옷인지' 질문에 둘 다/모르겠다고 답한 경우 */
+const APPAREL_BOTH = /둘\s*다|남녀|공용|상관\s*없|아무거나|모르|다\s*볼/;
+const GIFT_CONTEXT = /선물|드릴|드리려|드리고|사\s*드|사드|줄\s*거|줄\s*옷|생일|기념일|답례/;
+
+/** 부정되지 않은 자리에서 정규식이 한 번이라도 걸리는지 ("여성복 싫고" 같은 언급은 제외) */
+function hasPositiveMatch(text: string, re: RegExp): boolean {
+  for (const m of text.matchAll(re)) {
+    const start = m.index ?? 0;
+    if (!isNegatedAt(text, start, start + m[0].length)) return true;
+  }
+  return false;
+}
+
+function combineApparel(men: boolean, women: boolean): ApparelFor | null {
+  if (men && women) return "both";
+  if (men) return "men";
+  if (women) return "women";
+  return null;
 }
 
 function firstMatch<T>(patterns: [T, RegExp][], text: string): T | null {
@@ -198,6 +234,9 @@ export function extractSlots(messages: ChatMessage[]): InterviewSlots {
   const answered = new Set<InterviewSlot>();
   const taste = new Set<string>();
   let lastSlot: InterviewSlot | null = null;
+  let wantsApparel = false;
+  let men = false;
+  let women = false;
 
   for (const m of messages) {
     if (m.role === "assistant") {
@@ -240,6 +279,20 @@ export function extractSlots(messages: ChatMessage[]): InterviewSlots {
       answered.add("discovery");
     }
 
+    // 옷을 찾는지, 누가 입을 옷인지
+    if (hasPositiveMatch(text, APPAREL_WORDS)) wantsApparel = true;
+    const answeringApparel = target === "apparel_for";
+    const relationCounts = answeringApparel || GIFT_CONTEXT.test(text);
+    if (hasPositiveMatch(text, MEN_DIRECT) || (relationCounts && hasPositiveMatch(text, MEN_RELATION))) men = true;
+    if (hasPositiveMatch(text, WOMEN_DIRECT) || (relationCounts && hasPositiveMatch(text, WOMEN_RELATION))) women = true;
+    if (answeringApparel) {
+      answered.add("apparel_for");
+      if (APPAREL_BOTH.test(text)) {
+        men = true;
+        women = true;
+      }
+    }
+
     const sentence = matchSentence(text);
     for (const w of sentence.matchedWords) taste.add(w);
     const productSignal = PRODUCT_KEYS.some((k) => sentence.weights[k] >= 0.6);
@@ -254,6 +307,8 @@ export function extractSlots(messages: ChatMessage[]): InterviewSlots {
     slots.intent = intent.intent;
     slots.intentLabel = intent.label;
   }
+  slots.wantsApparel = wantsApparel;
+  slots.apparelFor = combineApparel(men, women);
   slots.tasteWords = [...taste].slice(0, 12);
   slots.answered = [...answered];
   return slots;
@@ -273,6 +328,9 @@ export function isSlotFilled(slots: InterviewSlots, slot: InterviewSlot): boolea
       return slots.answered.includes("taste");
     case "discovery":
       return Boolean(slots.discoveryPreference) || slots.answered.includes("discovery");
+    case "apparel_for":
+      // 옷을 찾는 게 아니면 물을 필요가 없습니다.
+      return !slots.wantsApparel || Boolean(slots.apparelFor) || slots.answered.includes("apparel_for");
   }
 }
 
@@ -339,6 +397,11 @@ export const QUESTION_BANK: Record<InterviewSlot, QuestionVariant[]> = {
     { text: "평소 즐겨 드시는 음식이나 좋아하는 맛이 있으세요?", suggestions: ["분식", "전통 먹거리", "달달한 간식", "커피"], when: isFood },
     { text: "평소 좋아하는 것이나 취미가 있다면 알려주세요.", suggestions: ["커피", "캠핑", "빈티지", "전통 먹거리"] },
     { text: "요즘 관심 있는 것이 있다면 한두 가지만 알려주세요.", suggestions: ["커피", "캠핑", "빈티지", "집 꾸미기"] },
+  ],
+  apparel_for: [
+    { text: "받는 분은 남성인가요, 여성인가요?", suggestions: ["남성", "여성", "잘 모르겠어요"], when: isGift },
+    { text: "남성 옷을 찾으세요, 여성 옷을 찾으세요?", suggestions: ["남성 옷", "여성 옷", "둘 다 볼래요"] },
+    { text: "누가 입을 옷인가요? 남성용과 여성용 중에 알려 주세요.", suggestions: ["남성용", "여성용", "둘 다"] },
   ],
   discovery: [
     { text: "처음 가 보는 숨은 가게도 괜찮으세요, 아니면 잘 알려진 가게가 좋으세요?", suggestions: ["숨은 가게 좋아요", "잘 알려진 곳이 좋아요", "상관없어요"] },
@@ -418,8 +481,10 @@ function orderKeyFor(slots: InterviewSlots): keyof typeof ORDER_BY_INTENT | null
  */
 export function slotOrderFor(slots: InterviewSlots): InterviewSlot[] {
   const key = orderKeyFor(slots);
-  if (key) return ORDER_BY_INTENT[key]!;
-  return [...CORE_SLOTS, "taste", "discovery", "companion"];
+  const base: InterviewSlot[] = key ? ORDER_BY_INTENT[key]! : [...CORE_SLOTS, "taste", "discovery", "companion"];
+  // 옷을 찾는다면 남성/여성을 먼저 알아야 추천이 갈립니다(원본 데이터가 남성복·여성복으로 나뉨).
+  // 옷이 아니면 isSlotFilled가 true를 돌려주므로 이 항목은 자동으로 건너뜁니다.
+  return ["looking_for", "apparel_for", ...base.filter((s) => s !== "looking_for" && s !== "apparel_for")];
 }
 
 export function nextRuleSlot(slots: InterviewSlots, answeredCount: number, askedSlots: InterviewSlot[]): InterviewSlot | null {
@@ -427,7 +492,8 @@ export function nextRuleSlot(slots: InterviewSlots, answeredCount: number, asked
   const pending = order.filter((s) => !isSlotFilled(slots, s) && !askedSlots.includes(s));
   if (pending.length === 0) return null;
   // 최소 답변 수를 채우기 전에는 계속 묻고, 채운 뒤에는 핵심 항목만 남았을 때 묻습니다.
-  if (answeredCount >= MIN_ANSWERS) return pending.find((s) => CORE_SLOTS.includes(s)) ?? null;
+  // 최소 답변 뒤에도 '누가 입을 옷인지'는 추천을 크게 가르므로 핵심 항목처럼 물어봅니다.
+  if (answeredCount >= MIN_ANSWERS) return pending.find((s) => CORE_SLOTS.includes(s) || s === "apparel_for") ?? null;
   return pending[0]!;
 }
 
@@ -452,6 +518,7 @@ const ACK_BY_SLOT: Partial<Record<InterviewSlot, string[]>> = {
   companion: ["누구와 함께인지 알겠어요.", "네, 참고할게요."],
   taste: ["좋은 정보예요.", "취향 잘 알겠어요."],
   discovery: ["알겠어요.", "네, 반영할게요."],
+  apparel_for: ["네, 그 옷으로 찾아볼게요.", "알겠어요, 거기에 맞춰 볼게요."],
 };
 
 function ackFor(lastSlot: InterviewSlot | null, seed: number): string {

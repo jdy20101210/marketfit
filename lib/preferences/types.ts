@@ -13,8 +13,11 @@ export const INPUT_MODE_LABEL: Record<InputMode, string> = {
   both: "대화 + 키워드",
 };
 
-/** 인터뷰에서 채우는 항목. 앞의 세 항목이 핵심이고, 나머지는 질문 수가 부족할 때만 묻습니다. */
-export const INTERVIEW_SLOTS = ["looking_for", "budget", "style", "companion", "taste", "discovery"] as const;
+/**
+ * 인터뷰에서 채우는 항목. 앞의 세 항목이 핵심이고, 나머지는 질문 수가 부족할 때만 묻습니다.
+ * apparel_for(누가 입을 옷인지)는 옷을 찾는다고 했는데 남성/여성을 말하지 않았을 때만 묻습니다.
+ */
+export const INTERVIEW_SLOTS = ["looking_for", "budget", "style", "companion", "taste", "discovery", "apparel_for"] as const;
 export type InterviewSlot = (typeof INTERVIEW_SLOTS)[number];
 export const CORE_SLOTS: InterviewSlot[] = ["looking_for", "budget", "style"];
 
@@ -55,6 +58,13 @@ export const STYLE_LABEL: Record<PreferredStyle, string> = {
   premium: "품질 우선",
 };
 
+/** 옷을 찾을 때 누가 입을 옷인지 (원본 데이터의 남성복·여성복 소분류와 대응) */
+export const APPAREL_FOR = ["men", "women", "both"] as const;
+export type ApparelFor = (typeof APPAREL_FOR)[number];
+export const APPAREL_LABEL: Record<ApparelFor, string> = { men: "남성 옷", women: "여성 옷", both: "남녀 옷 모두" };
+/** 품목 직접 일치에 넣을 원본 소분류 이름 */
+export const APPAREL_ITEM_TERMS: Record<ApparelFor, string[]> = { men: ["남성복"], women: ["여성복"], both: ["남성복", "여성복"] };
+
 export const DISCOVERY_PREFERENCES = ["familiar", "balanced", "new"] as const;
 export type DiscoveryPreference = (typeof DISCOVERY_PREFERENCES)[number];
 export const DISCOVERY_LABEL: Record<DiscoveryPreference, string> = {
@@ -90,6 +100,8 @@ export interface UserPreferenceProfile {
   occasion: Occasion | null;
   preferredStyle: PreferredStyle[];
   discoveryPreference: DiscoveryPreference | null;
+  /** 옷을 찾는 경우 누가 입을 옷인지 (이전 버전 분석에는 없을 수 있음) */
+  apparelFor?: ApparelFor | null;
   /** 사용자가 직접 말한 품목 단어 (예: ["운동화"]) — 점포 원본 품목과 그대로 대조합니다. */
   itemTerms: string[];
   summary: string;
@@ -133,6 +145,10 @@ export interface InterviewSlots {
   companion: Companion | null;
   occasion: Occasion | null;
   discoveryPreference: DiscoveryPreference | null;
+  /** 옷(의류)을 찾는다고 말했는지 — 부정된 언급("옷은 말고")은 제외 */
+  wantsApparel: boolean;
+  /** 누가 입을 옷인지 */
+  apparelFor: ApparelFor | null;
   tasteWords: string[];
   answered: InterviewSlot[];
 }
